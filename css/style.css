@@ -161,6 +161,10 @@ section {
     aspect-ratio: 16 / 7;
 }
 
+.gallery-item img {
+    cursor: pointer;
+}
+
 #documentary {
     background: #f5f5f5;
 }
@@ -255,4 +259,65 @@ footer {
     padding: 40px 48px;
     font-size: 14px;
     color: #777777;
+}
+.lightbox {
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.92);
+
+    z-index: 1000;
+
+    padding: 40px;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition:
+        opacity 0.3s ease,
+        visibility 0.3s ease;
+}
+
+.lightbox.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.lightbox-image {
+    max-width: 90vw;
+    max-height: 88vh;
+
+    width: auto;
+    height: auto;
+
+    object-fit: contain;
+
+    transform: scale(0.96);
+
+    transition: transform 0.3s ease;
+}
+
+.lightbox.active .lightbox-image {
+    transform: scale(1);
+}
+.lightbox-close {
+    position: absolute;
+
+    top: 24px;
+    right: 32px;
+
+    border: none;
+    background: none;
+
+    color: #ffffff;
+
+    font-size: 42px;
+    font-weight: 200;
+
+    cursor: pointer;
 }
