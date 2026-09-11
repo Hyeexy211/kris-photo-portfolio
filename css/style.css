@@ -1,20 +1,34 @@
+/* =========================
+   1. 全局重置：消除浏览器默认间距，
+   让页面从可预测的基础样式开始。
+========================= */
+
 * {
+    /* box-sizing: border-box 让宽高包含内边距和边框，布局更容易计算。 */
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
 html {
+    /* 点击页内导航链接时，平滑滚动到对应 section。 */
     scroll-behavior: smooth;
 }
 
 body {
+    /* 全站共用的字体、背景色与默认文字颜色。 */
     font-family: Arial, Helvetica, sans-serif;
     background: #ffffff;
     color: #111111;
 }
 
+
+/* =========================
+   2. 页头与导航：始终浮在照片上方。
+========================= */
+
 header {
+    /* fixed 让页头滚动时仍固定在浏览器顶部。 */
     position: fixed;
     top: 0;
     left: 0;
@@ -25,13 +39,16 @@ header {
 
     background: rgba(0, 0, 0, 0.18);
 
+    /* 模糊页头背后的内容，形成半透明的磨砂玻璃效果。 */
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
 
+    /* 让导航位于 Hero 遮罩和普通内容之上；移动端按钮会使用更高的 30。 */
     z-index: 10;
 }
 
 nav {
+    /* Flex 把站点标题放在左侧，导航列表放在右侧。 */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -46,7 +63,8 @@ nav h1 {
     color: #ffffff;
 }
 
-nav ul {
+.nav-links {
+    /* 默认桌面端将链接横向排列；手机端会在媒体查询中改为纵向。 */
     display: flex;
 
     gap: 28px;
@@ -67,7 +85,12 @@ nav a {
     transition: color 0.3s ease;
 }
 
+nav a:hover {
+    color: #ffffff;
+}
+
 nav a::after {
+    /* 使用伪元素制作默认隐藏的导航下划线，不需要额外 HTML。 */
     content: "";
 
     position: absolute;
@@ -86,120 +109,98 @@ nav a::after {
     transition: transform 0.3s ease;
 }
 
-nav a:hover {
-    color: #ffffff;
-}
-
 nav a:hover::after {
+    /* 鼠标悬停时把下划线从 0 宽度展开到完整宽度。 */
     transform: scaleX(1);
     transform-origin: left;
 }
 
+
+/* =========================
+   3. 移动端菜单按钮：桌面端隐藏，窄屏时显示。
+========================= */
+
+.menu-toggle {
+    /* 默认不显示，避免桌面端与完整导航重复。 */
+    display: none;
+
+    width: 44px;
+    height: 44px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: rgba(0, 0, 0, 0.25);
+
+    color: #ffffff;
+
+    font-size: 28px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    align-items: center;
+    justify-content: center;
+
+    position: relative;
+
+    z-index: 30;
+}
+
+
+/* =========================
+   4. 通用内容区：为普通 section 提供基本高度与留白。
+========================= */
+
 section {
+    /* 100vh 约等于一个浏览器窗口高度。 */
     min-height: 100vh;
     padding: 120px 48px;
 }
-.gallery-section {
-    min-height: auto;
-    padding: 120px 48px;
-    background: #ffffff;
-    color: #111111;
+
+section h2 {
+    font-size: 48px;
+    margin-bottom: 24px;
 }
 
-.section-heading {
-    margin-bottom: 48px;
-}
-.section-heading h2 {
-    font-size: clamp(40px, 5vw, 72px);
-    font-weight: 500;
-    letter-spacing: -0.04em;
-}
-.section-heading p {
-    margin-top: 12px;
-
-    font-size: 14px;
-
-    color: #777777;
-
-    letter-spacing: 0.08em;
+section p {
+    font-size: 18px;
+    line-height: 1.6;
 }
 
-.gallery-grid {
-    display: grid;
 
-    grid-template-columns: repeat(2, 1fr);
+/* =========================
+   5. Hero 首页：照片、渐变遮罩和文字分层叠放。
+========================= */
 
-    gap: 20px;
-}
+#home {
+    /* relative 为内部 absolute 定位的遮罩和文字提供定位参考。 */
+    position: relative;
 
-.gallery-item {
+    width: 100%;
+    height: 100vh;
+
+    padding: 0;
+
     overflow: hidden;
 }
-.gallery-item img {
+
+#home img {
+    /* cover 保持照片比例并铺满容器，必要时裁去边缘。 */
     width: 100%;
     height: 100%;
-
-    aspect-ratio: 3 / 2;
 
     object-fit: cover;
 
     display: block;
 }
-.gallery-item img {
-    transition: transform 0.6s ease;
-}
-
-.gallery-item:hover img {
-    transform: scale(1.04);
-}
-
-.gallery-item:nth-child(3) {
-    grid-column: span 2;
-}
-
-.gallery-item:nth-child(3) img {
-    aspect-ratio: 16 / 7;
-}
-
-.gallery-item img {
-    cursor: pointer;
-}
-
-#documentary {
-    background: #f5f5f5;
-}
-
-@media (max-width: 768px) {
-
-    .gallery-section {
-        padding: 80px 20px;
-    }
-
-    .gallery-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .gallery-item:nth-child(3) {
-        grid-column: span 1;
-    }
-
-    .gallery-item:nth-child(3) img {
-        aspect-ratio: 3 / 2;
-    }
-
-}
-
-#home {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    padding: 0;
-    overflow: hidden;
-}
 
 #home::after {
+    /* 伪元素覆盖整张照片，底部较深，方便承载白色文字。 */
     content: "";
+
     position: absolute;
+
     inset: 0;
 
     background: linear-gradient(
@@ -208,11 +209,27 @@ section {
         rgba(0, 0, 0, 0.2) 40%,
         rgba(0, 0, 0, 0) 70%
     );
+
     z-index: 1;
 }
+
+.hero-text {
+    /* absolute 让文字精准停在 Hero 的左下角，不占普通文档流空间。 */
+    position: absolute;
+
+    left: 48px;
+    bottom: 60px;
+
+    color: #ffffff;
+
+    z-index: 2;
+}
+
 #home h2 {
+    /* clamp 在小屏不低于 48px、随屏幕宽度增长、桌面端不超过 96px。 */
     font-size: clamp(48px, 7vw, 96px);
     font-weight: 500;
+
     letter-spacing: -0.04em;
     line-height: 0.95;
 
@@ -230,38 +247,107 @@ section {
 
     color: rgba(255, 255, 255, 0.75);
 }
-#home img {
+
+
+/* =========================
+   6. 画廊内容区：三个分类共用这套区块和标题样式。
+========================= */
+
+.gallery-section {
+    min-height: auto;
+
+    padding: 120px 48px;
+
+    background: #ffffff;
+
+    color: #111111;
+}
+
+#documentary {
+    /* 仅为纪录片分类换一层浅灰背景，其他画廊仍复用通用规则。 */
+    background: #f5f5f5;
+}
+
+.section-heading {
+    margin-bottom: 48px;
+}
+
+.section-heading h2 {
+    font-size: clamp(40px, 5vw, 72px);
+    font-weight: 500;
+
+    letter-spacing: -0.04em;
+}
+
+.section-heading p {
+    margin-top: 12px;
+
+    font-size: 14px;
+
+    color: #777777;
+
+    letter-spacing: 0.08em;
+}
+
+
+/* =========================
+   7. 画廊网格：使用 Grid 安排作品图片。
+========================= */
+
+.gallery-grid {
+    /* repeat(2, 1fr) 创建两列等宽网格。 */
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 20px;
+}
+
+.gallery-item {
+    /* 隐藏放大图片超出卡片边界的部分，Hover 时才显得干净。 */
+    overflow: hidden;
+}
+
+.gallery-item img {
+    /* 鼠标指针提示这张图片可点击；transition 让放大过程平滑。 */
     width: 100%;
     height: 100%;
+
+    aspect-ratio: 3 / 2;
+
     object-fit: cover;
+
     display: block;
-}
-.hero-text {
-    position: absolute;
-    left: 48px;
-    bottom: 60px;
-    color: #ffffff;
-    z-index: 2;
+
+    cursor: pointer;
+
+    transition: transform 0.6s ease;
 }
 
-section h2 {
-    font-size: 48px;
-    margin-bottom: 24px;
+.gallery-item:hover img {
+    /* 只缩放图片本身，不改变网格尺寸。 */
+    transform: scale(1.04);
 }
 
-section p {
-    font-size: 18px;
-    line-height: 1.6;
+.gallery-item:nth-child(3) {
+    /* 每组第三张照片跨越两列，形成横向的视觉变化。 */
+    grid-column: span 2;
+}
+
+.gallery-item:nth-child(3) img {
+    /* 同为第三张作品时，配合跨两列的卡片使用更扁的横向比例。 */
+    aspect-ratio: 16 / 7;
 }
 
 
-footer {
-    padding: 40px 48px;
-    font-size: 14px;
-    color: #777777;
-}
+/* =========================
+   8. 灯箱：默认不可见，添加 active class 后显示大图。
+========================= */
+
 .lightbox {
+    /* fixed + inset: 0 让黑色遮罩覆盖整个浏览器窗口。 */
     position: fixed;
+
     inset: 0;
 
     display: flex;
@@ -271,10 +357,12 @@ footer {
 
     background: rgba(0, 0, 0, 0.92);
 
+    /* 使用很高的层级，确保灯箱会盖过固定导航。 */
     z-index: 1000;
 
     padding: 40px;
 
+    /* opacity 和 visibility 一起控制隐藏状态，避免透明遮罩仍挡住点击。 */
     opacity: 0;
     visibility: hidden;
 
@@ -284,11 +372,13 @@ footer {
 }
 
 .lightbox.active {
+    /* JavaScript 添加 active 后，灯箱淡入并允许用户看见和操作。 */
     opacity: 1;
     visibility: visible;
 }
 
 .lightbox-image {
+    /* contain 保证大图完整显示，不像画廊缩略图那样被裁切。 */
     max-width: 90vw;
     max-height: 88vh;
 
@@ -303,15 +393,19 @@ footer {
 }
 
 .lightbox.active .lightbox-image {
+    /* 只有灯箱已打开时才回到原始缩放比例，形成轻微放大进入感。 */
     transform: scale(1);
 }
+
 .lightbox-close {
+    /* 关闭按钮独立定位在遮罩右上角，不会影响大图居中。 */
     position: absolute;
 
     top: 24px;
     right: 32px;
 
     border: none;
+
     background: none;
 
     color: #ffffff;
@@ -320,4 +414,190 @@ footer {
     font-weight: 200;
 
     cursor: pointer;
+}
+
+
+/* =========================
+   9. 页脚：展示版权等收尾内容。
+========================= */
+
+footer {
+    padding: 40px 48px;
+
+    font-size: 14px;
+
+    color: #777777;
+}
+
+
+/* =========================
+   10. 移动端响应式：屏幕宽度不超过 768px 时覆盖桌面端规则。
+========================= */
+
+@media (max-width: 768px) {
+    /* @media 中的规则只在窄屏设备生效。 */
+
+    /* Header */
+
+    header {
+        padding: 18px 20px;
+    }
+
+    nav h1 {
+        /* 当全屏菜单打开时，品牌名仍需压在菜单遮罩上方。 */
+        position: relative;
+
+        z-index: 20;
+    }
+
+
+    /* Menu Button */
+
+    .menu-toggle {
+        /* 在移动端把默认隐藏的按钮改为 Flex，才能使用居中规则摆放图标。 */
+        display: flex;
+    }
+
+
+    /* Mobile Navigation */
+
+    .nav-links {
+        /* 变为全屏纵向菜单，初始透明且不可见。 */
+        position: fixed;
+
+        top: 0;
+        left: 0;
+
+        width: 100%;
+        height: 100vh;
+
+        display: flex;
+        flex-direction: column;
+
+        align-items: center;
+        justify-content: center;
+
+        gap: 32px;
+
+        background: rgba(0, 0, 0, 0.96);
+
+        opacity: 0;
+        visibility: hidden;
+
+        transition:
+            opacity 0.3s ease,
+            visibility 0.3s ease;
+    }
+
+    .nav-links.active {
+        /* JavaScript 切换 active 后显示移动端菜单。 */
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .nav-links a {
+        font-size: 28px;
+        font-weight: 400;
+
+        color: #ffffff;
+    }
+
+
+    /* Mobile Menu Animation */
+
+    .nav-links li {
+        /* 每个菜单项先向下偏移并透明，准备执行进入动画。 */
+        opacity: 0;
+
+        transform: translateY(16px);
+
+        transition:
+            opacity 0.35s ease,
+            transform 0.35s ease;
+    }
+
+    .nav-links.active li {
+        /* 容器打开后，所有菜单项回到原位置并显示出来。 */
+        opacity: 1;
+
+        transform: translateY(0);
+    }
+
+    .nav-links.active li:nth-child(1) {
+        /*
+            为每项设置不同延迟，使菜单链接依次出现。
+            后面四条规则只改变延迟时间，动画类型仍继承自 .nav-links li。
+        */
+        transition-delay: 0.05s;
+    }
+
+    .nav-links.active li:nth-child(2) {
+        transition-delay: 0.1s;
+    }
+
+    .nav-links.active li:nth-child(3) {
+        transition-delay: 0.15s;
+    }
+
+    .nav-links.active li:nth-child(4) {
+        transition-delay: 0.2s;
+    }
+
+    .nav-links.active li:nth-child(5) {
+        transition-delay: 0.25s;
+    }
+
+
+    /* Hero */
+
+    .hero-text {
+        left: 20px;
+        right: 20px;
+
+        bottom: 40px;
+    }
+
+    #home h2 {
+        font-size: clamp(42px, 13vw, 64px);
+    }
+
+
+    /* Gallery */
+
+    .gallery-section {
+        padding: 80px 20px;
+    }
+
+    .gallery-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .gallery-item:nth-child(3) {
+        /* 手机只有一列，因此第三张不再需要跨两列。 */
+        grid-column: span 1;
+    }
+
+    .gallery-item:nth-child(3) img {
+        /* 恢复为普通图片比例，避免单列时出现过扁的横幅。 */
+        aspect-ratio: 3 / 2;
+    }
+
+
+    /* Lightbox */
+
+    .lightbox {
+        padding: 20px;
+    }
+
+    .lightbox-close {
+        top: 16px;
+        right: 20px;
+    }
+
+
+    /* Footer */
+
+    footer {
+        padding: 40px 20px;
+    }
 }
