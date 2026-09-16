@@ -1,603 +1,1100 @@
-/* =========================
-   1. 全局重置：消除浏览器默认间距，
-   让页面从可预测的基础样式开始。
-========================= */
+/* ================================================================
+   1. 全局基础规则
+   这一部分统一浏览器默认样式，建立可预测的页面尺寸计算方式。
+================================================================ */
 
+/* 星号选择器会选中页面里的每一个元素。 */
 * {
-    /* box-sizing: border-box 让宽高包含内边距和边框，布局更容易计算。 */
+    /* 清除浏览器自带的外边距，避免不同浏览器出现不一致的空白。 */
     margin: 0;
+
+    /* 清除浏览器自带的内边距，后面由我们自己控制空间。 */
     padding: 0;
+
+    /* 让 width 和 height 包含 padding 与 border，尺寸更容易计算。 */
     box-sizing: border-box;
 }
 
+/* html 代表整个网页文档的根元素。 */
 html {
-    /* 点击页内导航链接时，平滑滚动到对应 section。 */
+    /* 点击页内锚点时使用平滑滚动，而不是瞬间跳转。 */
     scroll-behavior: smooth;
+
+    /* 为固定页头预留滚动位置，避免区块标题被页头遮住。 */
+    scroll-padding-top: 84px;
 }
 
+/* body 是所有可见页面内容的外层容器。 */
 body {
-    /* 全站共用的字体、背景色与默认文字颜色。 */
+    /* 优先使用 Arial；没有时依次回退到 Helvetica 和系统无衬线字体。 */
     font-family: Arial, Helvetica, sans-serif;
+
+    /* 设置全站白色背景。 */
     background: #ffffff;
+
+    /* 设置正文默认文字颜色为接近黑色。 */
     color: #111111;
+
+    /* 防止长内容或动画在水平方向产生意外滚动条。 */
+    overflow-x: hidden;
+}
+
+/* JavaScript 在菜单或灯箱打开时添加这个 class。 */
+body.has-overlay {
+    /* 禁止背景页面继续滚动，让用户专注于当前覆盖层。 */
+    overflow: hidden;
+}
+
+/* 跳过链接为键盘和屏幕阅读器用户提供快速入口。 */
+.skip-link {
+    /* 固定定位使它不受正文滚动位置影响。 */
+    position: fixed;
+
+    /* 放在左上角，获得焦点时容易找到。 */
+    top: 12px;
+
+    /* 正常状态先移到屏幕左侧外面。 */
+    left: -9999px;
+
+    /* 设置舒适的点击区域。 */
+    padding: 12px 16px;
+
+    /* 使用白底黑字保证可读性。 */
+    background: #ffffff;
+
+    /* 设置深色文字。 */
+    color: #111111;
+
+    /* 去掉链接默认下划线。 */
+    text-decoration: none;
+
+    /* 让它在页头和灯箱之外仍能显示。 */
+    z-index: 2000;
+}
+
+/* :focus 表示用户用键盘 Tab 到跳过链接。 */
+.skip-link:focus {
+    /* 获得焦点后把链接移回可见区域。 */
+    left: 12px;
 }
 
 
-/* =========================
-   2. 页头与导航：始终浮在照片上方。
-========================= */
+/* ================================================================
+   2. 固定页头与主导航
+   页头始终浮在页面顶部，桌面端展示横向导航。
+================================================================ */
 
+/* header 包含品牌标题和主导航。 */
 header {
-    /* fixed 让页头滚动时仍固定在浏览器顶部。 */
+    /* fixed 让页头在页面滚动时仍停留在视口顶部。 */
     position: fixed;
+
+    /* 把页头贴住视口顶部。 */
     top: 0;
+
+    /* 把页头贴住视口左侧。 */
     left: 0;
 
+    /* 让页头横跨整个视口宽度。 */
     width: 100%;
 
+    /* 设置桌面端上下与左右留白。 */
     padding: 20px 48px;
 
+    /* 半透明黑色让白字在各种照片上都保持清晰。 */
     background: rgba(0, 0, 0, 0.18);
 
-    /* 模糊页头背后的内容，形成半透明的磨砂玻璃效果。 */
+    /* 模糊页头后面的内容，形成玻璃质感。 */
     backdrop-filter: blur(16px);
+
+    /* 为 Safari 浏览器提供同一模糊效果的前缀版本。 */
     -webkit-backdrop-filter: blur(16px);
 
-    /* 让导航位于 Hero 遮罩和普通内容之上；移动端按钮会使用更高的 30。 */
+    /* 让页头压在 Hero 遮罩和普通内容之上。 */
     z-index: 10;
 }
 
+/* nav 是 header 内部的水平布局容器。 */
 nav {
-    /* Flex 把站点标题放在左侧，导航列表放在右侧。 */
+    /* 使用 Flexbox 排列品牌名、菜单按钮和链接列表。 */
     display: flex;
+
+    /* 将品牌名推到左侧、导航链接推到右侧。 */
     justify-content: space-between;
+
+    /* 让所有导航项目在垂直方向居中。 */
     align-items: center;
 }
 
+/* 只选择导航内部的站点主标题。 */
 nav h1 {
+    /* 使用较小字号保持摄影网站的简洁感。 */
     font-size: 15px;
+
+    /* 600 是略粗于普通文字的字重。 */
     font-weight: 600;
 
+    /* 稍微拉开字母，增强品牌标题的呼吸感。 */
     letter-spacing: 0.04em;
 
+    /* 深色 Hero 上使用白色标题。 */
     color: #ffffff;
 }
 
+/* nav-links 是桌面端的横向链接列表。 */
 .nav-links {
-    /* 默认桌面端将链接横向排列；手机端会在媒体查询中改为纵向。 */
+    /* 使用 Flexbox 让列表项横向排列。 */
     display: flex;
 
+    /* 为每个链接设置一致间距。 */
     gap: 28px;
 
+    /* 去掉 ul 默认的小圆点。 */
     list-style: none;
 }
 
+/* 选择导航中的全部链接。 */
 nav a {
+    /* relative 为下面的装饰下划线提供定位参照。 */
     position: relative;
 
+    /* 使用略透明白色，让未悬停链接不会过度抢眼。 */
     color: rgba(255, 255, 255, 0.82);
 
+    /* 去掉浏览器默认链接下划线。 */
     text-decoration: none;
 
+    /* 设置导航文字大小。 */
     font-size: 13px;
+
+    /* 使用普通字重保持轻盈。 */
     font-weight: 400;
 
+    /* 颜色改变时播放 0.3 秒过渡。 */
     transition: color 0.3s ease;
 }
 
-nav a:hover {
+/* 鼠标悬停或键盘聚焦都使用相同的高亮反馈。 */
+nav a:hover,
+nav a:focus-visible {
+    /* 高亮状态使用完全不透明的白色。 */
     color: #ffffff;
 }
 
+/* ::after 创建一个不需要额外 HTML 的装饰下划线。 */
 nav a::after {
-    /* 使用伪元素制作默认隐藏的导航下划线，不需要额外 HTML。 */
+    /* 空字符串让伪元素真正生成。 */
     content: "";
 
+    /* absolute 允许下划线相对链接精确定位。 */
     position: absolute;
 
+    /* 下划线从链接左边缘开始。 */
     left: 0;
+
+    /* 将下划线放到文字下方 6 像素。 */
     bottom: -6px;
 
+    /* 下划线与链接同宽。 */
     width: 100%;
+
+    /* 使用 1 像素细线保持克制。 */
     height: 1px;
 
+    /* 下划线颜色为白色。 */
     background: #ffffff;
 
+    /* 初始横向缩放为 0，所以看不见。 */
     transform: scaleX(0);
+
+    /* 收起动画从右侧开始。 */
     transform-origin: right;
 
+    /* 为缩放变化添加平滑动画。 */
     transition: transform 0.3s ease;
 }
 
-nav a:hover::after {
-    /* 鼠标悬停时把下划线从 0 宽度展开到完整宽度。 */
+/* 鼠标悬停和键盘聚焦都展开导航下划线。 */
+nav a:hover::after,
+nav a:focus-visible::after {
+    /* 恢复完整横向尺寸，使下划线显示。 */
     transform: scaleX(1);
+
+    /* 展开动画从左侧开始。 */
     transform-origin: left;
 }
 
 
-/* =========================
-   3. 移动端菜单按钮：桌面端隐藏，窄屏时显示。
-========================= */
+/* ================================================================
+   3. 移动端菜单按钮
+   桌面端隐藏，宽度不超过 768px 时由媒体查询显示。
+================================================================ */
 
+/* menu-toggle 控制手机端全屏导航的开关。 */
 .menu-toggle {
-    /* 默认不显示，避免桌面端与完整导航重复。 */
+    /* 桌面端默认隐藏按钮。 */
     display: none;
 
+    /* 设置至少 44 像素的可点击宽度。 */
     width: 44px;
+
+    /* 设置至少 44 像素的可点击高度。 */
     height: 44px;
 
+    /* 去掉按钮默认边框。 */
     border: none;
+
+    /* 50% 圆角把正方形按钮变为圆形。 */
     border-radius: 50%;
 
+    /* 使用半透明深色背景。 */
     background: rgba(0, 0, 0, 0.25);
 
+    /* 图标使用白色。 */
     color: #ffffff;
 
+    /* 设置汉堡图标和关闭图标的大小。 */
     font-size: 28px;
+
+    /* line-height: 1 防止字符上下产生额外行高。 */
     line-height: 1;
 
+    /* 鼠标经过时显示可点击指针。 */
     cursor: pointer;
 
+    /* 为内部图标提供 Flexbox 的垂直居中。 */
     align-items: center;
+
+    /* 为内部图标提供 Flexbox 的水平居中。 */
     justify-content: center;
 
+    /* relative 让 z-index 可以生效。 */
     position: relative;
 
+    /* 菜单按钮必须压在全屏菜单遮罩上方。 */
     z-index: 30;
 }
 
+/* 所有重要交互元素在键盘聚焦时显示清晰轮廓。 */
+.menu-toggle:focus-visible,
+.gallery-item:focus-visible,
+.lightbox-close:focus-visible {
+    /* 使用白色外轮廓，在深色和图片背景上都容易辨认。 */
+    outline: 2px solid #ffffff;
 
-/* =========================
-   4. 通用内容区：为普通 section 提供基本高度与留白。
-========================= */
+    /* 让轮廓与元素边缘之间留出少量空隙。 */
+    outline-offset: 4px;
+}
 
+/* 画廊位于白色背景，所以聚焦时改用深色轮廓。 */
+.gallery-item:focus-visible {
+    /* 深色轮廓在浅色背景上对比更强。 */
+    outline-color: #111111;
+}
+
+
+/* ================================================================
+   4. 通用内容区
+   所有 section 先获得统一的最低高度和页面留白。
+================================================================ */
+
+/* section 是页面中的独立内容区块。 */
 section {
-    /* 100vh 约等于一个浏览器窗口高度。 */
+    /* 每个普通区块至少占满一个浏览器窗口高度。 */
     min-height: 100vh;
+
+    /* 动态视口单位能更准确适配手机浏览器地址栏。 */
+    min-height: 100dvh;
+
+    /* 设置桌面端上下 120px、左右 48px 的留白。 */
     padding: 120px 48px;
 }
 
+/* 选择 section 内的二级标题。 */
 section h2 {
+    /* 为普通内容区设置醒目的标题字号。 */
     font-size: 48px;
+
+    /* 标题下方留出与正文的间距。 */
     margin-bottom: 24px;
 }
 
+/* 选择 section 内的段落。 */
 section p {
+    /* 正文使用 18px，保持良好可读性。 */
     font-size: 18px;
+
+    /* 1.6 倍行高让多行文字不拥挤。 */
     line-height: 1.6;
 }
 
 
-/* =========================
-   5. Hero 首页：照片、渐变遮罩和文字分层叠放。
-========================= */
+/* ================================================================
+   5. Hero 首屏
+   全屏照片、渐变遮罩和文字通过定位叠放在一起。
+================================================================ */
 
+/* #home 是首页第一屏的唯一 id 选择器。 */
 #home {
-    /* relative 为内部 absolute 定位的遮罩和文字提供定位参考。 */
+    /* relative 为内部绝对定位的遮罩和文字提供参照。 */
     position: relative;
 
+    /* Hero 占满页面宽度。 */
     width: 100%;
+
+    /* 旧浏览器使用普通视口高度。 */
     height: 100vh;
 
+    /* 新浏览器使用动态视口高度适配移动地址栏。 */
+    height: 100dvh;
+
+    /* 覆盖通用 section 的内边距，让照片真正贴边。 */
     padding: 0;
 
+    /* 裁掉照片和动画超出 Hero 边界的部分。 */
     overflow: hidden;
 }
 
+/* 只选择 Hero 内的主照片。 */
 #home img {
-    /* cover 保持照片比例并铺满容器，必要时裁去边缘。 */
+    /* 图片宽度铺满 Hero。 */
     width: 100%;
+
+    /* 图片高度铺满 Hero。 */
     height: 100%;
 
+    /* cover 保持比例并裁去多余边缘，不会把照片压扁。 */
     object-fit: cover;
 
+    /* img 默认是行内元素，改为 block 可消除底部基线空隙。 */
     display: block;
 }
 
+/* ::after 创建覆盖在照片上的渐变遮罩。 */
 #home::after {
-    /* 伪元素覆盖整张照片，底部较深，方便承载白色文字。 */
+    /* 空内容用于生成伪元素。 */
     content: "";
 
+    /* absolute 让遮罩覆盖同一个 Hero。 */
     position: absolute;
 
+    /* inset: 0 等于同时设置 top、right、bottom、left 为 0。 */
     inset: 0;
 
+    /* 底部较深以承载白字，向上逐渐透明。 */
     background: linear-gradient(
+        /* 渐变方向从下向上。 */
         to top,
+        /* 底部使用 65% 不透明黑色。 */
         rgba(0, 0, 0, 0.65) 0%,
+        /* 40% 位置减弱为 20% 不透明。 */
         rgba(0, 0, 0, 0.2) 40%,
+        /* 70% 位置完全透明。 */
         rgba(0, 0, 0, 0) 70%
     );
 
+    /* 遮罩放在照片上方、文字下方。 */
     z-index: 1;
 }
 
+/* hero-text 保存首屏标题和分类说明。 */
 .hero-text {
-    /* absolute 让文字精准停在 Hero 的左下角，不占普通文档流空间。 */
+    /* absolute 允许文字停在 Hero 左下角。 */
     position: absolute;
 
+    /* 桌面端距离左边 48px。 */
     left: 48px;
+
+    /* 桌面端距离底部 60px。 */
     bottom: 60px;
 
+    /* Hero 文案使用白色。 */
     color: #ffffff;
 
+    /* 文字必须位于渐变遮罩之上。 */
     z-index: 2;
+
+    /* 动画开始前先隐藏文字。 */
+    opacity: 0;
+
+    /* 动画开始前向下偏移 24px。 */
+    transform: translateY(24px);
+
+    /* 页面加载后播放一次 heroFadeIn 动画并停留在终点。 */
+    animation: heroFadeIn 1s ease forwards;
+
+    /* 延迟 0.3 秒再开始，让首屏出现更自然。 */
+    animation-delay: 0.3s;
 }
 
+/* 只选择 Hero 内的 h2。 */
 #home h2 {
-    /* clamp 在小屏不低于 48px、随屏幕宽度增长、桌面端不超过 96px。 */
+    /* clamp 让字号随屏幕变化，但保持在 48px 到 96px 之间。 */
     font-size: clamp(48px, 7vw, 96px);
+
+    /* 使用中等字重。 */
     font-weight: 500;
 
+    /* 负字距让超大标题更紧凑。 */
     letter-spacing: -0.04em;
+
+    /* 紧凑行高形成海报式视觉。 */
     line-height: 0.95;
 
+    /* 限制文字行宽，避免在宽屏上拉得太长。 */
     max-width: 800px;
 }
 
+/* 只选择 Hero 内的分类说明。 */
 #home p {
+    /* 与大标题之间留出 24px。 */
     margin-top: 24px;
 
+    /* 使用较小字号形成层级。 */
     font-size: 14px;
+
+    /* 使用普通字重。 */
     font-weight: 400;
 
+    /* 拉开字母增强标签感。 */
     letter-spacing: 0.12em;
+
+    /* 将英文统一显示为大写。 */
     text-transform: uppercase;
 
+    /* 使用 75% 不透明白色弱化次要信息。 */
     color: rgba(255, 255, 255, 0.75);
 }
 
 
-/* =========================
-   6. 画廊内容区：三个分类共用这套区块和标题样式。
-========================= */
+/* ================================================================
+   6. 画廊区标题与背景
+   三个分类共享同一套基础样式，纪实区单独使用浅灰背景。
+================================================================ */
 
+/* gallery-section 是三个摄影分类共用的 class。 */
 .gallery-section {
+    /* 内容高度由图片决定，不强制占满一整屏。 */
     min-height: auto;
 
+    /* 设置桌面端画廊留白。 */
     padding: 120px 48px;
 
+    /* 默认画廊背景为白色。 */
     background: #ffffff;
 
+    /* 默认画廊文字为深色。 */
     color: #111111;
 }
 
+/* 只改变纪实画廊的背景，形成区块分隔。 */
 #documentary {
-    /* 仅为纪录片分类换一层浅灰背景，其他画廊仍复用通用规则。 */
+    /* 使用很浅的灰色，不改变原有极简风格。 */
     background: #f5f5f5;
 }
 
+/* section-heading 包住画廊标题和说明。 */
 .section-heading {
+    /* 标题组与图片网格之间留出 48px。 */
     margin-bottom: 48px;
 }
 
+/* 只选择画廊标题组里的 h2。 */
 .section-heading h2 {
+    /* 标题随屏幕宽度缩放，范围为 40px 到 72px。 */
     font-size: clamp(40px, 5vw, 72px);
+
+    /* 使用中等字重。 */
     font-weight: 500;
 
+    /* 负字距保持大标题紧凑。 */
     letter-spacing: -0.04em;
 }
 
+/* 只选择画廊标题组里的说明段落。 */
 .section-heading p {
+    /* 与标题之间留出 12px。 */
     margin-top: 12px;
 
+    /* 次要说明使用 14px。 */
     font-size: 14px;
 
+    /* 使用中灰色弱化次要信息。 */
     color: #777777;
 
+    /* 稍微增加字距。 */
     letter-spacing: 0.08em;
 }
 
 
-/* =========================
-   7. 画廊网格：使用 Grid 安排作品图片。
-========================= */
+/* ================================================================
+   7. 画廊网格和可点击作品
+   桌面端两列，第三张横跨两列；手机端由媒体查询改为单列。
+================================================================ */
 
+/* gallery-grid 是每组作品的网格父容器。 */
 .gallery-grid {
-    /* repeat(2, 1fr) 创建两列等宽网格。 */
+    /* 启用 CSS Grid。 */
     display: grid;
 
+    /* 创建两列等宽轨道。 */
     grid-template-columns: repeat(2, 1fr);
 
+    /* 设置行列之间的统一间距。 */
     gap: 20px;
 }
 
+/* gallery-item 现在是 button，因此同时支持鼠标和键盘。 */
 .gallery-item {
-    /* 隐藏放大图片超出卡片边界的部分，Hover 时才显得干净。 */
-    overflow: hidden;
-}
-
-.gallery-item img {
-    /* 鼠标指针提示这张图片可点击；transition 让放大过程平滑。 */
+    /* 让按钮填满所在网格单元宽度。 */
     width: 100%;
-    height: 100%;
 
-    aspect-ratio: 3 / 2;
+    /* 隐藏 Hover 放大后超出按钮边缘的图片。 */
+    overflow: hidden;
 
-    object-fit: cover;
+    /* 去掉按钮默认边框。 */
+    border: 0;
 
-    display: block;
+    /* 去掉按钮默认内边距。 */
+    padding: 0;
 
+    /* 去掉按钮默认背景色。 */
+    background: transparent;
+
+    /* 继承页面字体，避免浏览器按钮字体不一致。 */
+    font: inherit;
+
+    /* 鼠标经过时显示可点击指针。 */
     cursor: pointer;
 
+    /* 按钮本身按块级元素布局。 */
+    display: block;
+}
+
+/* 选择每一个作品按钮内部的图片。 */
+.gallery-item img {
+    /* 图片填满按钮宽度。 */
+    width: 100%;
+
+    /* 图片填满由宽高比计算出的按钮高度。 */
+    height: 100%;
+
+    /* 普通作品卡片使用 3:2 的显示比例。 */
+    aspect-ratio: 3 / 2;
+
+    /* cover 保持照片比例并裁切多余边缘。 */
+    object-fit: cover;
+
+    /* 消除行内图片底部的基线空隙。 */
+    display: block;
+
+    /* 放大和复原都使用 0.6 秒平滑过渡。 */
     transition: transform 0.6s ease;
 }
 
-.gallery-item:hover img {
-    /* 只缩放图片本身，不改变网格尺寸。 */
+/* 鼠标悬停或键盘聚焦作品按钮时放大内部图片。 */
+.gallery-item:hover img,
+.gallery-item:focus-visible img {
+    /* 只放大 4%，保留原有克制的交互风格。 */
     transform: scale(1.04);
 }
 
+/* 每组第三个作品在桌面端横跨两列。 */
 .gallery-item:nth-child(3) {
-    /* 每组第三张照片跨越两列，形成横向的视觉变化。 */
+    /* span 2 表示占据两个网格列。 */
     grid-column: span 2;
 }
 
+/* 第三个作品内部的图片使用更宽的横幅比例。 */
 .gallery-item:nth-child(3) img {
-    /* 同为第三张作品时，配合跨两列的卡片使用更扁的横向比例。 */
+    /* 16:7 让跨列作品显得宽而不太高。 */
     aspect-ratio: 16 / 7;
 }
 
 
-/* =========================
-   8. 灯箱：默认不可见，添加 active class 后显示大图。
-========================= */
+/* ================================================================
+   8. 图片灯箱
+   默认隐藏；JavaScript 添加 active 后覆盖整个视口。
+================================================================ */
 
+/* lightbox 是全屏模态查看器。 */
 .lightbox {
-    /* fixed + inset: 0 让黑色遮罩覆盖整个浏览器窗口。 */
+    /* fixed 让灯箱固定在浏览器视口上。 */
     position: fixed;
 
+    /* inset: 0 让它同时贴住视口四条边。 */
     inset: 0;
 
+    /* Flexbox 用于把大图水平、垂直居中。 */
     display: flex;
 
+    /* 在交叉轴上垂直居中。 */
     align-items: center;
+
+    /* 在主轴上水平居中。 */
     justify-content: center;
 
+    /* 使用 92% 不透明黑色遮住背景。 */
     background: rgba(0, 0, 0, 0.92);
 
-    /* 使用很高的层级，确保灯箱会盖过固定导航。 */
+    /* 灯箱层级高于固定页头。 */
     z-index: 1000;
 
+    /* 大图与视口边缘之间保留空间。 */
     padding: 40px;
 
-    /* opacity 和 visibility 一起控制隐藏状态，避免透明遮罩仍挡住点击。 */
+    /* 隐藏状态完全透明。 */
     opacity: 0;
+
+    /* visibility: hidden 让隐藏灯箱不被键盘或鼠标访问。 */
     visibility: hidden;
 
+    /* 隐藏状态不拦截页面点击。 */
+    pointer-events: none;
+
+    /* 透明度先淡出，visibility 在淡出完成后再隐藏。 */
     transition:
+        /* 第一项控制淡入淡出。 */
         opacity 0.3s ease,
-        visibility 0.3s ease;
+        /* 第二项延迟 0.3 秒切换隐藏状态，打开时会在 active 中取消延迟。 */
+        visibility 0s linear 0.3s;
 }
 
+/* JavaScript 打开灯箱时会添加 active。 */
 .lightbox.active {
-    /* JavaScript 添加 active 后，灯箱淡入并允许用户看见和操作。 */
+    /* 显示为完全不透明。 */
     opacity: 1;
+
+    /* 恢复可见状态。 */
     visibility: visible;
+
+    /* 恢复鼠标和触摸操作。 */
+    pointer-events: auto;
+
+    /* 打开时立即恢复 visibility，只让 opacity 播放淡入。 */
+    transition-delay: 0s;
 }
 
+/* lightbox-image 是当前被放大的作品。 */
 .lightbox-image {
-    /* contain 保证大图完整显示，不像画廊缩略图那样被裁切。 */
+    /* 图片宽度最多占视口 90%。 */
     max-width: 90vw;
+
+    /* 图片高度最多占视口 88%。 */
     max-height: 88vh;
 
+    /* 动态视口单位更适合手机地址栏变化。 */
+    max-height: 88dvh;
+
+    /* 宽度由图片原始比例和最大尺寸共同决定。 */
     width: auto;
+
+    /* 高度由图片原始比例和最大尺寸共同决定。 */
     height: auto;
 
+    /* contain 保证整张照片完整可见。 */
     object-fit: contain;
 
+    /* 隐藏时先缩小到 96%。 */
     transform: scale(0.96);
 
+    /* 为缩放变化添加平滑过渡。 */
     transition: transform 0.3s ease;
 }
 
+/* 灯箱打开后选择内部大图。 */
 .lightbox.active .lightbox-image {
-    /* 只有灯箱已打开时才回到原始缩放比例，形成轻微放大进入感。 */
+    /* 恢复到 100% 大小，形成轻微进入动画。 */
     transform: scale(1);
 }
 
+/* lightbox-close 是右上角关闭按钮。 */
 .lightbox-close {
-    /* 关闭按钮独立定位在遮罩右上角，不会影响大图居中。 */
+    /* absolute 让按钮独立于居中的大图定位。 */
     position: absolute;
 
+    /* 距离视口顶部 24px。 */
     top: 24px;
+
+    /* 距离视口右侧 32px。 */
     right: 32px;
 
+    /* 去掉按钮默认边框。 */
     border: none;
 
+    /* 使用透明背景。 */
     background: none;
 
+    /* 关闭图标使用白色。 */
     color: #ffffff;
 
+    /* 设置较大的 × 图标。 */
     font-size: 42px;
+
+    /* 使用较细字重。 */
     font-weight: 200;
 
+    /* 保持图标行高紧凑。 */
+    line-height: 1;
+
+    /* 鼠标经过时显示可点击指针。 */
     cursor: pointer;
 }
 
 
-/* =========================
-   9. 页脚：展示版权等收尾内容。
-========================= */
+/* ================================================================
+   9. 页脚
+================================================================ */
 
+/* footer 放置版权信息。 */
 footer {
+    /* 与桌面内容左右边缘保持一致。 */
     padding: 40px 48px;
 
+    /* 使用较小字号显示次要信息。 */
     font-size: 14px;
 
+    /* 使用中灰色降低视觉重量。 */
     color: #777777;
 }
 
 
-/* =========================
-   10. 移动端响应式：屏幕宽度不超过 768px 时覆盖桌面端规则。
-========================= */
+/* ================================================================
+   10. 手机和平板响应式布局
+   视口宽度不超过 768px 时覆盖上面的桌面规则。
+================================================================ */
 
+/* max-width 条件表示以下规则只在窄屏设备生效。 */
 @media (max-width: 768px) {
-    /* @media 中的规则只在窄屏设备生效。 */
-
-    /* Header */
-
+    /* 缩小移动端页头左右留白。 */
     header {
+        /* 上下 18px、左右 20px。 */
         padding: 18px 20px;
     }
 
+    /* 品牌名在全屏菜单打开时仍需要可见。 */
     nav h1 {
-        /* 当全屏菜单打开时，品牌名仍需压在菜单遮罩上方。 */
+        /* relative 让 z-index 生效。 */
         position: relative;
 
+        /* 高于菜单背景、低于菜单按钮。 */
         z-index: 20;
     }
 
-
-    /* Menu Button */
-
+    /* 在窄屏显示菜单开关。 */
     .menu-toggle {
-        /* 在移动端把默认隐藏的按钮改为 Flex，才能使用居中规则摆放图标。 */
+        /* 使用 Flexbox，同时启用前面定义的居中规则。 */
         display: flex;
     }
 
-
-    /* Mobile Navigation */
-
+    /* 手机端把链接列表变成全屏覆盖层。 */
     .nav-links {
-        /* 变为全屏纵向菜单，初始透明且不可见。 */
+        /* 固定在浏览器视口。 */
         position: fixed;
 
+        /* 贴住视口顶部。 */
         top: 0;
+
+        /* 贴住视口左侧。 */
         left: 0;
 
+        /* 占满视口宽度。 */
         width: 100%;
+
+        /* 旧浏览器使用普通视口高度。 */
         height: 100vh;
 
+        /* 新浏览器使用动态视口高度。 */
+        height: 100dvh;
+
+        /* 启用 Flexbox。 */
         display: flex;
+
+        /* 将链接从横排改为竖排。 */
         flex-direction: column;
 
+        /* 水平方向居中链接。 */
         align-items: center;
+
+        /* 垂直方向居中整个链接组。 */
         justify-content: center;
 
+        /* 链接之间保持 32px 距离。 */
         gap: 32px;
 
+        /* 使用接近不透明的黑色遮罩。 */
         background: rgba(0, 0, 0, 0.96);
 
+        /* 关闭时透明。 */
         opacity: 0;
+
+        /* 关闭时不参与辅助技术和鼠标交互。 */
         visibility: hidden;
 
+        /* 关闭时允许点击穿过遮罩。 */
+        pointer-events: none;
+
+        /* 透明度先淡出，visibility 在淡出结束后再隐藏。 */
         transition:
+            /* 控制透明度。 */
             opacity 0.3s ease,
-            visibility 0.3s ease;
+            /* 延迟切换隐藏状态，避免关闭动画突然消失。 */
+            visibility 0s linear 0.3s;
     }
 
+    /* JavaScript 为打开的菜单添加 active。 */
     .nav-links.active {
-        /* JavaScript 切换 active 后显示移动端菜单。 */
+        /* 打开时完全显示。 */
         opacity: 1;
+
+        /* 打开时恢复可见。 */
         visibility: visible;
+
+        /* 打开时接收点击。 */
+        pointer-events: auto;
+
+        /* 打开时立即恢复 visibility，只让 opacity 播放淡入。 */
+        transition-delay: 0s;
     }
 
+    /* 放大手机菜单中的链接。 */
     .nav-links a {
+        /* 28px 让触摸菜单清晰易读。 */
         font-size: 28px;
+
+        /* 保持普通字重。 */
         font-weight: 400;
 
+        /* 全屏深色菜单上使用白字。 */
         color: #ffffff;
     }
 
-
-    /* Mobile Menu Animation */
-
+    /* 每个手机菜单项目先处于动画起点。 */
     .nav-links li {
-        /* 每个菜单项先向下偏移并透明，准备执行进入动画。 */
+        /* 初始隐藏。 */
         opacity: 0;
 
+        /* 初始向下偏移 16px。 */
         transform: translateY(16px);
 
+        /* 透明度和位置一起过渡。 */
         transition:
+            /* 控制淡入。 */
             opacity 0.35s ease,
+            /* 控制上移动画。 */
             transform 0.35s ease;
     }
 
+    /* 菜单打开后让每个项目到达动画终点。 */
     .nav-links.active li {
-        /* 容器打开后，所有菜单项回到原位置并显示出来。 */
+        /* 恢复完全可见。 */
         opacity: 1;
 
+        /* 回到原始位置。 */
         transform: translateY(0);
     }
 
+    /* 第一项最先出现。 */
     .nav-links.active li:nth-child(1) {
-        /*
-            为每项设置不同延迟，使菜单链接依次出现。
-            后面四条规则只改变延迟时间，动画类型仍继承自 .nav-links li。
-        */
+        /* 只延迟 0.05 秒。 */
         transition-delay: 0.05s;
     }
 
+    /* 第二项稍后出现。 */
     .nav-links.active li:nth-child(2) {
+        /* 延迟 0.1 秒。 */
         transition-delay: 0.1s;
     }
 
+    /* 第三项继续错开时间。 */
     .nav-links.active li:nth-child(3) {
+        /* 延迟 0.15 秒。 */
         transition-delay: 0.15s;
     }
 
+    /* 第四项接着出现。 */
     .nav-links.active li:nth-child(4) {
+        /* 延迟 0.2 秒。 */
         transition-delay: 0.2s;
     }
 
+    /* 第五项最后出现。 */
     .nav-links.active li:nth-child(5) {
+        /* 延迟 0.25 秒。 */
         transition-delay: 0.25s;
     }
 
-
-    /* Hero */
-
+    /* 调整手机端 Hero 文案位置。 */
     .hero-text {
+        /* 距离左侧 20px。 */
         left: 20px;
+
+        /* 同时限制右侧，防止长标题超出视口。 */
         right: 20px;
 
+        /* 距离底部 40px。 */
         bottom: 40px;
     }
 
+    /* 调整手机端 Hero 大标题。 */
     #home h2 {
+        /* 在 42px 到 64px 之间随视口宽度缩放。 */
         font-size: clamp(42px, 13vw, 64px);
     }
 
-
-    /* Gallery */
-
+    /* 缩小手机端画廊留白。 */
     .gallery-section {
+        /* 上下 80px、左右 20px。 */
         padding: 80px 20px;
     }
 
+    /* 手机端把画廊改为单列。 */
     .gallery-grid {
+        /* 只创建一列。 */
         grid-template-columns: 1fr;
     }
 
+    /* 第三张照片在单列布局中不再跨列。 */
     .gallery-item:nth-child(3) {
-        /* 手机只有一列，因此第三张不再需要跨两列。 */
+        /* 只占据当前一列。 */
         grid-column: span 1;
     }
 
+    /* 第三张照片在手机端恢复普通比例。 */
     .gallery-item:nth-child(3) img {
-        /* 恢复为普通图片比例，避免单列时出现过扁的横幅。 */
+        /* 3:2 比 16:7 更适合窄屏。 */
         aspect-ratio: 3 / 2;
     }
 
-
-    /* Lightbox */
-
+    /* 缩小手机端灯箱边距。 */
     .lightbox {
+        /* 四周只保留 20px。 */
         padding: 20px;
     }
 
+    /* 把手机端关闭按钮靠近屏幕边缘。 */
     .lightbox-close {
+        /* 距离顶部 16px。 */
         top: 16px;
+
+        /* 距离右侧 20px。 */
         right: 20px;
     }
 
-
-    /* Footer */
-
+    /* 缩小手机端页脚左右留白。 */
     footer {
+        /* 上下 40px、左右 20px。 */
         padding: 40px 20px;
+    }
+}
+
+
+/* ================================================================
+   11. 滚动显现动画
+   只有 JavaScript 可用时 .js 才会隐藏待显现元素，避免无脚本时内容消失。
+================================================================ */
+
+/* JavaScript 启动后，尚未进入视口的 reveal 元素使用动画起点。 */
+.js .reveal {
+    /* 初始完全透明。 */
+    opacity: 0;
+
+    /* 初始向下偏移 40px。 */
+    transform: translateY(40px);
+
+    /* 透明度和位置同时变化。 */
+    transition:
+        /* 控制淡入速度。 */
+        opacity 0.8s ease,
+        /* 控制向上移动速度。 */
+        transform 0.8s ease;
+}
+
+/* IntersectionObserver 在元素进入视口时添加 active。 */
+.js .reveal.active {
+    /* 恢复完全可见。 */
+    opacity: 1;
+
+    /* 回到原始位置。 */
+    transform: translateY(0);
+}
+
+/* 每组第一张图片最先出现。 */
+.gallery-item.reveal:nth-child(1) {
+    /* 轻微延迟 0.05 秒。 */
+    transition-delay: 0.05s;
+}
+
+/* 每组第二张图片随后出现。 */
+.gallery-item.reveal:nth-child(2) {
+    /* 延迟 0.15 秒。 */
+    transition-delay: 0.15s;
+}
+
+/* 每组第三张图片最后出现。 */
+.gallery-item.reveal:nth-child(3) {
+    /* 延迟 0.25 秒。 */
+    transition-delay: 0.25s;
+}
+
+/* 画廊标题使用略短的过渡时间。 */
+.section-heading.reveal {
+    /* 0.7 秒让标题比图片更快稳定下来。 */
+    transition-duration: 0.7s;
+}
+
+/* 定义 Hero 标题从下方淡入的两个关键状态。 */
+@keyframes heroFadeIn {
+    /* from 是动画开始状态。 */
+    from {
+        /* 开始时透明。 */
+        opacity: 0;
+
+        /* 开始时向下偏移 24px。 */
+        transform: translateY(24px);
+    }
+
+    /* to 是动画结束状态。 */
+    to {
+        /* 结束时完全可见。 */
+        opacity: 1;
+
+        /* 结束时回到原始位置。 */
+        transform: translateY(0);
+    }
+}
+
+
+/* ================================================================
+   12. 减少动态效果的无障碍偏好
+   当操作系统要求减少动画时，立即显示内容并缩短所有动画。
+================================================================ */
+
+/* prefers-reduced-motion 来自用户的系统辅助功能设置。 */
+@media (prefers-reduced-motion: reduce) {
+    /* 同时选择普通元素及其 before、after 伪元素。 */
+    *,
+    *::before,
+    *::after {
+        /* 关闭平滑滚动，避免大范围移动。 */
+        scroll-behavior: auto !important;
+
+        /* 把动画时长缩短到接近瞬间。 */
+        animation-duration: 0.01ms !important;
+
+        /* 确保动画最多运行一次。 */
+        animation-iteration-count: 1 !important;
+
+        /* 把过渡时长也缩短到接近瞬间。 */
+        transition-duration: 0.01ms !important;
+    }
+
+    /* 待显现元素无需等待滚动观察器。 */
+    .js .reveal {
+        /* 直接显示。 */
+        opacity: 1;
+
+        /* 移除位移。 */
+        transform: none;
     }
 }
