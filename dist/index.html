@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <!-- 使用 UTF-8 编码，确保中文和特殊字符能正常显示。 -->
+    <meta charset="UTF-8">
+    <!-- 让手机浏览器按设备实际宽度渲染页面，响应式 CSS 才能生效。 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- 连接本项目的样式文件；路径相对于当前 index.html。 -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <title>Kris Photography</title>
+</head>
+
+<body>
+
+    <!-- 固定在页面顶部的站点标题与导航区域。 -->
+    <header> 
+        <nav>
+
+            <!-- h1 表示本站最重要的标题，通常是品牌或网站名称。 -->
+            <h1>Kris Photography</h1>
+
+            <!--
+                手机端使用的菜单开关按钮。
+                id 供 JavaScript 找到它，class 供 CSS 控制其在不同屏幕尺寸下的样式。
+            -->
+            <button
+                class="menu-toggle"
+                id="menu-toggle"
+                aria-label="Open navigation menu"
+            >
+                ☰
+            </button>
+
+            <!--
+                导航链接列表。每个 href="#..." 会跳转到拥有相同 id 的 section。
+                JavaScript 会在手机端为这个列表添加或移除 active class。
+            -->
+            <ul class="nav-links" id="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#portrait">Portrait</a></li>
+                <li><a href="#documentary">Documentary</a></li>
+                <li><a href="#landscape">Landscape</a></li>
+                <li><a href="#about">About</a></li>
+            </ul>
+
+        </nav>
+    </header>
+
+
+    <main>
+
+        <!--
+            首页 Hero：全屏照片、标题和分类说明叠放在同一区域。
+            CSS 的 #home::after 会在照片上增加渐变遮罩，保证白色文字清晰可读。
+        -->
+        <section id="home">
+            <img src="images/hero/QingShanLakeYouLi1.jpg" alt="Kris Photography Hero Image">
+            <div class="hero-text">
+                <h2>Photography by Kris Huang</h2>
+                <p>Portrait · Documentary · Landscape</p>
+            </div>
+        </section>
+
+        <!--
+            Portrait 作品区。gallery-section 提供通用区块样式，
+            gallery-grid 负责把三个 gallery-item 排成图片墙。
+        -->
+        <section id="portrait" class="gallery-section">
+            <div class="section-heading">
+                <h2>Portrait</h2>
+                <p>Selected portrait works.</p>
+            </div>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="images/portrait/Portrait-01.jpg" alt="Portrait photography 01">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/portrait/Portrait-02.jpg" alt="Portrait photography 02">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/portrait/Portrait-03.jpg" alt="Portrait photography 03">
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Documentary 与 Portrait 共用同一套画廊结构，只替换标题、文案与图片路径。 -->
+        <section id="documentary" class="gallery-section">
+            <div class="section-heading">
+                <h2>Documentary</h2>
+                <p>Documentary and street photography.</p>
+            </div>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="images/documentary/documentary-01.jpg" alt="Documentary photography 01">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/documentary/documentary-02.jpg" alt="Documentary photography 02">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/documentary/documentary-03.jpg" alt="Documentary photography 03">
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Landscape 同样复用画廊样式；复用 class 可以避免重复编写 CSS。 -->
+        <section id="landscape" class="gallery-section">
+            <div class="section-heading">
+                <h2>Landscape</h2>
+                <p>Landscape photography collection.</p>
+            </div>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="images/landscape/landscape-01.jpg" alt="Landscape photography 01">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/landscape/landscape-02.jpg" alt="Landscape photography 02">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/landscape/landscape-03.jpg" alt="Landscape photography 03">
+                </div>
+            </div>
+        </section>
+
+
+        <!-- About 是普通内容区，不使用 gallery-section 的图片墙布局。 -->
+        <section id="about">
+            <h2>About</h2>
+            <p>
+                I'm Kris, a photographer documenting people,
+                places and everyday moments.
+            </p>
+        </section>
+
+    </main>
+
+<!--
+    Lightbox 是隐藏的大图查看器。
+    JavaScript 会把被点击作品图的 src 和 alt 复制到 lightbox-image，
+    再添加 active class 让遮罩显示出来。
+-->
+<div class="lightbox" id="lightbox">
+
+    <button class="lightbox-close" id="lightbox-close">
+        ×
+    </button>
+
+    <img
+        class="lightbox-image"
+        id="lightbox-image"
+        src=""
+        alt=""
+    >
+
+</div>
+
+    <!-- 页脚放置版权等收尾信息。 -->
+    <footer>
+        <p>© 2026 Kris Photography</p>
+    </footer>
+
+    <!-- 放在 body 末尾，确保 HTML 元素创建后 JavaScript 再查找它们。 -->
+    <script src="js/main.js"></script>
+    
+</body>
+
+</html>
