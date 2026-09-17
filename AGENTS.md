@@ -667,3 +667,13 @@ Do not consider code complete merely because it was generated successfully.
 - Use `loading="lazy"` for gallery images below the fold.
 - Include intrinsic width and height when known.
 - Avoid serving unnecessarily large images to mobile devices.
+
+## SEO and Sharing Rules
+
+- Keep one clear page title.
+- Maintain a meaningful meta description.
+- Preserve Open Graph metadata.
+- Use absolute URLs for social sharing images.
+- Keep favicon assets inside `images/favicon/`.
+- Keep social preview assets inside `images/social/`.
+- Do not remove image alt text.
