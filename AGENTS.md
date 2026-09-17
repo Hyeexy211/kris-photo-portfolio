@@ -658,3 +658,12 @@ Do not consider code complete merely because it was generated successfully.
 - Do not lazy-load the hero image.
 - Preserve meaningful `alt` text.
 - Include image width and height when known.
+## Responsive Image Rules
+
+- Use `srcset` for important responsive image assets.
+- Use `sizes` that reflect the actual layout width.
+- Use multiple WebP sizes where practical.
+- Do not lazy-load hero images.
+- Use `loading="lazy"` for gallery images below the fold.
+- Include intrinsic width and height when known.
+- Avoid serving unnecessarily large images to mobile devices.
