@@ -50,3 +50,4 @@ python3 -m http.server 4173 --bind 127.0.0.1 --directory dist
 - `src` 与 `alt`：`src` 是图片文件地址；`alt` 是图片无法显示或由读屏软件阅读时使用的文字。正式展示摄影作品时，可以把当前编号式 `alt` 改成更具体的画面描述。
 - CSS 状态与 JavaScript 状态：JavaScript 负责添加或删除 `active`，CSS 决定这个状态具体如何显示。这样交互逻辑和视觉表现不会混在一起。
 - 固定值与设计变量：颜色、页面边距、区块间距和常用动画时长集中写在 `:root` 中；组件通过 `var(--变量名)` 使用它们，后续调整整站风格时只改一处。
+Built and maintained by Kris.
