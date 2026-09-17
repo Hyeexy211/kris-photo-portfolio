@@ -1,7 +1,30 @@
 /* ================================================================
-   1. 全局基础规则
-   这一部分统一浏览器默认样式，建立可预测的页面尺寸计算方式。
+   1. 设计变量与全局基础规则
+   重复使用的颜色、间距和动画时长集中在 :root，方便整站统一调整。
 ================================================================ */
+
+/* :root 是整份文档的根元素；这里定义的自定义属性可在所有规则中复用。 */
+:root {
+    /* 页面与文字的基础颜色。 */
+    --color-bg: #ffffff;
+    --color-text: #111111;
+    --color-muted: #777777;
+    --color-section-alt: #f5f5f5;
+    --color-on-dark: #ffffff;
+
+    /* 桌面端与移动端共用的页面左右留白。 */
+    --page-padding: 48px;
+    --page-padding-mobile: 20px;
+
+    /* 普通内容区的上下留白。 */
+    --section-spacing: 120px;
+    --section-spacing-mobile: 80px;
+
+    /* 统一常用动画节奏，避免相同时间值散落在文件各处。 */
+    --transition-fast: 0.3s ease;
+    --transition-medium: 0.6s ease;
+    --transition-slow: 0.8s ease;
+}
 
 /* 星号选择器会选中页面里的每一个元素。 */
 * {
@@ -30,10 +53,10 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 
     /* 设置全站白色背景。 */
-    background: #ffffff;
+    background: var(--color-bg);
 
     /* 设置正文默认文字颜色为接近黑色。 */
-    color: #111111;
+    color: var(--color-text);
 
     /* 防止长内容或动画在水平方向产生意外滚动条。 */
     overflow-x: hidden;
@@ -60,10 +83,10 @@ body.has-overlay {
     padding: 12px 16px;
 
     /* 使用白底黑字保证可读性。 */
-    background: #ffffff;
+    background: var(--color-bg);
 
     /* 设置深色文字。 */
-    color: #111111;
+    color: var(--color-text);
 
     /* 去掉链接默认下划线。 */
     text-decoration: none;
@@ -99,7 +122,7 @@ header {
     width: 100%;
 
     /* 设置桌面端上下与左右留白。 */
-    padding: 20px 48px;
+    padding: 20px var(--page-padding);
 
     /* 半透明黑色让白字在各种照片上都保持清晰。 */
     background: rgba(0, 0, 0, 0.18);
@@ -138,7 +161,7 @@ nav h1 {
     letter-spacing: 0.04em;
 
     /* 深色 Hero 上使用白色标题。 */
-    color: #ffffff;
+    color: var(--color-on-dark);
 }
 
 /* nav-links 是桌面端的横向链接列表。 */
@@ -171,14 +194,14 @@ nav a {
     font-weight: 400;
 
     /* 颜色改变时播放 0.3 秒过渡。 */
-    transition: color 0.3s ease;
+    transition: color var(--transition-fast);
 }
 
 /* 鼠标悬停或键盘聚焦都使用相同的高亮反馈。 */
 nav a:hover,
 nav a:focus-visible {
     /* 高亮状态使用完全不透明的白色。 */
-    color: #ffffff;
+    color: var(--color-on-dark);
 }
 
 /* ::after 创建一个不需要额外 HTML 的装饰下划线。 */
@@ -202,7 +225,7 @@ nav a::after {
     height: 1px;
 
     /* 下划线颜色为白色。 */
-    background: #ffffff;
+    background: var(--color-on-dark);
 
     /* 初始横向缩放为 0，所以看不见。 */
     transform: scaleX(0);
@@ -211,7 +234,7 @@ nav a::after {
     transform-origin: right;
 
     /* 为缩放变化添加平滑动画。 */
-    transition: transform 0.3s ease;
+    transition: transform var(--transition-fast);
 }
 
 /* 鼠标悬停和键盘聚焦都展开导航下划线。 */
@@ -251,7 +274,7 @@ nav a:focus-visible::after {
     background: rgba(0, 0, 0, 0.25);
 
     /* 图标使用白色。 */
-    color: #ffffff;
+    color: var(--color-on-dark);
 
     /* 设置汉堡图标和关闭图标的大小。 */
     font-size: 28px;
@@ -280,7 +303,7 @@ nav a:focus-visible::after {
 .gallery-item:focus-visible,
 .lightbox-close:focus-visible {
     /* 使用白色外轮廓，在深色和图片背景上都容易辨认。 */
-    outline: 2px solid #ffffff;
+    outline: 2px solid var(--color-on-dark);
 
     /* 让轮廓与元素边缘之间留出少量空隙。 */
     outline-offset: 4px;
@@ -289,7 +312,7 @@ nav a:focus-visible::after {
 /* 画廊位于白色背景，所以聚焦时改用深色轮廓。 */
 .gallery-item:focus-visible {
     /* 深色轮廓在浅色背景上对比更强。 */
-    outline-color: #111111;
+    outline-color: var(--color-text);
 }
 
 
@@ -306,8 +329,8 @@ section {
     /* 动态视口单位能更准确适配手机浏览器地址栏。 */
     min-height: 100dvh;
 
-    /* 设置桌面端上下 120px、左右 48px 的留白。 */
-    padding: 120px 48px;
+    /* 使用统一的区块间距和页面左右留白。 */
+    padding: var(--section-spacing) var(--page-padding);
 }
 
 /* 选择 section 内的二级标题。 */
@@ -402,14 +425,14 @@ section p {
     /* absolute 允许文字停在 Hero 左下角。 */
     position: absolute;
 
-    /* 桌面端距离左边 48px。 */
-    left: 48px;
+    /* 与其他桌面内容使用相同的左侧留白。 */
+    left: var(--page-padding);
 
     /* 桌面端距离底部 60px。 */
     bottom: 60px;
 
     /* Hero 文案使用白色。 */
-    color: #ffffff;
+    color: var(--color-on-dark);
 
     /* 文字必须位于渐变遮罩之上。 */
     z-index: 2;
@@ -478,19 +501,19 @@ section p {
     min-height: auto;
 
     /* 设置桌面端画廊留白。 */
-    padding: 120px 48px;
+    padding: var(--section-spacing) var(--page-padding);
 
     /* 默认画廊背景为白色。 */
-    background: #ffffff;
+    background: var(--color-bg);
 
     /* 默认画廊文字为深色。 */
-    color: #111111;
+    color: var(--color-text);
 }
 
 /* 只改变纪实画廊的背景，形成区块分隔。 */
 #documentary {
     /* 使用很浅的灰色，不改变原有极简风格。 */
-    background: #f5f5f5;
+    background: var(--color-section-alt);
 }
 
 /* section-heading 包住画廊标题和说明。 */
@@ -520,7 +543,7 @@ section p {
     font-size: 14px;
 
     /* 使用中灰色弱化次要信息。 */
-    color: #777777;
+    color: var(--color-muted);
 
     /* 稍微增加字距。 */
     letter-spacing: 0.08em;
@@ -589,7 +612,7 @@ section p {
     display: block;
 
     /* 放大和复原都使用 0.6 秒平滑过渡。 */
-    transition: transform 0.6s ease;
+    transition: transform var(--transition-medium);
 }
 
 /* 鼠标悬停或键盘聚焦作品按钮时放大内部图片。 */
@@ -655,7 +678,7 @@ section p {
     /* 透明度先淡出，visibility 在淡出完成后再隐藏。 */
     transition:
         /* 第一项控制淡入淡出。 */
-        opacity 0.3s ease,
+        opacity var(--transition-fast),
         /* 第二项延迟 0.3 秒切换隐藏状态，打开时会在 active 中取消延迟。 */
         visibility 0s linear 0.3s;
 }
@@ -699,7 +722,7 @@ section p {
     transform: scale(0.96);
 
     /* 为缩放变化添加平滑过渡。 */
-    transition: transform 0.3s ease;
+    transition: transform var(--transition-fast);
 }
 
 /* 灯箱打开后选择内部大图。 */
@@ -726,7 +749,7 @@ section p {
     background: none;
 
     /* 关闭图标使用白色。 */
-    color: #ffffff;
+    color: var(--color-on-dark);
 
     /* 设置较大的 × 图标。 */
     font-size: 42px;
@@ -749,13 +772,13 @@ section p {
 /* footer 放置版权信息。 */
 footer {
     /* 与桌面内容左右边缘保持一致。 */
-    padding: 40px 48px;
+    padding: 40px var(--page-padding);
 
     /* 使用较小字号显示次要信息。 */
     font-size: 14px;
 
     /* 使用中灰色降低视觉重量。 */
-    color: #777777;
+    color: var(--color-muted);
 }
 
 
@@ -769,7 +792,7 @@ footer {
     /* 缩小移动端页头左右留白。 */
     header {
         /* 上下 18px、左右 20px。 */
-        padding: 18px 20px;
+        padding: 18px var(--page-padding-mobile);
     }
 
     /* 品牌名在全屏菜单打开时仍需要可见。 */
@@ -837,7 +860,7 @@ footer {
         /* 透明度先淡出，visibility 在淡出结束后再隐藏。 */
         transition:
             /* 控制透明度。 */
-            opacity 0.3s ease,
+            opacity var(--transition-fast),
             /* 延迟切换隐藏状态，避免关闭动画突然消失。 */
             visibility 0s linear 0.3s;
     }
@@ -866,7 +889,7 @@ footer {
         font-weight: 400;
 
         /* 全屏深色菜单上使用白字。 */
-        color: #ffffff;
+        color: var(--color-on-dark);
     }
 
     /* 每个手机菜单项目先处于动画起点。 */
@@ -927,10 +950,10 @@ footer {
     /* 调整手机端 Hero 文案位置。 */
     .hero-text {
         /* 距离左侧 20px。 */
-        left: 20px;
+        left: var(--page-padding-mobile);
 
         /* 同时限制右侧，防止长标题超出视口。 */
-        right: 20px;
+        right: var(--page-padding-mobile);
 
         /* 距离底部 40px。 */
         bottom: 40px;
@@ -944,8 +967,8 @@ footer {
 
     /* 缩小手机端画廊留白。 */
     .gallery-section {
-        /* 上下 80px、左右 20px。 */
-        padding: 80px 20px;
+        /* 使用移动端统一的区块间距和页面左右留白。 */
+        padding: var(--section-spacing-mobile) var(--page-padding-mobile);
     }
 
     /* 手机端把画廊改为单列。 */
@@ -969,7 +992,7 @@ footer {
     /* 缩小手机端灯箱边距。 */
     .lightbox {
         /* 四周只保留 20px。 */
-        padding: 20px;
+        padding: var(--page-padding-mobile);
     }
 
     /* 把手机端关闭按钮靠近屏幕边缘。 */
@@ -978,13 +1001,13 @@ footer {
         top: 16px;
 
         /* 距离右侧 20px。 */
-        right: 20px;
+        right: var(--page-padding-mobile);
     }
 
     /* 缩小手机端页脚左右留白。 */
     footer {
         /* 上下 40px、左右 20px。 */
-        padding: 40px 20px;
+        padding: 40px var(--page-padding-mobile);
     }
 }
 
@@ -1005,9 +1028,9 @@ footer {
     /* 透明度和位置同时变化。 */
     transition:
         /* 控制淡入速度。 */
-        opacity 0.8s ease,
+        opacity var(--transition-slow),
         /* 控制向上移动速度。 */
-        transform 0.8s ease;
+        transform var(--transition-slow);
 }
 
 /* IntersectionObserver 在元素进入视口时添加 active。 */

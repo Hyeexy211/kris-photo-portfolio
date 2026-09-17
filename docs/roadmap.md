@@ -38,29 +38,29 @@ Create a clean and maintainable frontend foundation.
 - [x] Create JavaScript file
 - [x] Create navigation
 - [x] Create hero section
-- [ ] Organize project directories
-- [ ] Add README.md
-- [ ] Add AGENTS.md
-- [ ] Add roadmap.md
-- [ ] Improve `.gitignore`
+- [x] Organize project directories
+- [x] Add README.md
+- [x] Add AGENTS.md
+- [x] Add roadmap.md
+- [x] Improve `.gitignore`
 
 ## Responsive Design
 
-- [ ] Desktop layout
-- [ ] Tablet layout
-- [ ] Mobile layout
-- [ ] Responsive navigation
-- [ ] Responsive typography
-- [ ] Responsive image sizing
+- [x] Desktop layout
+- [x] Tablet layout
+- [x] Mobile layout
+- [x] Responsive navigation
+- [x] Responsive typography
+- [x] Responsive image sizing
 
 ## Foundation Quality
 
-- [ ] Check semantic HTML
-- [ ] Remove temporary test code
-- [ ] Remove duplicated CSS
-- [ ] Establish CSS variables
-- [ ] Check basic accessibility
-- [ ] Check browser console
+- [x] Check semantic HTML
+- [x] Remove temporary test code
+- [x] Remove duplicated CSS
+- [x] Establish CSS variables
+- [x] Check basic accessibility
+- [x] Check browser console
 
 ### Phase 1 Definition of Done
 
