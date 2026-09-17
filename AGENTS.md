@@ -648,3 +648,13 @@ Ready for commit
 ```
 
 Do not consider code complete merely because it was generated successfully.
+
+## Image Rules
+
+- Do not add RAW photography files to the repository.
+- Prefer optimized WebP or JPEG assets for the website.
+- Use lowercase filenames.
+- Use `loading="lazy"` for gallery images.
+- Do not lazy-load the hero image.
+- Preserve meaningful `alt` text.
+- Include image width and height when known.

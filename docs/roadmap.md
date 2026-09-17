@@ -7,20 +7,23 @@ The goal is to build the project gradually:
 ```text
 Foundation
     ↓
-Portfolio
+Portfolio and Viewing Experience
     ↓
-Experience
+First Static Release
     ↓
-Performance
+Image Performance
     ↓
-Backend
-    ↓
-Deployment
+Optional Platform Features
     ↓
 Long-term Platform
 ```
 
 Avoid implementing later-stage infrastructure before the current stage is stable.
+The first GitHub Pages release belongs to the current static-site stage; the later
+backend and storage phases are optional expansion, not release prerequisites.
+
+Checkboxes describe completed work. An item present only in the uncommitted
+working tree stays open until it has been checked and is ready to publish.
 
 ---
 
@@ -83,26 +86,24 @@ Turn the basic website into an actual photography portfolio.
 
 Create initial categories:
 
-- [ ] Portrait
-- [ ] Street
-- [ ] Landscape
-- [ ] Cafe
+- [x] Portrait
+- [x] Documentary
+- [x] Landscape
+- [ ] Decide whether Street or Cafe needs a separate category later
 
 ## Gallery
 
-- [ ] Create gallery layout
-- [ ] Create reusable gallery items
-- [ ] Add responsive gallery grid
-- [ ] Add portrait image handling
-- [ ] Add landscape image handling
+- [x] Create gallery layout
+- [x] Create reusable gallery items
+- [x] Add responsive gallery grid
+- [x] Display portrait and landscape photographs in the gallery
 - [ ] Add image captions
-- [ ] Add lazy loading
 
 ## Navigation
 
-- [ ] Connect category navigation
+- [x] Connect category navigation to the three gallery sections
 - [ ] Add active category state
-- [ ] Add smooth transitions between categories
+- [x] Add smooth anchor scrolling, with reduced-motion support
 
 ### Phase 2 Definition of Done
 
@@ -126,12 +127,12 @@ Make viewing individual photographs immersive.
 
 ## Lightbox
 
-- [ ] Click photograph to open
-- [ ] Full-screen viewer
-- [ ] Close button
+- [x] Click photograph to open
+- [x] Full-screen viewer
+- [x] Close button and Escape to close
 - [ ] Previous photograph
 - [ ] Next photograph
-- [ ] Keyboard navigation
+- [ ] Keyboard navigation between photographs
 - [ ] Mobile swipe support
 
 ## Photo Information
@@ -171,12 +172,12 @@ Improve the experience without distracting from photography.
 
 ## Animations
 
-- [ ] Navigation transitions
-- [ ] Gallery reveal animation
-- [ ] Image hover behavior
+- [x] Navigation transitions
+- [x] Gallery reveal animation
+- [x] Image hover behavior
 - [ ] Page transition experiments
-- [ ] Lightbox transitions
-- [ ] Reduced-motion support
+- [x] Lightbox transitions
+- [x] Reduced-motion support
 
 Rules:
 
@@ -195,17 +196,31 @@ Avoid excessive animation.
 
 Goal:
 
-Prepare the site for hundreds or thousands of photographs.
+Make the first static portfolio fast while preserving photographic quality.
 
-## Image Optimization
+## Web Image Export (Lesson 16)
 
-- [ ] Generate thumbnails
-- [ ] Generate medium-resolution images
-- [ ] Preserve originals separately
-- [ ] Add WebP
-- [ ] Evaluate AVIF
-- [ ] Responsive `srcset`
-- [ ] Lazy loading
+- [ ] Keep RAW and high-quality photo archives outside the website repository; publish only web-ready assets
+- [ ] Resize the hero export to roughly 2000-2400px on its longest edge
+- [ ] Resize gallery exports to roughly 1600-1800px on their longest edge
+- [ ] Export in sRGB; compare JPEG and WebP at suitable quality by eye and file size
+- [ ] Finish integrating the WebP files into the site and remove redundant large website assets when safe
+- [ ] Use actual image dimensions for HTML `width` and `height`, including correct aspect ratios
+- [ ] Keep the hero eager-loaded and lazy-load below-the-fold gallery images
+- [ ] Replace numbered placeholder `alt` text with meaningful descriptions of the photographs
+
+The current WebP conversion and HTML references are uncommitted drafts. The
+files retain very large source dimensions: the hero is 4672 x 7008px and about
+3.9 MiB; some gallery images reach 14014px. The HTML currently declares the
+hero as 3000 x 2000px and every gallery image as 2000 x 3000px, which does not
+match their real dimensions and, for several images, not even their aspect
+ratios. Do not mark image optimization complete until these are corrected.
+
+## Later Image Pipeline
+
+- [ ] Generate thumbnails and medium-resolution images when the collection grows
+- [ ] Add responsive `srcset` where device-size variants are useful
+- [ ] Evaluate AVIF after the JPEG/WebP workflow is stable
 
 Possible future pipeline:
 
@@ -226,10 +241,12 @@ Original
 - [ ] Pagination or infinite loading
 - [ ] Browser caching
 - [ ] CDN support
-- [ ] Preload important hero images
+- [ ] Evaluate hero image priority after measuring the first load
 
 ## Performance Testing
 
+- [ ] Check Network panel image sizes and loading order; hero loads first, offscreen gallery images wait
+- [ ] Measure LCP and CLS on desktop and mobile after the image export is finished
 - [ ] Lighthouse testing
 - [ ] Mobile network testing
 - [ ] Large gallery testing
@@ -454,9 +471,23 @@ Goal:
 
 Make the website publicly accessible.
 
-Tasks:
+## First Static Release (Lessons 14-15)
 
-- [ ] Production hosting
+- [x] Create a GitHub remote for this repository (`origin`)
+- [ ] Finish and review the current image changes, then commit and push a clean `main`
+- [ ] Configure GitHub Pages to deploy from `main` / root, if GitHub Pages is the chosen host
+- [ ] Confirm the live URL from the host's settings or deployment status
+- [ ] Test the live hero, all three galleries, navigation, lightbox, and mobile menu
+- [ ] Check that every image, CSS file, and script loads at the published URL
+
+The local `origin` configuration and `origin/main` tracking show that this
+checkout is connected to GitHub, but do not confirm that GitHub Pages is
+configured or that the site is live.
+The current working tree has uncommitted image work, so the release checklist
+remains open.
+
+## Later Production Improvements
+
 - [ ] Custom domain
 - [ ] HTTPS
 - [ ] Production CDN
@@ -471,10 +502,11 @@ Future target:
 ```text
 git push
     ↓
-automatic build
-    ↓
 automatic deployment
 ```
+
+The current site is plain HTML, CSS, and JavaScript; it does not need a build
+system for its first release.
 
 ---
 
@@ -533,21 +565,23 @@ These are optional and should not distract from the core portfolio.
 Current development priority:
 
 ```text
-Phase 1
-Foundation
+Phase 5
+Finish the web image export and verify loading behavior
     ↓
-Phase 2
-Photography Portfolio
+Phase 12
+Publish and test the first static release
     ↓
-Phase 3
-Viewing Experience
+Phases 2-4 and later
+Add optional portfolio and viewing features as needed
 ```
 
 Do not rush into backend development yet.
 
 The immediate objective is:
 
-> Build a beautiful, responsive, maintainable photography portfolio that works extremely well with a small collection before designing infrastructure for thousands of photographs.
+> Complete the image export: correct dimensions, reasonable file sizes,
+> meaningful descriptions, and verified lazy loading. Then review and push
+> the site and confirm its public release.
 
 ---
 
