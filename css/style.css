@@ -3,6 +3,24 @@
    这一部分统一浏览器默认样式，建立可预测的页面尺寸计算方式。
 ================================================================ */
 
+
+:root {
+    --color-bg: #ffffff;
+    --color-text: #111111;
+    --color-muted: #777777;
+
+    --color-dark: #000000;
+    --color-light: #ffffff;
+
+    --page-padding: 48px;
+    --page-padding-mobile: 20px;
+
+    --section-spacing: 120px;
+
+    --transition-fast: 0.3s ease;
+    --transition-slow: 0.8s ease;
+}
+
 /* 星号选择器会选中页面里的每一个元素。 */
 * {
     /* 清除浏览器自带的外边距，避免不同浏览器出现不一致的空白。 */
@@ -1097,4 +1115,68 @@ footer {
         /* 移除位移。 */
         transform: none;
     }
+}
+
+.about-section {
+    display: grid;
+
+    grid-template-columns: 1fr 2fr;
+
+    gap: 80px;
+
+    padding:
+        var(--section-spacing)
+        var(--page-padding);
+
+    background: var(--color-bg);
+
+    color: var(--color-text);
+}
+
+.about-label p {
+    font-size: 14px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.12em;
+
+    color: var(--color-muted);
+}
+
+.about-content h2 {
+    max-width: 900px;
+
+    font-size: clamp(36px, 5vw, 72px);
+
+    font-weight: 500;
+
+    line-height: 1.05;
+
+    letter-spacing: -0.04em;
+}
+
+.about-content p {
+    max-width: 600px;
+
+    margin-top: 40px;
+
+    font-size: 16px;
+
+    line-height: 1.7;
+
+    color: var(--color-muted);
+}
+
+@media (max-width: 768px) {
+
+    .about-section {
+        grid-template-columns: 1fr;
+
+        gap: 32px;
+
+        padding:
+            80px
+            var(--page-padding-mobile);
+    }
+
 }
