@@ -11,6 +11,8 @@
     --color-muted: #777777;
     --color-section-alt: #f5f5f5;
     --color-on-dark: #ffffff;
+    --color-dark: #000000;
+    --color-light: #ffffff;
 
     /* 桌面端与移动端共用的页面左右留白。 */
     --page-padding: 48px;
@@ -21,10 +23,12 @@
     --section-spacing-mobile: 80px;
 
     /* 统一常用动画节奏，避免相同时间值散落在文件各处。 */
+/* 统一常用动画节奏，避免相同时间值散落在文件各处。 */
     --transition-fast: 0.3s ease;
     --transition-medium: 0.6s ease;
     --transition-slow: 0.8s ease;
 }
+
 
 /* 星号选择器会选中页面里的每一个元素。 */
 * {
@@ -1120,4 +1124,68 @@ footer {
         /* 移除位移。 */
         transform: none;
     }
+}
+
+.about-section {
+    display: grid;
+
+    grid-template-columns: 1fr 2fr;
+
+    gap: 80px;
+
+    padding:
+        var(--section-spacing)
+        var(--page-padding);
+
+    background: var(--color-bg);
+
+    color: var(--color-text);
+}
+
+.about-label p {
+    font-size: 14px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.12em;
+
+    color: var(--color-muted);
+}
+
+.about-content h2 {
+    max-width: 900px;
+
+    font-size: clamp(36px, 5vw, 72px);
+
+    font-weight: 500;
+
+    line-height: 1.05;
+
+    letter-spacing: -0.04em;
+}
+
+.about-content p {
+    max-width: 600px;
+
+    margin-top: 40px;
+
+    font-size: 16px;
+
+    line-height: 1.7;
+
+    color: var(--color-muted);
+}
+
+@media (max-width: 768px) {
+
+    .about-section {
+        grid-template-columns: 1fr;
+
+        gap: 32px;
+
+        padding:
+            80px
+            var(--page-padding-mobile);
+    }
+
 }
