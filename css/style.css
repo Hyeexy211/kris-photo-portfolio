@@ -23,7 +23,6 @@
     --section-spacing-mobile: 80px;
 
     /* 统一常用动画节奏，避免相同时间值散落在文件各处。 */
-/* 统一常用动画节奏，避免相同时间值散落在文件各处。 */
     --transition-fast: 0.3s ease;
     --transition-medium: 0.6s ease;
     --transition-slow: 0.8s ease;

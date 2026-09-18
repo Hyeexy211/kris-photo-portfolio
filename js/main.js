@@ -54,8 +54,8 @@ function openLightbox(trigger) {
     // 记录触发按钮，稍后关闭灯箱时恢复键盘焦点。
     lightboxTrigger = trigger;
 
-    // currentSrc 是浏览器实际选中的图片地址；没有时回退到普通 src。
-    lightboxImage.src = image.currentSrc || image.src;
+    // 使用作品按钮指定的大图；没有指定时才回退到当前缩略图。
+    lightboxImage.src = trigger.dataset.fullSrc || image.currentSrc || image.src;
 
     // 把缩略图的替代文字也复制给灯箱大图。
     lightboxImage.alt = image.alt;
@@ -71,6 +71,9 @@ function openLightbox(trigger) {
 
     // 等浏览器完成当前次绘制后再移动焦点，确保灯箱已进入可见状态。
     window.requestAnimationFrame(() => {
+        // 若灯箱在下一帧到来前已关闭，不把焦点移回隐藏的按钮。
+        if (!lightbox.classList.contains("active")) return;
+
         // 把键盘焦点移到关闭按钮，方便键盘和屏幕阅读器用户立即操作。
         lightboxClose.focus();
     });

@@ -58,7 +58,7 @@
 
     <meta
         property="og:image"
-        content="https://hyeexy211.github.io/kris-photo-portfolio/images/social/social-cover.jpg"
+        content="https://hyeexy211.github.io/kris-photo-portfolio/images/social/social-cover.png"
     >
 
 
@@ -81,7 +81,7 @@
 
     <meta
         name="twitter:image"
-        content="https://hyeexy211.github.io/kris-photo-portfolio/images/social/social-cover.jpg"
+        content="https://hyeexy211.github.io/kris-photo-portfolio/images/social/social-cover.png"
     >
 
 
@@ -104,6 +104,8 @@
 
 <body>
 
+    <a class="skip-link" href="#main-content">Skip to content</a>
+
     <!-- 固定在页面顶部的站点标题与导航区域。 -->
     <header> 
         <nav>
@@ -118,6 +120,9 @@
             <button
                 class="menu-toggle"
                 id="menu-toggle"
+                type="button"
+                aria-controls="nav-links"
+                aria-expanded="false"
                 aria-label="Open navigation menu"
             >
                 ☰
@@ -139,7 +144,7 @@
     </header>
 
 
-    <main>
+    <main id="main-content">
 
         <!--
             首页 Hero：全屏照片、标题和分类说明叠放在同一区域。
@@ -152,12 +157,12 @@
             srcset="
                 images/hero/hero-01-640.webp 640w,
                 images/hero/hero-01-1200.webp 1200w,
-                images/hero/hero-01-1800.webp 1800w,
+                images/hero/hero-01-1800.webp 1800w
             "
 
             sizes="100vw"
-            width="2400" height="1600"
-            alt="Kris Photography Hero Image"
+            width="4672" height="7008"
+            alt="Warm hanging lamp beside a rain-streaked window overlooking misty trees"
             >
             <div class="hero-text">
                 <h2>Photography by Kris Huang</h2>
@@ -175,7 +180,7 @@
                 <p>Selected portrait works.</p>
             </div>
             <div class="gallery-grid">
-                <div class="gallery-item reveal"> 
+                <button class="gallery-item reveal" type="button" data-full-src="images/portrait/portrait-01-1800.webp">
                     <img
                         src="images/portrait/portrait-01-1200.webp"
 
@@ -190,14 +195,14 @@
                             50vw
                         "
 
-                        width="1800"
-                        height="1200"
+                        width="4672"
+                        height="7008"
 
                         alt="Portrait photography"
                         loading="lazy"
                     >
-                </div>
-                <div class="gallery-item reveal">
+                </button>
+                <button class="gallery-item reveal" type="button" data-full-src="images/portrait/portrait-02-1800.webp">
                     <img
                         src="images/portrait/portrait-02-1200.webp"
 
@@ -212,14 +217,14 @@
                             50vw
                         "
 
-                        width="1800"
-                        height="1200"
+                        width="4672"
+                        height="7008"
 
                         alt="Portrait photography 02"
                         loading="lazy"
                     >
-                </div>
-                <div class="gallery-item reveal">
+                </button>
+                <button class="gallery-item reveal" type="button" data-full-src="images/portrait/portrait-03-1800.webp">
                     <img
                         src="images/portrait/portrait-03-1200.webp"
 
@@ -230,17 +235,17 @@
                         "
 
                         sizes="
-                            (max-width: 768px) 100vw,
-                            50vw
+                            (max-width: 768px) calc(100vw - 40px),
+                            calc(100vw - 96px)
                         "
 
-                        width="1800"
-                        height="1200"
+                        width="4672"
+                        height="7008"
 
                         alt="Portrait photography 03"
                         loading="lazy"
                     >
-                </div>
+                </button>
             </div>
         </section>
 
@@ -252,7 +257,7 @@
                 <p>Documentary and street photography.</p>
             </div>
             <div class="gallery-grid">
-                <div class="gallery-item reveal">
+                <button class="gallery-item reveal" type="button" data-full-src="images/documentary/documentary-01-1800.webp">
                     <img
                         src="images/documentary/documentary-01-1200.webp"
 
@@ -267,14 +272,14 @@
                             50vw
                         "
 
-                        width="1800"
-                        height="1200"
+                        width="4672"
+                        height="7008"
 
                         alt="Documentary photography"
                         loading="lazy"
                     >
-                </div>
-                <div class="gallery-item reveal">
+                </button>
+                <button class="gallery-item reveal" type="button" data-full-src="images/documentary/documentary-02-1800.webp">
                     <img
                         src="images/documentary/documentary-02-1200.webp"
 
@@ -289,14 +294,14 @@
                             50vw
                         "
 
-                        width="1800"
-                        height="1200"
+                        width="7008"
+                        height="4672"
 
                         alt="Documentary photography 02"
                         loading="lazy"
                     >
-                </div>
-                <div class="gallery-item reveal">
+                </button>
+                <button class="gallery-item reveal" type="button" data-full-src="images/documentary/documentary-03-1800.webp">
                     <img
                         src="images/documentary/documentary-03-1200.webp"
 
@@ -307,17 +312,17 @@
                         "
 
                         sizes="
-                            (max-width: 768px) 100vw,
-                            50vw
+                            (max-width: 768px) calc(100vw - 40px),
+                            calc(100vw - 96px)
                         "
 
-                        width="1800"
-                        height="1200"
+                        width="7008"
+                        height="4672"
 
                         alt="Documentary photography 03"
                         loading="lazy"
                     >
-                </div>
+                </button>
             </div>
         </section>
 
@@ -329,7 +334,7 @@
                 <p>Landscape photography collection.</p>
             </div>
             <div class="gallery-grid">
-                <div class="gallery-item reveal">
+                <button class="gallery-item reveal" type="button" data-full-src="images/landscape/landscape-01-1800.webp">
                     <img
                         src="images/landscape/landscape-01-1200.webp"
 
@@ -344,14 +349,14 @@
                             50vw
                         "
 
-                        width="1800"
-                        height="1200"
+                        width="14014"
+                        height="5962"
 
                         alt="Landscape photography 01"
                         loading="lazy"
                     >
-                </div>
-                <div class="gallery-item reveal">
+                </button>
+                <button class="gallery-item reveal" type="button" data-full-src="images/landscape/landscape-02-1800.webp">
                     <img
                         src="images/landscape/landscape-02-1200.webp"
 
@@ -366,13 +371,14 @@
                             50vw
                         "
 
-                        width="1800"
-                        height="1200"
+                        width="6449"
+                        height="9674"
 
                         alt="Landscape photography 02"
+                        loading="lazy"
                     >
-                </div>
-                <div class="gallery-item reveal">
+                </button>
+                <button class="gallery-item reveal" type="button" data-full-src="images/landscape/landscape-03-1800.webp">
                     <img
                         src="images/landscape/landscape-03-1200.webp"
 
@@ -383,17 +389,17 @@
                         "
 
                         sizes="
-                            (max-width: 768px) 100vw,
-                            50vw
+                            (max-width: 768px) calc(100vw - 40px),
+                            calc(100vw - 96px)
                         "
 
-                        width="1800"
-                        height="1200"
+                        width="6996"
+                        height="3498"
 
                         alt="Landscape photography 03"
                         loading="lazy"
                     >
-                </div>
+                </button>
             </div>
         </section>
 
@@ -425,19 +431,18 @@
 
 <!--
     Lightbox 是隐藏的大图查看器。
-    JavaScript 会把被点击作品图的 src 和 alt 复制到 lightbox-image，
+    JavaScript 会把作品按钮指定的大图地址和图片的 alt 复制到 lightbox-image，
     再添加 active class 让遮罩显示出来。
 -->
-<div class="lightbox" id="lightbox">
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" aria-hidden="true">
 
-    <button class="lightbox-close" id="lightbox-close">
+    <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Close photo viewer">
         ×
     </button>
 
     <img
         class="lightbox-image"
         id="lightbox-image"
-        src=""
         alt=""
     >
 
