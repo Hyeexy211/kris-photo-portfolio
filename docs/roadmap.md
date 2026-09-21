@@ -277,7 +277,7 @@ Possible photo data:
 
 Tasks:
 
-- [ ] Define photograph data structure
+- [x] Define initial photograph data structure
 - [ ] Separate photo data from page markup
 - [ ] Load gallery dynamically
 - [ ] Define category system
@@ -285,6 +285,11 @@ Tasks:
 - [ ] Define metadata system
 
 This phase may initially use JSON before introducing a database.
+
+Lesson 22 starts this phase with `data/photos.js` and one real repository image.
+The initial record intentionally contains only `id`, `src`, `date`, and
+`category`; its date remains empty until verified. The existing HTML galleries
+are still static, so data-driven rendering remains a later task.
 
 ---
 

@@ -5,9 +5,10 @@
 ## 建议阅读顺序
 
 1. 从 `index.html` 开始：先看 `<head>`，再依次看页头、Hero、Selected Work 卡片、About 和页脚。每张卡片的 `href` 指向 `projects/` 中的一页。
-2. 打开 `projects/portrait.html`，沿着页头、项目介绍、照片 `<figure>`、项目资料、灯箱和页脚阅读。子页面的 `../` 表示返回项目根目录。
-3. 再看 `css/style.css`：从 `:root` 设计变量开始，依次看全局规则、页头、Hero、灯箱、手机布局、动画、作品卡片和项目页。
-4. 最后看 `js/main.js`：先看如何取得元素，再看 `openLightbox` / `closeLightbox`、`setMenuOpen`、键盘事件和滚动观察器。首页没有灯箱元素，因此代码会先检查它是否存在。
+2. 打开 `data/photos.js`：先认识 `photos` 数组，再看第一张真实照片如何用 `id`、`src`、`date` 和 `category` 四个字段描述。
+3. 打开 `projects/portrait.html`，沿着页头、项目介绍、照片 `<figure>`、项目资料、灯箱和页脚阅读。子页面的 `../` 表示返回项目根目录。
+4. 再看 `css/style.css`：从 `:root` 设计变量开始，依次看全局规则、页头、Hero、灯箱、手机布局、动画、作品卡片和项目页。
+5. 最后看 `js/main.js`：先看如何取得元素，再看 `openLightbox` / `closeLightbox`、`setMenuOpen`、键盘事件和滚动观察器。首页没有灯箱元素，因此代码会先检查它是否存在。
 
 源码里的中文注释紧挨着对应的标签、样式规则或 JavaScript 语句。阅读时可以先看注释，再看下面一行代码，最后在浏览器里观察它的效果。空行和闭合符号属于代码结构，不需要单独的功能说明。
 
@@ -16,6 +17,7 @@
 | 文件或目录 | 作用 | 初学者重点 |
 | --- | --- | --- |
 | `index.html` | 定义首页与作品入口 | `article`、整张卡片链接、`srcset`、`aria-*` |
+| `data/photos.js` | 保存照片资料，与页面结构分开 | 数组、对象、`id`、`src`、`date`、`category` |
 | `projects/*.html` | 每个分类一页，展示完整照片组 | `../` 相对路径、`figure`、灯箱按钮 |
 | `css/style.css` | 布局、颜色、动画和响应式 | 选择器、Grid、Flexbox、媒体查询 |
 | `js/main.js` | 用户交互 | DOM 查询、事件监听、函数、状态 class |
@@ -28,6 +30,13 @@
 - `index.html` 的 `#work` 只放作品入口。每个 `<article class="project-card">` 都有封面、标题、照片数量和指向独立页面的链接。
 - `projects/portrait.html`、`projects/documentary.html`、`projects/landscape.html` 分别展示三张现有照片。每页的 `../css/style.css`、`../images/...` 都从 `projects/` 返回到项目根目录。
 - 当前仓库没有课程示例的京都照片，因此没有添加空白的 `Kyoto Night` 页面，也没有填写未经确认的拍摄地点、年份或器材。以后有真实素材时，可以参照现有作品页复制一份，再在首页添加对应卡片。
+
+## 第 22 课：照片数据层
+
+- `data/photos.js` 是网站的第一层照片数据。它先用一条真实记录说明“这张照片是什么”，而不是负责照片的视觉布局。
+- 第一条记录指向已经存在的 `images/portrait/portrait-01-1200.webp`。没有经过确认的拍摄日期保持为空，不编造地点、日期或器材资料。
+- `index.html` 会先加载 `data/photos.js`，再加载 `js/main.js`。这个顺序为后续用 JavaScript 读取照片资料、自动生成页面做好准备。
+- 本课暂时不把所有作品搬进数组，也不改写现有 Gallery。当前页面外观应保持不变；“动态生成 Gallery”和“按日期形成时间轴”属于后续课程。
 
 ## 现有交互与可访问性
 
@@ -44,6 +53,7 @@
 在项目根目录执行：
 
 ```sh
+node --check data/photos.js
 node --check js/main.js
 python3 -m http.server 4173 --bind 127.0.0.1 --directory dist
 ```
