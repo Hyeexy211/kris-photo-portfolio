@@ -95,13 +95,15 @@ Create initial categories:
 
 - [x] Create gallery layout
 - [x] Create reusable gallery items
-- [x] Add responsive gallery grid
+- [x] Add responsive photo layouts
 - [x] Display portrait and landscape photographs in the gallery
+- [x] Give Portrait, Documentary, and Landscape their own static URLs
+- [x] Link full-size project cards on the homepage to those pages
 - [ ] Add image captions
 
 ## Navigation
 
-- [x] Connect category navigation to the three gallery sections
+- [x] Connect Work navigation to the project cards
 - [ ] Add active category state
 - [x] Add smooth anchor scrolling, with reduced-motion support
 
@@ -112,9 +114,9 @@ Visitors should be able to:
 ```text
 Open website
     ↓
-Choose photography category
+Choose a project card
     ↓
-Browse photographs
+Open its page and browse photographs
 ```
 
 ---
@@ -205,21 +207,20 @@ Make the first static portfolio fast while preserving photographic quality.
 - [ ] Resize gallery exports to roughly 1600-1800px on their longest edge
 - [ ] Export in sRGB; compare JPEG and WebP at suitable quality by eye and file size
 - [ ] Finish integrating the WebP files into the site and remove redundant large website assets when safe
-- [ ] Use actual image dimensions for HTML `width` and `height`, including correct aspect ratios
-- [ ] Keep the hero eager-loaded and lazy-load below-the-fold gallery images
-- [ ] Replace numbered placeholder `alt` text with meaningful descriptions of the photographs
+- [x] Use actual image dimensions for HTML `width` and `height`, including correct aspect ratios
+- [x] Keep the hero eager-loaded and lazy-load below-the-fold gallery images
+- [x] Replace numbered placeholder `alt` text with meaningful descriptions of the photographs
 
-The current WebP conversion and HTML references are uncommitted drafts. The
-files retain very large source dimensions: the hero is 4672 x 7008px and about
-3.9 MiB; some gallery images reach 14014px. The HTML currently declares the
-hero as 3000 x 2000px and every gallery image as 2000 x 3000px, which does not
-match their real dimensions and, for several images, not even their aspect
-ratios. Do not mark image optimization complete until these are corrected.
+The responsive WebP set now contains real 640px, 1200px, and 1800px-wide
+files. Its total size fell from roughly 128 MiB to 6.4 MiB, and the HTML
+dimensions match each default `src`. The original JPEGs and redundant
+full-resolution WebPs are still in the repository, so archive cleanup and
+color-profile verification remain open tasks.
 
 ## Later Image Pipeline
 
 - [ ] Generate thumbnails and medium-resolution images when the collection grows
-- [ ] Add responsive `srcset` where device-size variants are useful
+- [x] Add responsive `srcset` where device-size variants are useful
 - [ ] Evaluate AVIF after the JPEG/WebP workflow is stable
 
 Possible future pipeline:

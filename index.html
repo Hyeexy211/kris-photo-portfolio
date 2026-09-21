@@ -134,9 +134,7 @@
             -->
             <ul class="nav-links" id="nav-links">
                 <li><a href="#home">Home</a></li>
-                <li><a href="#portrait">Portrait</a></li>
-                <li><a href="#documentary">Documentary</a></li>
-                <li><a href="#landscape">Landscape</a></li>
+                <li><a href="#work">Work</a></li>
                 <li><a href="#about">About</a></li>
             </ul>
 
@@ -161,7 +159,7 @@
             "
 
             sizes="100vw"
-            width="4672" height="7008"
+            width="1800" height="2700"
             alt="Warm hanging lamp beside a rain-streaked window overlooking misty trees"
             >
             <div class="hero-text">
@@ -170,241 +168,86 @@
             </div>
         </section>
 
-        <!--
-            Portrait 作品区。gallery-section 提供通用区块样式，
-            gallery-grid 负责把三个 gallery-item 排成图片墙。
-        -->
-        <section id="portrait" class="gallery-section">
-            <div class="section-heading reveal">
-                <h2>Portrait</h2>
-                <p>Selected portrait works.</p>
+        <!-- 第 20 课：每张 article 卡片指向一个独立作品页，整张卡片都是链接。 -->
+        <section id="work" class="projects-section" aria-labelledby="work-title">
+            <div class="section-header reveal">
+                <p class="section-label">Selected Work</p>
+                <h2 id="work-title">Collections</h2>
             </div>
-            <div class="gallery-grid">
-                <button class="gallery-item reveal" type="button" data-full-src="images/portrait/portrait-01-1800.webp">
-                    <img
-                        src="images/portrait/portrait-01-1200.webp"
-
-                        srcset="
-                            images/portrait/portrait-01-640.webp 640w,
-                            images/portrait/portrait-01-1200.webp 1200w,
-                            images/portrait/portrait-01-1800.webp 1800w
-                        "
-
-                        sizes="
-                            (max-width: 768px) 100vw,
-                            50vw
-                        "
-
-                        width="4672"
-                        height="7008"
-
-                        alt="Portrait photography"
-                        loading="lazy"
-                    >
-                </button>
-                <button class="gallery-item reveal" type="button" data-full-src="images/portrait/portrait-02-1800.webp">
-                    <img
-                        src="images/portrait/portrait-02-1200.webp"
-
-                        srcset="
-                            images/portrait/portrait-02-640.webp 640w,
-                            images/portrait/portrait-02-1200.webp 1200w,
-                            images/portrait/portrait-02-1800.webp 1800w
-                        "
-
-                        sizes="
-                            (max-width: 768px) 100vw,
-                            50vw
-                        "
-
-                        width="4672"
-                        height="7008"
-
-                        alt="Portrait photography 02"
-                        loading="lazy"
-                    >
-                </button>
-                <button class="gallery-item reveal" type="button" data-full-src="images/portrait/portrait-03-1800.webp">
-                    <img
-                        src="images/portrait/portrait-03-1200.webp"
-
-                        srcset="
-                            images/portrait/portrait-03-640.webp 640w,
-                            images/portrait/portrait-03-1200.webp 1200w,
-                            images/portrait/portrait-03-1800.webp 1800w
-                        "
-
-                        sizes="
-                            (max-width: 768px) calc(100vw - 40px),
-                            calc(100vw - 96px)
-                        "
-
-                        width="4672"
-                        height="7008"
-
-                        alt="Portrait photography 03"
-                        loading="lazy"
-                    >
-                </button>
-            </div>
-        </section>
-
-
-        <!-- Documentary 与 Portrait 共用同一套画廊结构，只替换标题、文案与图片路径。 -->
-        <section id="documentary" class="gallery-section">
-            <div class="section-heading reveal">
-                <h2>Documentary</h2>
-                <p>Documentary and street photography.</p>
-            </div>
-            <div class="gallery-grid">
-                <button class="gallery-item reveal" type="button" data-full-src="images/documentary/documentary-01-1800.webp">
-                    <img
-                        src="images/documentary/documentary-01-1200.webp"
-
-                        srcset="
-                            images/documentary/documentary-01-640.webp 640w,
-                            images/documentary/documentary-01-1200.webp 1200w,
-                            images/documentary/documentary-01-1800.webp 1800w
-                        "
-
-                        sizes="
-                            (max-width: 768px) 100vw,
-                            50vw
-                        "
-
-                        width="4672"
-                        height="7008"
-
-                        alt="Documentary photography"
-                        loading="lazy"
-                    >
-                </button>
-                <button class="gallery-item reveal" type="button" data-full-src="images/documentary/documentary-02-1800.webp">
-                    <img
-                        src="images/documentary/documentary-02-1200.webp"
-
-                        srcset="
-                            images/documentary/documentary-02-640.webp 640w,
-                            images/documentary/documentary-02-1200.webp 1200w,
-                            images/documentary/documentary-02-1800.webp 1800w
-                        "
-
-                        sizes="
-                            (max-width: 768px) 100vw,
-                            50vw
-                        "
-
-                        width="7008"
-                        height="4672"
-
-                        alt="Documentary photography 02"
-                        loading="lazy"
-                    >
-                </button>
-                <button class="gallery-item reveal" type="button" data-full-src="images/documentary/documentary-03-1800.webp">
-                    <img
-                        src="images/documentary/documentary-03-1200.webp"
-
-                        srcset="
-                            images/documentary/documentary-03-640.webp 640w,
-                            images/documentary/documentary-03-1200.webp 1200w,
-                            images/documentary/documentary-03-1800.webp 1800w
-                        "
-
-                        sizes="
-                            (max-width: 768px) calc(100vw - 40px),
-                            calc(100vw - 96px)
-                        "
-
-                        width="7008"
-                        height="4672"
-
-                        alt="Documentary photography 03"
-                        loading="lazy"
-                    >
-                </button>
+            <div class="project-grid">
+                <article class="project-card reveal">
+                    <a class="project-card-link" href="projects/portrait.html">
+                        <div class="project-card-image">
+                            <img
+                                src="images/portrait/portrait-01-1200.webp"
+                                srcset="images/portrait/portrait-01-640.webp 640w, images/portrait/portrait-01-1200.webp 1200w, images/portrait/portrait-01-1800.webp 1800w"
+                                sizes="(max-width: 768px) calc(100vw - 40px), calc((100vw - 120px) / 2)"
+                                width="1200"
+                                height="1800"
+                                alt="A rain-darkened window frames trees and a passing car"
+                                loading="lazy"
+                            >
+                            <span class="project-card-overlay" aria-hidden="true">View Project</span>
+                        </div>
+                        <div class="project-card-info">
+                            <h3>Portrait</h3>
+                            <div class="project-card-meta">
+                                <span>Collection</span>
+                                <span>3 photographs</span>
+                            </div>
+                        </div>
+                    </a>
+                </article>
+                <article class="project-card reveal">
+                    <a class="project-card-link" href="projects/documentary.html">
+                        <div class="project-card-image">
+                            <img
+                                src="images/documentary/documentary-01-1200.webp"
+                                srcset="images/documentary/documentary-01-640.webp 640w, images/documentary/documentary-01-1200.webp 1200w, images/documentary/documentary-01-1800.webp 1800w"
+                                sizes="(max-width: 768px) calc(100vw - 40px), calc((100vw - 120px) / 2)"
+                                width="1200"
+                                height="1800"
+                                alt="White flowers and a veiled mannequin beside an old window"
+                                loading="lazy"
+                            >
+                            <span class="project-card-overlay" aria-hidden="true">View Project</span>
+                        </div>
+                        <div class="project-card-info">
+                            <h3>Documentary</h3>
+                            <div class="project-card-meta">
+                                <span>Collection</span>
+                                <span>3 photographs</span>
+                            </div>
+                        </div>
+                    </a>
+                </article>
+                <article class="project-card reveal">
+                    <a class="project-card-link" href="projects/landscape.html">
+                        <div class="project-card-image">
+                            <img
+                                src="images/landscape/landscape-01-1200.webp"
+                                srcset="images/landscape/landscape-01-640.webp 640w, images/landscape/landscape-01-1200.webp 1200w, images/landscape/landscape-01-1800.webp 1800w"
+                                sizes="(max-width: 768px) calc(100vw - 40px), calc((100vw - 120px) / 2)"
+                                width="1200"
+                                height="511"
+                                alt="City lights beneath a pink dusk sky and silhouetted branches"
+                                loading="lazy"
+                            >
+                            <span class="project-card-overlay" aria-hidden="true">View Project</span>
+                        </div>
+                        <div class="project-card-info">
+                            <h3>Landscape</h3>
+                            <div class="project-card-meta">
+                                <span>Collection</span>
+                                <span>3 photographs</span>
+                            </div>
+                        </div>
+                    </a>
+                </article>
             </div>
         </section>
 
-
-        <!-- Landscape 同样复用画廊样式；复用 class 可以避免重复编写 CSS。 -->
-        <section id="landscape" class="gallery-section">
-            <div class="section-heading reveal">
-                <h2>Landscape</h2>
-                <p>Landscape photography collection.</p>
-            </div>
-            <div class="gallery-grid">
-                <button class="gallery-item reveal" type="button" data-full-src="images/landscape/landscape-01-1800.webp">
-                    <img
-                        src="images/landscape/landscape-01-1200.webp"
-
-                        srcset="
-                            images/landscape/landscape-01-640.webp 640w,
-                            images/landscape/landscape-01-1200.webp 1200w,
-                            images/landscape/landscape-01-1800.webp 1800w
-                        "
-
-                        sizes="
-                            (max-width: 768px) 100vw,
-                            50vw
-                        "
-
-                        width="14014"
-                        height="5962"
-
-                        alt="Landscape photography 01"
-                        loading="lazy"
-                    >
-                </button>
-                <button class="gallery-item reveal" type="button" data-full-src="images/landscape/landscape-02-1800.webp">
-                    <img
-                        src="images/landscape/landscape-02-1200.webp"
-
-                        srcset="
-                            images/landscape/landscape-02-640.webp 640w,
-                            images/landscape/landscape-02-1200.webp 1200w,
-                            images/landscape/landscape-02-1800.webp 1800w
-                        "
-
-                        sizes="
-                            (max-width: 768px) 100vw,
-                            50vw
-                        "
-
-                        width="6449"
-                        height="9674"
-
-                        alt="Landscape photography 02"
-                        loading="lazy"
-                    >
-                </button>
-                <button class="gallery-item reveal" type="button" data-full-src="images/landscape/landscape-03-1800.webp">
-                    <img
-                        src="images/landscape/landscape-03-1200.webp"
-
-                        srcset="
-                            images/landscape/landscape-03-640.webp 640w,
-                            images/landscape/landscape-03-1200.webp 1200w,
-                            images/landscape/landscape-03-1800.webp 1800w
-                        "
-
-                        sizes="
-                            (max-width: 768px) calc(100vw - 40px),
-                            calc(100vw - 96px)
-                        "
-
-                        width="6996"
-                        height="3498"
-
-                        alt="Landscape photography 03"
-                        loading="lazy"
-                    >
-                </button>
-            </div>
-        </section>
-
-
-        <!-- About 是普通内容区，不使用 gallery-section 的图片墙布局。 -->
+        <!-- About 保留原来的双栏介绍布局。 -->
         <section id="about" class="about-section">
 
             <div class="about-label">
@@ -428,25 +271,6 @@
         
 
     </main>
-
-<!--
-    Lightbox 是隐藏的大图查看器。
-    JavaScript 会把作品按钮指定的大图地址和图片的 alt 复制到 lightbox-image，
-    再添加 active class 让遮罩显示出来。
--->
-<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" aria-hidden="true">
-
-    <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Close photo viewer">
-        ×
-    </button>
-
-    <img
-        class="lightbox-image"
-        id="lightbox-image"
-        alt=""
-    >
-
-</div>
 
     <!-- 页脚放置版权等收尾信息。 -->
     <footer>

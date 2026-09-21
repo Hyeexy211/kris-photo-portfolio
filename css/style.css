@@ -1188,3 +1188,323 @@ footer {
     }
 
 }
+/* ================================================================
+   13. 首页作品卡片
+   每张卡片是一个完整链接，桌面端两列，第三张横跨两列。
+================================================================ */
+
+.projects-section {
+    padding: var(--section-spacing) var(--page-padding);
+    background: var(--color-bg);
+}
+
+.section-header {
+    margin-bottom: 56px;
+}
+
+.section-label {
+    margin-bottom: 16px;
+    color: var(--color-muted);
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.section-header h2 {
+    margin: 0;
+    font-size: clamp(48px, 7vw, 96px);
+    font-weight: 500;
+    letter-spacing: -0.05em;
+    line-height: 0.95;
+}
+
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 72px 24px;
+}
+
+.project-card:nth-child(3) {
+    grid-column: span 2;
+}
+
+.project-card-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+
+.project-card-image {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-section-alt);
+}
+
+.project-card-image img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    transition: transform var(--transition-medium);
+}
+
+.project-card:nth-child(3) .project-card-image img {
+    aspect-ratio: 16 / 7;
+}
+
+.project-card-overlay {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.72);
+    color: var(--color-on-dark);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.project-card-link:hover .project-card-image img,
+.project-card-link:focus-visible .project-card-image img {
+    transform: scale(1.025);
+}
+
+.project-card-link:hover .project-card-overlay,
+.project-card-link:focus-visible .project-card-overlay {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.project-card-link:focus-visible {
+    outline: 2px solid var(--color-text);
+    outline-offset: 6px;
+}
+
+.project-card-info {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding-top: 18px;
+}
+
+.project-card-info h3 {
+    font-size: clamp(26px, 3vw, 40px);
+    font-weight: 500;
+    letter-spacing: -0.035em;
+}
+
+.project-card-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    color: var(--color-muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+
+/* ================================================================
+   14. 独立作品页
+================================================================ */
+
+.site-brand {
+    color: var(--color-on-dark);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+}
+
+.project-site header {
+    background: rgba(0, 0, 0, 0.72);
+}
+
+.project-page {
+    background: var(--color-bg);
+    color: var(--color-text);
+}
+
+.project-hero {
+    min-height: 72vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 132px var(--page-padding) 80px;
+}
+
+.project-back {
+    width: fit-content;
+    color: var(--color-text);
+    font-size: 14px;
+    text-decoration: none;
+    transition: opacity var(--transition-fast);
+}
+
+.project-back:hover,
+.project-back:focus-visible {
+    opacity: 0.55;
+}
+
+.project-back:focus-visible {
+    outline: 2px solid var(--color-text);
+    outline-offset: 5px;
+}
+
+.project-intro {
+    max-width: 1100px;
+}
+
+.project-category {
+    margin-bottom: 24px;
+    color: var(--color-muted);
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.project-intro h1 {
+    font-size: clamp(56px, 10vw, 140px);
+    font-weight: 500;
+    letter-spacing: -0.055em;
+    line-height: 0.9;
+}
+
+.project-description {
+    max-width: 650px;
+    margin-top: 40px;
+    color: var(--color-muted);
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+.project-gallery {
+    min-height: 0;
+    padding: 0 var(--page-padding) var(--section-spacing);
+}
+
+.project-image {
+    margin: 0 0 24px;
+    overflow: hidden;
+}
+
+.project-image:nth-child(2) {
+    width: 76%;
+    margin-left: auto;
+}
+
+.project-image:nth-child(3) {
+    width: 84%;
+}
+
+.project-image .gallery-item img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: auto;
+    object-fit: contain;
+    cursor: zoom-in;
+}
+
+.project-info {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 32px;
+    margin: 0 var(--page-padding);
+    padding: 40px 0 var(--section-spacing);
+    border-top: 1px solid #dddddd;
+}
+
+.project-info p {
+    font-size: 15px;
+}
+
+.project-info .project-info-label {
+    margin-bottom: 8px;
+    color: var(--color-muted);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+
+/* ================================================================
+   15. 新增页面的响应式布局
+================================================================ */
+
+@media (max-width: 768px) {
+    .projects-section {
+        padding: var(--section-spacing-mobile) var(--page-padding-mobile);
+    }
+
+    .section-header {
+        margin-bottom: 40px;
+    }
+
+    .project-grid {
+        grid-template-columns: 1fr;
+        gap: 56px;
+    }
+
+    .project-card:nth-child(3) {
+        grid-column: span 1;
+    }
+
+    .project-card-image img,
+    .project-card:nth-child(3) .project-card-image img {
+        aspect-ratio: 4 / 5;
+    }
+
+    .project-card-overlay {
+        display: none;
+    }
+
+    .project-card-info {
+        gap: 16px;
+        padding-top: 14px;
+    }
+
+    .project-card-meta {
+        flex-shrink: 0;
+    }
+
+    .project-hero {
+        min-height: 62vh;
+        padding: 112px var(--page-padding-mobile) 56px;
+    }
+
+    .project-intro h1 {
+        font-size: clamp(52px, 17vw, 78px);
+    }
+
+    .project-description {
+        margin-top: 28px;
+        font-size: 16px;
+    }
+
+    .project-gallery {
+        padding: 0 var(--page-padding-mobile) 80px;
+    }
+
+    .project-image,
+    .project-image:nth-child(2),
+    .project-image:nth-child(3) {
+        width: 100%;
+        margin-right: 0;
+        margin-left: 0;
+        margin-bottom: 20px;
+    }
+
+    .project-info {
+        grid-template-columns: 1fr;
+        gap: 28px;
+        margin: 0 var(--page-padding-mobile);
+        padding: 32px 0 80px;
+    }
+}

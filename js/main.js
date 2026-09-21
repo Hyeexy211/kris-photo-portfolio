@@ -3,7 +3,7 @@
 // document.querySelector 会取到第一个匹配的元素，querySelectorAll 会取到全部匹配元素。
 // ================================================================
 
-// 找到九个可点击的作品按钮；每个按钮内部都有一张 img。
+// 找到当前页面的可点击照片按钮；首页只有作品卡片时，这个列表为空。
 const galleryItems = document.querySelectorAll(".gallery-item");
 
 // 找到共用的大图灯箱容器。
@@ -35,7 +35,7 @@ let lightboxTrigger = null;
 // 这个函数只负责根据当前状态更新 body 的滚动锁。
 function updatePageScroll() {
     // classList.contains 返回 true 表示对应覆盖层目前处于打开状态。
-    const hasOpenOverlay = lightbox.classList.contains("active") || navLinks.classList.contains("active");
+    const hasOpenOverlay = (lightbox?.classList.contains("active") ?? false) || navLinks.classList.contains("active");
 
     // toggle 的第二个参数是布尔值：true 添加 class，false 移除 class。
     document.body.classList.toggle("has-overlay", hasOpenOverlay);
@@ -100,17 +100,17 @@ function closeLightbox() {
     lightboxTrigger = null;
 }
 
-// 对每一个作品按钮绑定同一种点击行为，避免重复写九份代码。
+// 对项目页中的每张照片绑定同一种点击行为。
 galleryItems.forEach((item) => {
     // button 原生支持鼠标点击，以及键盘 Enter 和 Space 激活。
     item.addEventListener("click", () => openLightbox(item));
 });
 
 // 关闭按钮被点击时调用同一个关闭函数。
-lightboxClose.addEventListener("click", closeLightbox);
+lightboxClose?.addEventListener("click", closeLightbox);
 
 // 点击灯箱空白遮罩时关闭；点击中间图片时不会关闭。
-lightbox.addEventListener("click", (event) => {
+lightbox?.addEventListener("click", (event) => {
     // event.target 是用户实际点击到的元素。
     if (event.target === lightbox) closeLightbox();
 });
@@ -167,7 +167,7 @@ window.addEventListener("resize", () => {
 // 在 document 上监听按键，无论当前焦点在哪个元素都能响应 Escape。
 document.addEventListener("keydown", (event) => {
     // 灯箱打开时优先处理灯箱，不影响其他普通按键。
-    if (lightbox.classList.contains("active")) {
+    if (lightbox?.classList.contains("active")) {
         // Escape 是常见的关闭对话框快捷键。
         if (event.key === "Escape") {
             // 关闭灯箱并恢复到原作品按钮的焦点。
