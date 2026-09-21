@@ -1,11 +1,11 @@
 # Kris Photography：初学者代码阅读指南
 
-这是一个不依赖框架的摄影作品集。首页展示三个作品卡片，点击后进入 `projects/` 中的独立页面浏览完整照片组。HTML 负责内容结构，CSS 负责外观与响应式布局，JavaScript 负责灯箱、手机菜单和滚动动画。图片保存在 `images/` 下，`dist/` 是给 Sites 预览和托管使用的同内容副本。
+这是一个不依赖框架的摄影作品集。首页保留三个作品入口卡片，并在下方由照片数据生成可筛选 Gallery；点击作品卡片后可进入 `projects/` 中的独立页面浏览完整照片组。HTML 负责内容结构，CSS 负责外观与响应式布局，JavaScript 负责动态 Gallery、灯箱、手机菜单和滚动动画。图片保存在 `images/` 下，`dist/` 是给 Sites 预览和托管使用的同内容副本。
 
 ## 建议阅读顺序
 
-1. 从 `index.html` 开始：先看 `<head>`，再依次看页头、Hero、Selected Work 卡片、About 和页脚。每张卡片的 `href` 指向 `projects/` 中的一页。
-2. 打开 `data/photos.js`：先认识 `photos` 数组，再看第一张真实照片如何用 `id`、`src`、`date` 和 `category` 四个字段描述。
+1. 从 `index.html` 开始：先看 `<head>`，再依次看页头、Hero、Selected Work 卡片、动态 Gallery、About 和页脚。每张作品入口卡片的 `href` 指向 `projects/` 中的一页。
+2. 打开 `data/photos.js`：先认识 `photos` 数组，再看九张真实照片如何用 `id`、`src`、`title`、`date` 和 `category` 等字段描述。
 3. 打开 `projects/portrait.html`，沿着页头、项目介绍、照片 `<figure>`、项目资料、灯箱和页脚阅读。子页面的 `../` 表示返回项目根目录。
 4. 再看 `css/style.css`：从 `:root` 设计变量开始，依次看全局规则、页头、Hero、灯箱、手机布局、动画、作品卡片和项目页。
 5. 最后看 `js/main.js`：先看如何取得元素，再看 `openLightbox` / `closeLightbox`、`setMenuOpen`、键盘事件和滚动观察器。首页没有灯箱元素，因此代码会先检查它是否存在。
@@ -20,7 +20,7 @@
 | `data/photos.js` | 保存照片资料，与页面结构分开 | 数组、对象、`id`、`src`、`date`、`category` |
 | `projects/*.html` | 每个分类一页，展示完整照片组 | `../` 相对路径、`figure`、灯箱按钮 |
 | `css/style.css` | 布局、颜色、动画和响应式 | 选择器、Grid、Flexbox、媒体查询 |
-| `js/main.js` | 用户交互 | DOM 查询、事件监听、函数、状态 class |
+| `js/main.js` | 动态渲染与用户交互 | DOM 创建、筛选、事件监听、函数、状态 class |
 | `images/` | 网站使用的摄影图片 | 路径和文件名大小写必须一致 |
 | `.openai/hosting.json` | Sites 静态托管配置 | `project_id` 绑定现有 Site，`dist` 是托管目录 |
 | `dist/` | 可预览的静态副本 | 不要只改这里，先改根目录源码再同步 |
@@ -33,10 +33,17 @@
 
 ## 第 22 课：照片数据层
 
-- `data/photos.js` 是网站的第一层照片数据。它先用一条真实记录说明“这张照片是什么”，而不是负责照片的视觉布局。
-- 第一条记录指向已经存在的 `images/portrait/portrait-01-1200.webp`。没有经过确认的拍摄日期保持为空，不编造地点、日期或器材资料。
-- `index.html` 会先加载 `data/photos.js`，再加载 `js/main.js`。这个顺序为后续用 JavaScript 读取照片资料、自动生成页面做好准备。
-- 本课暂时不把所有作品搬进数组，也不改写现有 Gallery。当前页面外观应保持不变；“动态生成 Gallery”和“按日期形成时间轴”属于后续课程。
+- `data/photos.js` 是网站的照片数据层，记录九张真实作品的路径、标题、分类与响应式图片信息，不负责视觉布局。
+- 没有经过确认的拍摄日期继续保留为空；`createPhotoCard()` 会跳过空日期，不编造地点、日期或器材资料。
+- `index.html` 会先加载 `data/photos.js`，再加载 `js/main.js`，因此主脚本能够读取照片资料并自动生成 Gallery。
+
+## 第 24 课：数据驱动 Gallery 与分类筛选
+
+- `createPhotoCard(photo)` 使用 `document.createElement()` 把一条照片数据转换成 `.photo-card`，并按数据是否存在决定要不要创建标题和日期元素。
+- `renderGallery(photoList)` 每次先清空旧内容，再逐张调用 `createPhotoCard()`；空数组会显示 `No photos found.`。
+- All、Street、Portrait、Documentary 与 Landscape 按钮通过 `filter()` 筛选同一个 `photos` 数组，所以连续切换不会叠加或重复卡片。
+- 仓库当前没有 Street 作品；保留课程要求的 Street 按钮用于真实演示空状态，但没有把 Documentary 照片错误改名或虚构 Street 素材。
+- 首页的动态 Gallery 是浏览全部照片的入口；三个独立项目页仍承担完整作品组与灯箱查看功能，不在首页保留第二套手写照片卡片。
 
 ## 现有交互与可访问性
 

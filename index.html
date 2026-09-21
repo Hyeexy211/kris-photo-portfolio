@@ -135,6 +135,7 @@
             <ul class="nav-links" id="nav-links">
                 <li><a href="#home">Home</a></li>
                 <li><a href="#work">Work</a></li>
+                <li><a href="#gallery">Gallery</a></li>
                 <li><a href="#about">About</a></li>
             </ul>
 
@@ -245,6 +246,38 @@
                     </a>
                 </article>
             </div>
+        </section>
+
+        <!-- 第 24 课：照片卡片由 data/photos.js 和 js/main.js 动态生成。 -->
+        <section id="gallery" class="dynamic-gallery-section" aria-labelledby="gallery-title">
+            <div class="section-header reveal">
+                <p class="section-label">Browse photographs</p>
+                <h2 id="gallery-title">Gallery</h2>
+            </div>
+
+            <div class="gallery-filters" aria-label="Filter photographs by category">
+                <button class="filter-button active" type="button" data-category="all" aria-pressed="true">
+                    All
+                </button>
+                <button class="filter-button" type="button" data-category="street" aria-pressed="false">
+                    Street
+                </button>
+                <button class="filter-button" type="button" data-category="portrait" aria-pressed="false">
+                    Portrait
+                </button>
+                <button class="filter-button" type="button" data-category="documentary" aria-pressed="false">
+                    Documentary
+                </button>
+                <button class="filter-button" type="button" data-category="landscape" aria-pressed="false">
+                    Landscape
+                </button>
+            </div>
+
+            <div
+                class="photo-gallery-grid"
+                id="photo-gallery"
+                aria-live="polite"
+            ></div>
         </section>
 
         <!-- About 保留原来的双栏介绍布局。 -->

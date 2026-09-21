@@ -1,28 +1,114 @@
 // ================================================================
-// 第 23 课：读取并遍历照片数据
-// photos 已经由 data/photos.js 创建，这里只读取数据，不生成 HTML。
+// 第 24 课：数据驱动 Gallery 与分类筛选
+// photos 已经由 data/photos.js 创建；这里负责把数据转换成页面元素。
 // ================================================================
 
-// 输出整个 photos 数组，确认 main.js 已经能够读取照片数据。
-console.log(photos);
+// 首页动态 Gallery 的容器；独立作品页没有这个元素，因此会安全跳过渲染。
+const galleryContainer = document.querySelector("#photo-gallery");
 
-// 数组索引从 0 开始，所以 photos[0] 代表第一张照片的数据对象。
-console.log(photos[0]);
+// 所有分类按钮使用相同的 click 处理逻辑。
+const filterButtons = document.querySelectorAll(".filter-button");
 
-// 在照片对象后写 .src，可以读取这张照片的图片路径。
-console.log(photos[0].src);
+// 根据一条照片数据创建并返回完整的 article 卡片。
+function createPhotoCard(photo) {
+    const card = document.createElement("article");
+    card.className = "photo-card";
+    card.dataset.id = photo.id;
+    card.dataset.category = photo.category;
 
-// length 会自动返回 photos 数组中一共有多少张照片。
-console.log(photos.length);
+    const image = document.createElement("img");
+    image.className = "dynamic-photo";
+    image.src = photo.src;
+    image.alt = photo.title || "Photography work";
+    image.loading = "lazy";
+    image.decoding = "async";
 
-// 数组最后一项的索引，比数组长度少 1。
-console.log(photos[photos.length - 1]);
+    // 数据提供响应式图片时继续复用现有 640 / 1200 / 1800 WebP。
+    if (photo.srcset) {
+        image.srcset = photo.srcset;
+        image.sizes = "(max-width: 680px) calc(100vw - 40px), (max-width: 1024px) calc((100vw - 120px) / 2), calc((100vw - 144px) / 3)";
+    }
 
-// i 从 0 开始；只要 i 仍小于照片总数，就继续读取下一张照片。
-for (let i = 0; i < photos.length; i++) {
-    // photos[i] 是当前照片对象，.src 是当前照片的图片路径。
-    console.log(photos[i].src);
+    // 固有尺寸让浏览器在图片下载前预留空间，减少页面跳动。
+    if (photo.width && photo.height) {
+        image.width = photo.width;
+        image.height = photo.height;
+    }
+
+    card.appendChild(image);
+
+    // title 和 date 都为空时不创建空白资料区。
+    if (photo.title || photo.date) {
+        const photoInfo = document.createElement("div");
+        photoInfo.className = "photo-info";
+
+        if (photo.title) {
+            const title = document.createElement("h3");
+            title.className = "photo-title";
+            title.textContent = photo.title;
+            photoInfo.appendChild(title);
+        }
+
+        if (photo.date) {
+            const date = document.createElement("p");
+            date.className = "photo-date";
+            date.textContent = photo.date;
+            photoInfo.appendChild(date);
+        }
+
+        card.appendChild(photoInfo);
+    }
+
+    return card;
 }
+
+// 清空旧内容，再根据传入的数组重新绘制 Gallery。
+function renderGallery(photoList) {
+    // main.js 也被独立作品页复用；那些页面没有动态 Gallery 容器。
+    if (!galleryContainer) return;
+
+    galleryContainer.innerHTML = "";
+
+    if (photoList.length === 0) {
+        const emptyMessage = document.createElement("p");
+        emptyMessage.className = "gallery-empty";
+        emptyMessage.textContent = "No photos found.";
+        galleryContainer.appendChild(emptyMessage);
+        return;
+    }
+
+    photoList.forEach((photo) => {
+        const card = createPhotoCard(photo);
+        galleryContainer.appendChild(card);
+    });
+}
+
+// 点击按钮时更新唯一 active 状态，并用 filter() 取得对应分类。
+filterButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+        const category = button.dataset.category;
+
+        filterButtons.forEach((filterButton) => {
+            const isActive = filterButton === button;
+            filterButton.classList.toggle("active", isActive);
+            filterButton.setAttribute("aria-pressed", String(isActive));
+        });
+
+        if (category === "all") {
+            renderGallery(photos);
+            return;
+        }
+
+        const filteredPhotos = photos.filter((photo) => {
+            return photo.category === category;
+        });
+
+        renderGallery(filteredPhotos);
+    });
+});
+
+// 首次加载默认显示全部照片，对应 HTML 中默认 active 的 All 按钮。
+renderGallery(photos);
 
 // ================================================================
 // 1. 取得页面元素

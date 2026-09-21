@@ -278,18 +278,21 @@ Possible photo data:
 Tasks:
 
 - [x] Define initial photograph data structure
-- [ ] Separate photo data from page markup
-- [ ] Load gallery dynamically
-- [ ] Define category system
+- [x] Separate photo data from page markup
+- [x] Load gallery dynamically
+- [x] Define category system
 - [ ] Define tag system
 - [ ] Define metadata system
 
 This phase may initially use JSON before introducing a database.
 
 Lesson 22 starts this phase with `data/photos.js` and one real repository image.
-The initial record intentionally contains only `id`, `src`, `date`, and
-`category`; its date remains empty until verified. The existing HTML galleries
-are still static, so data-driven rendering remains a later task.
+Lesson 24 expands that data to the nine existing portfolio photographs and uses
+`createPhotoCard()` plus `renderGallery()` to build a filterable homepage
+Gallery. Unverified dates remain empty and are not rendered. The category
+filters preserve the repository's real Portrait, Documentary and Landscape
+collections. The requested Street filter remains available as an honest empty
+state until real Street work is added.
 
 ---
 
