@@ -132,9 +132,9 @@ Make viewing individual photographs immersive.
 - [x] Click photograph to open
 - [x] Full-screen viewer
 - [x] Close button and Escape to close
-- [ ] Previous photograph
-- [ ] Next photograph
-- [ ] Keyboard navigation between photographs
+- [x] Previous photograph
+- [x] Next photograph
+- [x] Keyboard navigation between photographs
 - [ ] Mobile swipe support
 
 ## Photo Information

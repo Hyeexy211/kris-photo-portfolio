@@ -304,7 +304,8 @@ nav a:focus-visible::after {
 /* 所有重要交互元素在键盘聚焦时显示清晰轮廓。 */
 .menu-toggle:focus-visible,
 .gallery-item:focus-visible,
-.lightbox-close:focus-visible {
+.lightbox-close:focus-visible,
+.lightbox-nav:focus-visible {
     /* 使用白色外轮廓，在深色和图片背景上都容易辨认。 */
     outline: 2px solid var(--color-on-dark);
 
@@ -767,6 +768,48 @@ section p {
     cursor: pointer;
 }
 
+/* 左右切换按钮悬浮在灯箱两侧，不挤压中间照片。 */
+.lightbox-nav {
+    /* absolute 让按钮相对整个灯箱定位。 */
+    position: absolute;
+
+    /* 把按钮的上边缘放到视口垂直中点。 */
+    top: 50%;
+
+    /* 再向上移动自身高度的一半，实现真正垂直居中。 */
+    transform: translateY(-50%);
+
+    /* 提供至少 48 像素的鼠标和触摸点击区域。 */
+    min-width: 48px;
+    min-height: 48px;
+
+    /* 去掉浏览器按钮默认外观，保持摄影网站的克制风格。 */
+    border: 0;
+    background: transparent;
+
+    /* 使用白色大箭头，在深色遮罩上保持清晰。 */
+    color: var(--color-on-dark);
+    font-size: 52px;
+    font-weight: 200;
+    line-height: 1;
+
+    /* 鼠标经过时提示这是可点击的控制按钮。 */
+    cursor: pointer;
+
+    /* 保证按钮位于大图之上。 */
+    z-index: 1;
+}
+
+/* 上一张按钮贴近灯箱左边缘。 */
+.lightbox-prev {
+    left: 24px;
+}
+
+/* 下一张按钮贴近灯箱右边缘。 */
+.lightbox-next {
+    right: 24px;
+}
+
 
 /* ================================================================
    9. 页脚
@@ -1005,6 +1048,21 @@ footer {
 
         /* 距离右侧 20px。 */
         right: var(--page-padding-mobile);
+    }
+
+    /* 手机窄屏上把左右按钮收进边缘，并稍微缩小箭头。 */
+    .lightbox-nav {
+        min-width: 44px;
+        min-height: 44px;
+        font-size: 44px;
+    }
+
+    .lightbox-prev {
+        left: 2px;
+    }
+
+    .lightbox-next {
+        right: 2px;
     }
 
     /* 缩小手机端页脚左右留白。 */

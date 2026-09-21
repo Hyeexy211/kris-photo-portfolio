@@ -3,8 +3,8 @@
 // document.querySelector 会取到第一个匹配的元素，querySelectorAll 会取到全部匹配元素。
 // ================================================================
 
-// 找到当前页面的可点击照片按钮；首页只有作品卡片时，这个列表为空。
-const galleryItems = document.querySelectorAll(".gallery-item");
+// 找到当前页面所有带有 lightbox-trigger 标签的照片按钮。
+const lightboxTriggers = document.querySelectorAll(".lightbox-trigger");
 
 // 找到共用的大图灯箱容器。
 const lightbox = document.querySelector("#lightbox");
@@ -14,6 +14,10 @@ const lightboxImage = document.querySelector("#lightbox-image");
 
 // 找到灯箱右上角的关闭按钮。
 const lightboxClose = document.querySelector("#lightbox-close");
+
+// 找到灯箱左右两侧的上一张和下一张按钮。
+const lightboxPrev = document.querySelector("#lightbox-prev");
+const lightboxNext = document.querySelector("#lightbox-next");
 
 // 找到手机导航的开关按钮。
 const menuToggle = document.querySelector("#menu-toggle");
@@ -26,6 +30,9 @@ const navItems = document.querySelectorAll(".nav-links a");
 
 // 保存打开灯箱之前获得焦点的元素，关闭时把焦点还给它。
 let lightboxTrigger = null;
+
+// 记录灯箱当前显示的是 lightboxTriggers 中的第几张照片。
+let currentImageIndex = 0;
 
 // ================================================================
 // 2. 共用的覆盖层状态
@@ -43,22 +50,35 @@ function updatePageScroll() {
 
 // ================================================================
 // 3. 图片灯箱
-// 点击作品时打开，点击关闭按钮或遮罩、按 Escape 时关闭。
+// 点击作品时打开；按钮、方向键或键盘负责切换与关闭。
 // ================================================================
 
-// 函数参数 trigger 是被点击的作品按钮。
-function openLightbox(trigger) {
-    // 在按钮里找到这件作品对应的图片。
+// 根据索引找出照片，并把它的地址和替代文字放进灯箱。
+function showLightboxImage(index) {
+    // 没有可查看的照片时立即结束，避免访问不存在的数组成员。
+    if (lightboxTriggers.length === 0) return;
+
+    // 取余运算让最后一张的下一张回到开头，第一张的上一张回到末尾。
+    currentImageIndex = (index + lightboxTriggers.length) % lightboxTriggers.length;
+
+    // 取得当前位置对应的照片按钮和其中的图片。
+    const trigger = lightboxTriggers[currentImageIndex];
     const image = trigger.querySelector("img");
+
+    // 使用作品按钮指定的大图；没有指定时才回退到当前响应式图片。
+    lightboxImage.src = trigger.dataset.fullSrc || image.currentSrc || image.src;
+
+    // 把原图的替代文字同步给灯箱大图。
+    lightboxImage.alt = image.alt;
+}
+
+// 函数参数 trigger 是被点击的作品按钮，index 是它在照片列表中的位置。
+function openLightbox(trigger, index) {
+    // 按照被点击照片的索引更新灯箱内容和当前状态。
+    showLightboxImage(index);
 
     // 记录触发按钮，稍后关闭灯箱时恢复键盘焦点。
     lightboxTrigger = trigger;
-
-    // 使用作品按钮指定的大图；没有指定时才回退到当前缩略图。
-    lightboxImage.src = trigger.dataset.fullSrc || image.currentSrc || image.src;
-
-    // 把缩略图的替代文字也复制给灯箱大图。
-    lightboxImage.alt = image.alt;
 
     // active 与 CSS 的 .lightbox.active 对应，负责显示灯箱。
     lightbox.classList.add("active");
@@ -100,11 +120,17 @@ function closeLightbox() {
     lightboxTrigger = null;
 }
 
-// 对项目页中的每张照片绑定同一种点击行为。
-galleryItems.forEach((item) => {
+// 对项目页中的每张 lightbox-trigger 照片绑定同一种点击行为。
+lightboxTriggers.forEach((trigger, index) => {
     // button 原生支持鼠标点击，以及键盘 Enter 和 Space 激活。
-    item.addEventListener("click", () => openLightbox(item));
+    trigger.addEventListener("click", () => openLightbox(trigger, index));
 });
+
+// 点击上一张时显示当前索引前一项；showLightboxImage 会处理首尾循环。
+lightboxPrev?.addEventListener("click", () => showLightboxImage(currentImageIndex - 1));
+
+// 点击下一张时显示当前索引后一项；showLightboxImage 会处理首尾循环。
+lightboxNext?.addEventListener("click", () => showLightboxImage(currentImageIndex + 1));
 
 // 关闭按钮被点击时调用同一个关闭函数。
 lightboxClose?.addEventListener("click", closeLightbox);
@@ -161,7 +187,7 @@ window.addEventListener("resize", () => {
 
 // ================================================================
 // 5. 键盘操作
-// Escape 关闭当前覆盖层；Tab 在灯箱中维持模态焦点。
+// Escape 关闭当前覆盖层；方向键切换照片；Tab 维持模态焦点。
 // ================================================================
 
 // 在 document 上监听按键，无论当前焦点在哪个元素都能响应 Escape。
@@ -177,13 +203,37 @@ document.addEventListener("keydown", (event) => {
             return;
         }
 
-        // 当前灯箱里只有一个可聚焦元素，即关闭按钮。
-        if (event.key === "Tab") {
-            // 阻止焦点 Tab 到背后的导航或作品。
+        // 右方向键显示下一张照片，并阻止页面发生默认滚动。
+        if (event.key === "ArrowRight") {
             event.preventDefault();
+            showLightboxImage(currentImageIndex + 1);
+            return;
+        }
 
-            // 无论正向还是反向 Tab，都让焦点留在关闭按钮。
-            lightboxClose.focus();
+        // 左方向键显示上一张照片，并阻止页面发生默认滚动。
+        if (event.key === "ArrowLeft") {
+            event.preventDefault();
+            showLightboxImage(currentImageIndex - 1);
+            return;
+        }
+
+        // 灯箱内的全部可聚焦按钮组成一个循环列表。
+        if (event.key === "Tab") {
+            const lightboxFocusItems = [lightboxClose, lightboxPrev, lightboxNext].filter(Boolean);
+            const firstItem = lightboxFocusItems[0];
+            const lastItem = lightboxFocusItems[lightboxFocusItems.length - 1];
+
+            // Shift+Tab 从第一个按钮向前时，跳到最后一个按钮。
+            if (event.shiftKey && document.activeElement === firstItem) {
+                event.preventDefault();
+                lastItem.focus();
+            }
+
+            // 普通 Tab 从最后一个按钮向后时，回到第一个按钮。
+            if (!event.shiftKey && document.activeElement === lastItem) {
+                event.preventDefault();
+                firstItem.focus();
+            }
         }
 
         // 灯箱打开时不再处理菜单快捷键。

@@ -48,10 +48,10 @@
             </div>
         </section>
 
-        <!-- figure 表示一张独立作品；button 沿用已有灯箱，支持鼠标和键盘打开。 -->
+        <!-- figure 表示一张独立作品；lightbox-trigger 让共用脚本识别可放大的照片。 -->
         <section class="project-gallery" aria-label="Documentary photographs">
             <figure class="project-image">
-                <button class="gallery-item" type="button" data-full-src="../images/documentary/documentary-01-1800.webp">
+                <button class="gallery-item lightbox-trigger" type="button" data-full-src="../images/documentary/documentary-01-1800.webp">
                     <img
                         src="../images/documentary/documentary-01-1200.webp"
                         srcset="../images/documentary/documentary-01-640.webp 640w, ../images/documentary/documentary-01-1200.webp 1200w, ../images/documentary/documentary-01-1800.webp 1800w"
@@ -64,7 +64,7 @@
                 </button>
             </figure>
             <figure class="project-image">
-                <button class="gallery-item" type="button" data-full-src="../images/documentary/documentary-02-1800.webp">
+                <button class="gallery-item lightbox-trigger" type="button" data-full-src="../images/documentary/documentary-02-1800.webp">
                     <img
                         src="../images/documentary/documentary-02-1200.webp"
                         srcset="../images/documentary/documentary-02-640.webp 640w, ../images/documentary/documentary-02-1200.webp 1200w, ../images/documentary/documentary-02-1800.webp 1800w"
@@ -77,7 +77,7 @@
                 </button>
             </figure>
             <figure class="project-image">
-                <button class="gallery-item" type="button" data-full-src="../images/documentary/documentary-03-1800.webp">
+                <button class="gallery-item lightbox-trigger" type="button" data-full-src="../images/documentary/documentary-03-1800.webp">
                     <img
                         src="../images/documentary/documentary-03-1200.webp"
                         srcset="../images/documentary/documentary-03-640.webp 640w, ../images/documentary/documentary-03-1200.webp 1200w, ../images/documentary/documentary-03-1800.webp 1800w"
@@ -100,7 +100,9 @@
 
     <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" aria-hidden="true">
         <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Close photo viewer">×</button>
+        <button class="lightbox-nav lightbox-prev" id="lightbox-prev" type="button" aria-label="View previous photograph">‹</button>
         <img class="lightbox-image" id="lightbox-image" alt="">
+        <button class="lightbox-nav lightbox-next" id="lightbox-next" type="button" aria-label="View next photograph">›</button>
     </div>
 
     <footer><p>© 2026 Kris Photography</p></footer>
