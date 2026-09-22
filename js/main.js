@@ -54,10 +54,46 @@ function getFilteredPhotos() {
     return photos.filter((photo) => photo.category === activeCategory);
 }
 
+// ================================================================
+// 第 26 课：根据拍摄日期自动排序照片
+// 筛选后的照片会先复制、排序，再交给 Gallery 和灯箱使用。
+// ================================================================
+
+// 把严格的 YYYY-MM-DD 转成时间值；缺失或无效日期统一返回 null。
+function getPhotoDateValue(photo) {
+    if (!photo || typeof photo.date !== "string") return null;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(photo.date)) return null;
+
+    const parsedDate = new Date(`${photo.date}T00:00:00Z`);
+
+    if (Number.isNaN(parsedDate.getTime())) return null;
+    if (parsedDate.toISOString().slice(0, 10) !== photo.date) return null;
+
+    return parsedDate.getTime();
+}
+
+// 返回一个按日期从新到旧排列的新数组，不改变传入数组的原始顺序。
+function sortPhotosByDate(photoList) {
+    return [...photoList].sort((photoA, photoB) => {
+        const dateA = getPhotoDateValue(photoA);
+        const dateB = getPhotoDateValue(photoB);
+
+        // 没有有效日期的照片放在最后，并保留它们原本的相对顺序。
+        if (dateA === null && dateB === null) return 0;
+        if (dateA === null) return 1;
+        if (dateB === null) return -1;
+
+        return dateB - dateA;
+    });
+}
+
 // 用传入数组一次替换 Gallery 内容，避免静态卡片与动态卡片叠加。
 function renderGallery(photoList) {
     // main.js 也被独立作品页复用；那些页面没有动态 Gallery 容器。
     if (!galleryContainer) return;
+
+    // 每次渲染都使用排序副本；photos 与筛选结果本身不会被 sort() 修改。
+    const sortedPhotos = sortPhotosByDate(photoList);
 
     // 替换 DOM 前停止观察旧卡片，避免筛选多次后留下已经移除的观察目标。
     if (revealObserver) {
@@ -66,9 +102,9 @@ function renderGallery(photoList) {
         });
     }
 
-    renderedPhotos = photoList;
+    renderedPhotos = sortedPhotos;
 
-    if (photoList.length === 0) {
+    if (sortedPhotos.length === 0) {
         const emptyMessage = document.createElement("p");
         emptyMessage.className = "gallery-empty";
         emptyMessage.textContent = "No photos found.";
@@ -78,7 +114,7 @@ function renderGallery(photoList) {
 
     const galleryFragment = document.createDocumentFragment();
 
-    photoList.forEach((photo) => {
+    sortedPhotos.forEach((photo) => {
         galleryFragment.appendChild(createPhotoCard(photo));
     });
 
