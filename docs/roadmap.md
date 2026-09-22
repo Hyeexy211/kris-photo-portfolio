@@ -281,6 +281,12 @@ Tasks:
 - [x] Separate photo data from page markup
 - [x] Load gallery dynamically
 - [x] Define category system
+- [x] Define the Collection data structure
+- [x] Separate Collection data from homepage markup
+- [x] Render Work cards from ordered Collection data
+- [x] Link Photo to Collection with `collectionId`
+- [x] Add a shared Content Service query layer
+- [x] Add one slug-driven Collection page template
 - [ ] Define tag system
 - [ ] Define metadata system
 
@@ -293,6 +299,64 @@ Gallery. Unverified dates remain empty and are not rendered. The category
 filters preserve the repository's real Portrait, Documentary and Landscape
 collections. The requested Street filter remains available as an honest empty
 state until real Street work is added.
+
+The CMS foundation keeps the existing static hosting model while introducing a
+second content entity. `data/collections.js` owns Collection records,
+`data/photos.js` owns Photo records, and `photo.collectionId` creates the
+one-to-many relationship without copying Photo objects into a Collection. The
+public UI reads both through `js/content-service.js`. Existing static pages in
+`projects/` remain available for compatibility while new Work cards use the
+shared `collection.html?slug=...` template.
+
+Photos without a `collectionId` are allowed and can still appear in the main
+Gallery. They simply do not appear in a Collection query.
+
+---
+
+# CMS Course Route: Lessons 27+
+
+This course route extends the completed static-portfolio lessons without
+deleting the earlier phase history.
+
+## Content Foundation
+
+- [x] Lesson 27 — Content Architecture: separate Collection, Photo, UI and storage responsibilities
+- [x] Lesson 28 — Collections Data Layer: migrate the three real Work records to `data/collections.js`
+- [x] Lesson 29 — Dynamic Work Rendering: use `createWorkCard()` and `renderWorks()`
+- [x] Lesson 30 — Dynamic Collection Page: render one template from a URL slug
+- [x] Lesson 31 — Photo / Collection Relationship: add nullable `photo.collectionId`
+- [x] Lesson 32 — Content Service Layer: centralize public content queries
+
+## Admin Prototype
+
+- [ ] Lesson 33 — Admin Dashboard: add a read-only overview before editing features
+- [ ] Lesson 34 — Work CRUD: prototype Collection create, read, update and delete
+- [ ] Lesson 35 — Gallery CRUD: prototype Photo create, read, update and delete
+- [ ] Lesson 36 — Admin Forms: validation, errors, cancel/reset and accessible form states
+
+Lessons 34–36 may use a LocalStorage Adapter for learning and prototyping. That
+adapter must stay behind the Content Service boundary and must be clearly
+labelled as browser-local prototype storage, not a production CMS database.
+
+## Production Content System
+
+- [ ] Lesson 37 — Backend Introduction: choose responsibilities and API boundaries
+- [ ] Lesson 38 — Database: persist Collection and Photo records
+- [ ] Lesson 39 — Image Storage: upload derivatives and originals outside Git
+- [ ] Lesson 40 — Real Collection CRUD: connect Work management to the backend
+- [ ] Lesson 41 — Real Gallery CRUD: connect Photo management to the backend
+- [ ] Lesson 42 — Admin Authentication: protect all write operations
+
+Do not expose production write credentials in browser JavaScript. Database,
+object-storage and authentication work begins only after the public data model
+and prototype UI are stable.
+
+## Discovery and Viewing
+
+- [ ] Lesson 43 — Advanced Gallery Filters
+- [ ] Lesson 44 — Timeline
+- [ ] Lesson 45 — Search
+- [ ] Lesson 46+ — Continue performance, accessibility, SEO, sharing and photography-viewing improvements
 
 ---
 
@@ -492,8 +556,9 @@ Make the website publicly accessible.
 The local `origin` configuration and `origin/main` tracking show that this
 checkout is connected to GitHub, but do not confirm that GitHub Pages is
 configured or that the site is live.
-The current working tree has uncommitted image work, so the release checklist
-remains open.
+Release readiness must be checked from the current checkout. Source or `dist/`
+changes are not a deployment until they are reviewed, committed, pushed and
+verified at the configured public URL.
 
 ## Later Production Improvements
 
@@ -574,23 +639,28 @@ These are optional and should not distract from the core portfolio.
 Current development priority:
 
 ```text
-Phase 5
-Finish the web image export and verify loading behavior
+Lessons 27-32
+Verify and publish the Collection / Photo content foundation
     ↓
-Phase 12
-Publish and test the first static release
+Lesson 33
+Build a read-only Admin Dashboard shell
     ↓
-Phases 2-4 and later
-Add optional portfolio and viewing features as needed
+Lessons 34-36
+Add LocalStorage-backed CRUD as an explicitly labelled prototype
+    ↓
+Lessons 37-42
+Choose and connect production backend, storage and authentication
 ```
 
-Do not rush into backend development yet.
+The static release, image-performance checks and live-site verification remain
+open operational work. CMS lessons must not bypass them or introduce a backend
+before the public data model is stable.
 
 The immediate objective is:
 
-> Complete the image export: correct dimensions, reasonable file sizes,
-> meaningful descriptions, and verified lazy loading. Then review and push
-> the site and confirm its public release.
+> Verify the data-driven Work cards, Collection template, Photo relationships,
+> Content Service boundary and source-to-`dist/` parity. Then review the branch
+> before beginning the Admin prototype.
 
 ---
 

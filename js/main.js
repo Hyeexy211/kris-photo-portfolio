@@ -1,5 +1,5 @@
 // ================================================================
-// 第 25 课：让 photos.js 正式接管首页 Gallery
+// 第 25 课：让 Photo 数据正式接管首页 Gallery
 // 数据、渲染、筛选、动态灯箱入口分别由小函数负责。
 // ================================================================
 
@@ -49,9 +49,11 @@ function createPhotoCard(photo) {
 
 // 根据 activeCategory 返回唯一一份应该显示的数据，不在 DOM 中另外保存照片资料。
 function getFilteredPhotos() {
-    if (activeCategory === "all") return photos;
+    const allPhotos = contentService.getPhotos();
 
-    return photos.filter((photo) => photo.category === activeCategory);
+    if (activeCategory === "all") return allPhotos;
+
+    return allPhotos.filter((photo) => photo.category === activeCategory);
 }
 
 // ================================================================
@@ -92,7 +94,7 @@ function renderGallery(photoList) {
     // main.js 也被独立作品页复用；那些页面没有动态 Gallery 容器。
     if (!galleryContainer) return;
 
-    // 每次渲染都使用排序副本；photos 与筛选结果本身不会被 sort() 修改。
+    // 每次渲染都使用排序副本；Content Service 返回的数据不会被 sort() 修改。
     const sortedPhotos = sortPhotosByDate(photoList);
 
     // 替换 DOM 前停止观察旧卡片，避免筛选多次后留下已经移除的观察目标。
@@ -124,7 +126,7 @@ function renderGallery(photoList) {
     observeRevealElements(galleryContainer);
 }
 
-// 分类按钮只绑定一次；每次点击先更新状态，再从 photos 重新筛选并渲染。
+// 分类按钮只绑定一次；每次点击先更新状态，再从 Content Service 查询并渲染。
 function setupGalleryFilters() {
     filterButtons.forEach((button) => {
         button.addEventListener("click", () => {
@@ -148,7 +150,7 @@ function setupGalleryLightbox() {
 
         if (!trigger || !galleryContainer.contains(trigger)) return;
 
-        const photo = photos.find((item) => item.id === trigger.dataset.id);
+        const photo = contentService.getPhotos().find((item) => item.id === trigger.dataset.id);
 
         if (!photo) return;
 
@@ -208,13 +210,13 @@ const navItems = document.querySelectorAll(".nav-links a");
 // 保存打开灯箱之前获得焦点的元素，关闭时把焦点还给它。
 let lightboxTrigger = null;
 
-// 灯箱当前浏览的数据列表：项目页来自 DOM，首页来自 photos.js 的筛选结果。
+// 灯箱当前浏览的数据列表：项目页来自 DOM，首页来自 Content Service 的筛选结果。
 let activeLightboxPhotos = [];
 
 // 记录灯箱当前显示的是 activeLightboxPhotos 中的第几张照片。
 let currentImageIndex = 0;
 
-// 把独立项目页现有 DOM 转成与 photos.js 相同的最小照片数据格式。
+// 把独立项目页现有 DOM 转成与 Content Service 相同的最小照片数据格式。
 const staticLightboxPhotos = [...lightboxTriggers].map((trigger) => {
     const image = trigger.querySelector("img");
 
@@ -252,7 +254,7 @@ function showLightboxImage(index) {
     // 取余运算让最后一张的下一张回到开头，第一张的上一张回到末尾。
     currentImageIndex = (index + activeLightboxPhotos.length) % activeLightboxPhotos.length;
 
-    // 首页直接读取 photos.js；独立作品页读取上面从 DOM 整理出的同形数据。
+    // 首页读取 Content Service；独立作品页读取上面从 DOM 整理出的同形数据。
     const photo = activeLightboxPhotos[currentImageIndex];
 
     // 优先显示数据中的大图路径；没有提供时才回退到卡片图片。
@@ -262,7 +264,7 @@ function showLightboxImage(index) {
     lightboxImage.alt = photo.title || "Photography work";
 }
 
-// 同一个 openLightbox 同时接收首页 photos.js 数据与项目页整理出的照片数据。
+// 同一个 openLightbox 同时接收首页 Content Service 数据与项目页整理出的照片数据。
 function openLightbox(photo, trigger, photoList) {
     if (!lightbox || !lightboxClose || photoList.length === 0) return;
 

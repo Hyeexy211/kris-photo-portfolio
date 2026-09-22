@@ -13,6 +13,7 @@ const photos = [
         title: "A rain-darkened window frames trees and a passing car",
         date: "",
         category: "portrait",
+        collectionId: "portrait",
         width: 1200,
         height: 1800
     },
@@ -24,6 +25,7 @@ const photos = [
         title: "Rain and trees seen through a softly lit window",
         date: "",
         category: "portrait",
+        collectionId: "portrait",
         width: 1200,
         height: 1800
     },
@@ -35,6 +37,7 @@ const photos = [
         title: "A glowing wall lamp beside a rain-covered garden window",
         date: "",
         category: "portrait",
+        collectionId: "portrait",
         width: 1200,
         height: 1800
     },
@@ -46,6 +49,7 @@ const photos = [
         title: "White flowers and a veiled mannequin beside an old window",
         date: "",
         category: "documentary",
+        collectionId: "documentary",
         width: 1200,
         height: 1800
     },
@@ -57,6 +61,7 @@ const photos = [
         title: "Plants and a chandelier in a weathered indoor courtyard",
         date: "",
         category: "documentary",
+        collectionId: "documentary",
         width: 1200,
         height: 800
     },
@@ -68,6 +73,7 @@ const photos = [
         title: "Jewelry, mirrors and a painted hand arranged on a table",
         date: "",
         category: "documentary",
+        collectionId: "documentary",
         width: 1200,
         height: 800
     },
@@ -79,6 +85,7 @@ const photos = [
         title: "City lights beneath a pink dusk sky and silhouetted branches",
         date: "",
         category: "landscape",
+        collectionId: "landscape",
         width: 1200,
         height: 511
     },
@@ -90,6 +97,7 @@ const photos = [
         title: "Crescent moon above distant mountains in a purple evening sky",
         date: "",
         category: "landscape",
+        collectionId: "landscape",
         width: 1200,
         height: 1800
     },
@@ -101,6 +109,7 @@ const photos = [
         title: "Stone steps lead through a wooden gate framed by pink flowers",
         date: "",
         category: "landscape",
+        collectionId: "landscape",
         width: 1200,
         height: 600
     }
