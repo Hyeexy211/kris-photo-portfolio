@@ -1,6 +1,6 @@
 // ================================================================
-// 第 24 课：数据驱动 Gallery 与分类筛选
-// photos 已经由 data/photos.js 创建；这里负责把数据转换成页面元素。
+// 第 25 课：让 photos.js 正式接管首页 Gallery
+// 数据、渲染、筛选、动态灯箱入口分别由小函数负责。
 // ================================================================
 
 // 首页动态 Gallery 的容器；独立作品页没有这个元素，因此会安全跳过渲染。
@@ -9,15 +9,23 @@ const galleryContainer = document.querySelector("#photo-gallery");
 // 所有分类按钮使用相同的 click 处理逻辑。
 const filterButtons = document.querySelectorAll(".filter-button");
 
-// 根据一条照片数据创建并返回完整的 article 卡片。
+// 当前分类是 Gallery 的唯一筛选状态；初始值与 HTML 的 All 按钮一致。
+let activeCategory = "all";
+
+// 保存当前真正显示在 Gallery 中的照片，供灯箱上一张 / 下一张使用。
+let renderedPhotos = [];
+
+// 根据一条照片数据创建与原静态 Gallery 完全相同的可点击按钮。
 function createPhotoCard(photo) {
-    const card = document.createElement("article");
-    card.className = "photo-card";
+    const card = document.createElement("button");
+    card.className = "gallery-item lightbox-trigger reveal";
+    card.type = "button";
     card.dataset.id = photo.id;
     card.dataset.category = photo.category;
+    card.dataset.fullSrc = photo.fullSrc || photo.src;
+    card.setAttribute("aria-label", `Open ${photo.title || "photography work"}`);
 
     const image = document.createElement("img");
-    image.className = "dynamic-photo";
     image.src = photo.src;
     image.alt = photo.title || "Photography work";
     image.loading = "lazy";
@@ -26,7 +34,7 @@ function createPhotoCard(photo) {
     // 数据提供响应式图片时继续复用现有 640 / 1200 / 1800 WebP。
     if (photo.srcset) {
         image.srcset = photo.srcset;
-        image.sizes = "(max-width: 680px) calc(100vw - 40px), (max-width: 1024px) calc((100vw - 120px) / 2), calc((100vw - 144px) / 3)";
+        image.sizes = "(max-width: 768px) calc(100vw - 40px), calc((100vw - 116px) / 2)";
     }
 
     // 固有尺寸让浏览器在图片下载前预留空间，减少页面跳动。
@@ -36,86 +44,107 @@ function createPhotoCard(photo) {
     }
 
     card.appendChild(image);
-
-    // title 和 date 都为空时不创建空白资料区。
-    if (photo.title || photo.date) {
-        const photoInfo = document.createElement("div");
-        photoInfo.className = "photo-info";
-
-        if (photo.title) {
-            const title = document.createElement("h3");
-            title.className = "photo-title";
-            title.textContent = photo.title;
-            photoInfo.appendChild(title);
-        }
-
-        if (photo.date) {
-            const date = document.createElement("p");
-            date.className = "photo-date";
-            date.textContent = photo.date;
-            photoInfo.appendChild(date);
-        }
-
-        card.appendChild(photoInfo);
-    }
-
     return card;
 }
 
-// 清空旧内容，再根据传入的数组重新绘制 Gallery。
+// 根据 activeCategory 返回唯一一份应该显示的数据，不在 DOM 中另外保存照片资料。
+function getFilteredPhotos() {
+    if (activeCategory === "all") return photos;
+
+    return photos.filter((photo) => photo.category === activeCategory);
+}
+
+// 用传入数组一次替换 Gallery 内容，避免静态卡片与动态卡片叠加。
 function renderGallery(photoList) {
     // main.js 也被独立作品页复用；那些页面没有动态 Gallery 容器。
     if (!galleryContainer) return;
 
-    galleryContainer.innerHTML = "";
+    // 替换 DOM 前停止观察旧卡片，避免筛选多次后留下已经移除的观察目标。
+    if (revealObserver) {
+        galleryContainer.querySelectorAll(".reveal").forEach((element) => {
+            revealObserver.unobserve(element);
+        });
+    }
+
+    renderedPhotos = photoList;
 
     if (photoList.length === 0) {
         const emptyMessage = document.createElement("p");
         emptyMessage.className = "gallery-empty";
         emptyMessage.textContent = "No photos found.";
-        galleryContainer.appendChild(emptyMessage);
+        galleryContainer.replaceChildren(emptyMessage);
         return;
     }
 
+    const galleryFragment = document.createDocumentFragment();
+
     photoList.forEach((photo) => {
-        const card = createPhotoCard(photo);
-        galleryContainer.appendChild(card);
+        galleryFragment.appendChild(createPhotoCard(photo));
+    });
+
+    galleryContainer.replaceChildren(galleryFragment);
+
+    // render 后把新建的 .reveal 交给同一个 Observer，不重复创建观察器。
+    observeRevealElements(galleryContainer);
+}
+
+// 分类按钮只绑定一次；每次点击先更新状态，再从 photos 重新筛选并渲染。
+function setupGalleryFilters() {
+    filterButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            activeCategory = button.dataset.category;
+
+            filterButtons.forEach((filterButton) => {
+                const isActive = filterButton === button;
+                filterButton.classList.toggle("active", isActive);
+                filterButton.setAttribute("aria-pressed", String(isActive));
+            });
+
+            renderGallery(getFilteredPhotos());
+        });
     });
 }
 
-// 点击按钮时更新唯一 active 状态，并用 filter() 取得对应分类。
-filterButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-        const category = button.dataset.category;
+// 在持久存在的容器上委托点击，重新渲染后无需给每张卡片重复绑定事件。
+function setupGalleryLightbox() {
+    galleryContainer.addEventListener("click", (event) => {
+        const trigger = event.target.closest(".lightbox-trigger");
 
-        filterButtons.forEach((filterButton) => {
-            const isActive = filterButton === button;
-            filterButton.classList.toggle("active", isActive);
-            filterButton.setAttribute("aria-pressed", String(isActive));
-        });
+        if (!trigger || !galleryContainer.contains(trigger)) return;
 
-        if (category === "all") {
-            renderGallery(photos);
-            return;
-        }
+        const photo = photos.find((item) => item.id === trigger.dataset.id);
 
-        const filteredPhotos = photos.filter((photo) => {
-            return photo.category === category;
-        });
+        if (!photo) return;
 
-        renderGallery(filteredPhotos);
+        openLightbox(photo, trigger, renderedPhotos);
     });
-});
+}
 
-// 首次加载默认显示全部照片，对应 HTML 中默认 active 的 All 按钮。
-renderGallery(photos);
+// 首页存在 Gallery 时才初始化；独立作品页继续使用自己的静态照片结构。
+function initGallery() {
+    if (!galleryContainer) return;
+
+    // 以 HTML 当前的 active 按钮为准，避免初始视觉与 JavaScript 状态不同步。
+    const activeButton = [...filterButtons].find((button) => button.classList.contains("active"));
+    activeCategory = activeButton?.dataset.category || "all";
+
+    filterButtons.forEach((filterButton) => {
+        const isActive = filterButton.dataset.category === activeCategory;
+        filterButton.classList.toggle("active", isActive);
+        filterButton.setAttribute("aria-pressed", String(isActive));
+    });
+
+    setupGalleryFilters();
+    setupGalleryLightbox();
+    renderGallery(getFilteredPhotos());
+}
 
 // ================================================================
 // 1. 取得页面元素
 // document.querySelector 会取到第一个匹配的元素，querySelectorAll 会取到全部匹配元素。
 // ================================================================
 
-// 找到当前页面所有带有 lightbox-trigger 标签的照片按钮。
+// 独立作品页的静态照片按钮仍保留；首页动态 Gallery 会使用事件委托。
 const lightboxTriggers = document.querySelectorAll(".lightbox-trigger");
 
 // 找到共用的大图灯箱容器。
@@ -143,8 +172,22 @@ const navItems = document.querySelectorAll(".nav-links a");
 // 保存打开灯箱之前获得焦点的元素，关闭时把焦点还给它。
 let lightboxTrigger = null;
 
-// 记录灯箱当前显示的是 lightboxTriggers 中的第几张照片。
+// 灯箱当前浏览的数据列表：项目页来自 DOM，首页来自 photos.js 的筛选结果。
+let activeLightboxPhotos = [];
+
+// 记录灯箱当前显示的是 activeLightboxPhotos 中的第几张照片。
 let currentImageIndex = 0;
+
+// 把独立项目页现有 DOM 转成与 photos.js 相同的最小照片数据格式。
+const staticLightboxPhotos = [...lightboxTriggers].map((trigger) => {
+    const image = trigger.querySelector("img");
+
+    return {
+        src: image.currentSrc || image.src,
+        fullSrc: trigger.dataset.fullSrc || image.currentSrc || image.src,
+        title: image.alt
+    };
+});
 
 // ================================================================
 // 2. 共用的覆盖层状态
@@ -168,26 +211,29 @@ function updatePageScroll() {
 // 根据索引找出照片，并把它的地址和替代文字放进灯箱。
 function showLightboxImage(index) {
     // 没有可查看的照片时立即结束，避免访问不存在的数组成员。
-    if (lightboxTriggers.length === 0) return;
+    if (activeLightboxPhotos.length === 0 || !lightboxImage) return;
 
     // 取余运算让最后一张的下一张回到开头，第一张的上一张回到末尾。
-    currentImageIndex = (index + lightboxTriggers.length) % lightboxTriggers.length;
+    currentImageIndex = (index + activeLightboxPhotos.length) % activeLightboxPhotos.length;
 
-    // 取得当前位置对应的照片按钮和其中的图片。
-    const trigger = lightboxTriggers[currentImageIndex];
-    const image = trigger.querySelector("img");
+    // 首页直接读取 photos.js；独立作品页读取上面从 DOM 整理出的同形数据。
+    const photo = activeLightboxPhotos[currentImageIndex];
 
-    // 使用作品按钮指定的大图；没有指定时才回退到当前响应式图片。
-    lightboxImage.src = trigger.dataset.fullSrc || image.currentSrc || image.src;
+    // 优先显示数据中的大图路径；没有提供时才回退到卡片图片。
+    lightboxImage.src = photo.fullSrc || photo.src;
 
-    // 把原图的替代文字同步给灯箱大图。
-    lightboxImage.alt = image.alt;
+    // 把照片说明同步给灯箱大图。
+    lightboxImage.alt = photo.title || "Photography work";
 }
 
-// 函数参数 trigger 是被点击的作品按钮，index 是它在照片列表中的位置。
-function openLightbox(trigger, index) {
-    // 按照被点击照片的索引更新灯箱内容和当前状态。
-    showLightboxImage(index);
+// 同一个 openLightbox 同时接收首页 photos.js 数据与项目页整理出的照片数据。
+function openLightbox(photo, trigger, photoList) {
+    if (!lightbox || !lightboxClose || photoList.length === 0) return;
+
+    activeLightboxPhotos = photoList;
+
+    // 按照被点击照片在当前可见列表中的索引更新灯箱内容。
+    showLightboxImage(photoList.indexOf(photo));
 
     // 记录触发按钮，稍后关闭灯箱时恢复键盘焦点。
     lightboxTrigger = trigger;
@@ -232,10 +278,12 @@ function closeLightbox() {
     lightboxTrigger = null;
 }
 
-// 对项目页中的每张 lightbox-trigger 照片绑定同一种点击行为。
+// 只给不会重新渲染的项目页照片直接绑定；首页动态照片由 Gallery 容器委托。
 lightboxTriggers.forEach((trigger, index) => {
     // button 原生支持鼠标点击，以及键盘 Enter 和 Space 激活。
-    trigger.addEventListener("click", () => openLightbox(trigger, index));
+    trigger.addEventListener("click", () => {
+        openLightbox(staticLightboxPhotos[index], trigger, staticLightboxPhotos);
+    });
 });
 
 // 点击上一张时显示当前索引前一项；showLightboxImage 会处理首尾循环。
@@ -397,16 +445,24 @@ document.addEventListener("keydown", (event) => {
 // 只有浏览器支持 IntersectionObserver 且用户没有要求减少动画时才启用。
 // ================================================================
 
-// 选取所有标题和作品卡片上标有 reveal class 的元素。
-const revealElements = document.querySelectorAll(".reveal");
-
 // 查询系统是否要求减少动画，保护容易晕动的访问者。
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// 整个页面只创建一个 Observer；Gallery 每次 render 后复用它注册新卡片。
+let revealObserver = null;
+
+function observeRevealElements(root = document) {
+    if (!revealObserver) return;
+
+    root.querySelectorAll(".reveal:not(.active)").forEach((element) => {
+        revealObserver.observe(element);
+    });
+}
 
 // 不支持观察器时不添加 .js，CSS 会让所有作品保持可见，避免内容消失。
 if ("IntersectionObserver" in window && !prefersReducedMotion) {
     // 创建观察器，浏览器会在元素进入或离开视口时调用回调函数。
-    const revealObserver = new IntersectionObserver(
+    revealObserver = new IntersectionObserver(
         // entries 是这次发生可见性变化的元素列表。
         (entries) => {
             // 逐个检查可见性变化。
@@ -428,6 +484,9 @@ if ("IntersectionObserver" in window && !prefersReducedMotion) {
     // 只有观察器创建成功后才启用 CSS 的隐藏起点。
     document.documentElement.classList.add("js");
 
-    // 开始观察每个需要淡入的元素。
-    revealElements.forEach((element) => revealObserver.observe(element));
+    // 先观察 HTML 原本存在的标题和作品卡片。
+    observeRevealElements();
 }
+
+// Reveal 与 Lightbox 函数都准备好后，最后初始化并首次渲染首页 Gallery。
+initGallery();

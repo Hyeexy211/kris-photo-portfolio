@@ -37,13 +37,15 @@
 - 没有经过确认的拍摄日期继续保留为空；`createPhotoCard()` 会跳过空日期，不编造地点、日期或器材资料。
 - `index.html` 会先加载 `data/photos.js`，再加载 `js/main.js`，因此主脚本能够读取照片资料并自动生成 Gallery。
 
-## 第 24 课：数据驱动 Gallery 与分类筛选
+## 第 24～25 课：数据驱动 Gallery 正式接入
 
-- `createPhotoCard(photo)` 使用 `document.createElement()` 把一条照片数据转换成 `.photo-card`，并按数据是否存在决定要不要创建标题和日期元素。
-- `renderGallery(photoList)` 每次先清空旧内容，再逐张调用 `createPhotoCard()`；空数组会显示 `No photos found.`。
+- `createPhotoCard(photo)` 使用 `document.createElement()` 把一条照片数据转换成正式的 `.gallery-item.lightbox-trigger.reveal` 照片按钮，继续复用原 Gallery 的样式、Hover、响应式与键盘行为。
+- `renderGallery(photoList)` 使用 `replaceChildren()` 一次替换旧内容，再逐张调用 `createPhotoCard()`；空数组会显示 `No photos found.`，不会与旧卡片叠加。
 - All、Street、Portrait、Documentary 与 Landscape 按钮通过 `filter()` 筛选同一个 `photos` 数组，所以连续切换不会叠加或重复卡片。
 - 仓库当前没有 Street 作品；保留课程要求的 Street 按钮用于真实演示空状态，但没有把 Documentary 照片错误改名或虚构 Street 素材。
-- 首页的动态 Gallery 是浏览全部照片的入口；三个独立项目页仍承担完整作品组与灯箱查看功能，不在首页保留第二套手写照片卡片。
+- 首页的动态 Gallery 是浏览全部照片的入口；`photos.js` 是首页作品的唯一数据源，`index.html` 只保留容器、筛选按钮和 Lightbox 结构。
+- 首页 Lightbox 在持久存在的 Gallery 容器上使用事件委托，通过 `data-id` 回到 `photos` 查找数据；重新筛选后不需要重复绑定监听器。
+- 动态创建的 `.reveal` 会在每次 render 后交给页面共用的同一个 `IntersectionObserver`，不会为每次筛选重复创建观察器。
 
 ## 现有交互与可访问性
 

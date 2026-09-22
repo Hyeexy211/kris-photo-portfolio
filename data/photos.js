@@ -8,6 +8,7 @@ const photos = [
     {
         id: "portrait-001",
         src: "images/portrait/portrait-01-1200.webp",
+        fullSrc: "images/portrait/portrait-01-1800.webp",
         srcset: "images/portrait/portrait-01-640.webp 640w, images/portrait/portrait-01-1200.webp 1200w, images/portrait/portrait-01-1800.webp 1800w",
         title: "A rain-darkened window frames trees and a passing car",
         date: "",
@@ -18,6 +19,7 @@ const photos = [
     {
         id: "portrait-002",
         src: "images/portrait/portrait-02-1200.webp",
+        fullSrc: "images/portrait/portrait-02-1800.webp",
         srcset: "images/portrait/portrait-02-640.webp 640w, images/portrait/portrait-02-1200.webp 1200w, images/portrait/portrait-02-1800.webp 1800w",
         title: "Rain and trees seen through a softly lit window",
         date: "",
@@ -28,6 +30,7 @@ const photos = [
     {
         id: "portrait-003",
         src: "images/portrait/portrait-03-1200.webp",
+        fullSrc: "images/portrait/portrait-03-1800.webp",
         srcset: "images/portrait/portrait-03-640.webp 640w, images/portrait/portrait-03-1200.webp 1200w, images/portrait/portrait-03-1800.webp 1800w",
         title: "A glowing wall lamp beside a rain-covered garden window",
         date: "",
@@ -38,6 +41,7 @@ const photos = [
     {
         id: "documentary-001",
         src: "images/documentary/documentary-01-1200.webp",
+        fullSrc: "images/documentary/documentary-01-1800.webp",
         srcset: "images/documentary/documentary-01-640.webp 640w, images/documentary/documentary-01-1200.webp 1200w, images/documentary/documentary-01-1800.webp 1800w",
         title: "White flowers and a veiled mannequin beside an old window",
         date: "",
@@ -48,6 +52,7 @@ const photos = [
     {
         id: "documentary-002",
         src: "images/documentary/documentary-02-1200.webp",
+        fullSrc: "images/documentary/documentary-02-1800.webp",
         srcset: "images/documentary/documentary-02-640.webp 640w, images/documentary/documentary-02-1200.webp 1200w, images/documentary/documentary-02-1800.webp 1800w",
         title: "Plants and a chandelier in a weathered indoor courtyard",
         date: "",
@@ -58,6 +63,7 @@ const photos = [
     {
         id: "documentary-003",
         src: "images/documentary/documentary-03-1200.webp",
+        fullSrc: "images/documentary/documentary-03-1800.webp",
         srcset: "images/documentary/documentary-03-640.webp 640w, images/documentary/documentary-03-1200.webp 1200w, images/documentary/documentary-03-1800.webp 1800w",
         title: "Jewelry, mirrors and a painted hand arranged on a table",
         date: "",
@@ -68,6 +74,7 @@ const photos = [
     {
         id: "landscape-001",
         src: "images/landscape/landscape-01-1200.webp",
+        fullSrc: "images/landscape/landscape-01-1800.webp",
         srcset: "images/landscape/landscape-01-640.webp 640w, images/landscape/landscape-01-1200.webp 1200w, images/landscape/landscape-01-1800.webp 1800w",
         title: "City lights beneath a pink dusk sky and silhouetted branches",
         date: "",
@@ -78,6 +85,7 @@ const photos = [
     {
         id: "landscape-002",
         src: "images/landscape/landscape-02-1200.webp",
+        fullSrc: "images/landscape/landscape-02-1800.webp",
         srcset: "images/landscape/landscape-02-640.webp 640w, images/landscape/landscape-02-1200.webp 1200w, images/landscape/landscape-02-1800.webp 1800w",
         title: "Crescent moon above distant mountains in a purple evening sky",
         date: "",
@@ -88,6 +96,7 @@ const photos = [
     {
         id: "landscape-003",
         src: "images/landscape/landscape-03-1200.webp",
+        fullSrc: "images/landscape/landscape-03-1800.webp",
         srcset: "images/landscape/landscape-03-640.webp 640w, images/landscape/landscape-03-1200.webp 1200w, images/landscape/landscape-03-1800.webp 1800w",
         title: "Stone steps lead through a wooden gate framed by pink flowers",
         date: "",

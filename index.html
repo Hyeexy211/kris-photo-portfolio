@@ -248,9 +248,9 @@
             </div>
         </section>
 
-        <!-- 第 24 课：照片卡片由 data/photos.js 和 js/main.js 动态生成。 -->
-        <section id="gallery" class="dynamic-gallery-section" aria-labelledby="gallery-title">
-            <div class="section-header reveal">
+        <!-- 第 25 课：只保留正式 Gallery 的结构，照片卡片全部由 photos.js 生成。 -->
+        <section id="gallery" class="gallery-section" aria-labelledby="gallery-title">
+            <div class="section-heading reveal">
                 <p class="section-label">Browse photographs</p>
                 <h2 id="gallery-title">Gallery</h2>
             </div>
@@ -274,7 +274,7 @@
             </div>
 
             <div
-                class="photo-gallery-grid"
+                class="gallery-grid"
                 id="photo-gallery"
                 aria-live="polite"
             ></div>
@@ -304,6 +304,14 @@
         
 
     </main>
+
+    <!-- 首页动态 Gallery 与独立作品页复用同一个现有 Lightbox 结构。 -->
+    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" aria-hidden="true">
+        <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Close photo viewer">×</button>
+        <button class="lightbox-nav lightbox-prev" id="lightbox-prev" type="button" aria-label="View previous photograph">‹</button>
+        <img class="lightbox-image" id="lightbox-image" alt="">
+        <button class="lightbox-nav lightbox-next" id="lightbox-next" type="button" aria-label="View next photograph">›</button>
+    </div>
 
     <!-- 页脚放置版权等收尾信息。 -->
     <footer>

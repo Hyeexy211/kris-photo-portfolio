@@ -1368,13 +1368,8 @@ footer {
 
 
 /* ================================================================
-   14. 数据驱动 Gallery 与分类筛选
+   14. 数据驱动 Gallery 的分类筛选与空状态
 ================================================================ */
-
-.dynamic-gallery-section {
-    padding: var(--section-spacing) var(--page-padding);
-    background: var(--color-section-alt);
-}
 
 .gallery-filters {
     display: flex;
@@ -1409,42 +1404,6 @@ footer {
 .filter-button:focus-visible {
     outline: 2px solid var(--color-text);
     outline-offset: 3px;
-}
-
-.photo-gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 48px 24px;
-}
-
-.photo-card {
-    min-width: 0;
-}
-
-.dynamic-photo {
-    display: block;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 4 / 5;
-    object-fit: cover;
-    background: #e9e9e9;
-}
-
-.photo-info {
-    padding-top: 16px;
-}
-
-.photo-title {
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 1.45;
-}
-
-.photo-date {
-    margin-top: 7px;
-    color: var(--color-muted);
-    font-size: 13px;
-    line-height: 1.4;
 }
 
 .gallery-empty {
@@ -1584,28 +1543,13 @@ footer {
    16. 新增页面的响应式布局
 ================================================================ */
 
-@media (max-width: 1024px) {
-    .photo-gallery-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
 @media (max-width: 768px) {
     .projects-section {
         padding: var(--section-spacing-mobile) var(--page-padding-mobile);
     }
 
-    .dynamic-gallery-section {
-        padding: var(--section-spacing-mobile) var(--page-padding-mobile);
-    }
-
     .gallery-filters {
         margin-bottom: 32px;
-    }
-
-    .photo-gallery-grid {
-        grid-template-columns: 1fr;
-        gap: 40px;
     }
 
     .section-header {
