@@ -581,10 +581,16 @@ system for its first release.
 - [x] Page titles
 - [x] Meta descriptions
 - [x] Open Graph images
-- [ ] Sitemap
-- [ ] robots.txt
+- [x] Sitemap
+- [x] robots.txt
 - [ ] Structured photo pages
 - [ ] Social sharing previews
+
+The sitemap currently lists the nine real photo IDs and must be updated when
+photos are added or removed. On a GitHub Pages project site, this repository's
+`robots.txt` is served beneath `/kris-photo-portfolio/`; it cannot set the
+domain-root robots policy. Individual photo pages also need static or server
+rendered metadata before unique social preview cards can be claimed.
 
 ---
 

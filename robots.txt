@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /kris-photo-portfolio/
+
+Sitemap: https://hyeexy211.github.io/kris-photo-portfolio/sitemap.xml
