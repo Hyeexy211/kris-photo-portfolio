@@ -4,7 +4,7 @@
 // 未经确认的年份、地点和时间继续保留为空，不根据文件信息猜测。
 // ================================================================
 
-const collections = [
+const defaultCollections = [
     {
         id: "portrait",
         slug: "portrait",

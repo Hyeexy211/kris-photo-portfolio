@@ -329,14 +329,16 @@ deleting the earlier phase history.
 
 ## Admin Prototype
 
-- [ ] Lesson 33 — Admin Dashboard: add a read-only overview before editing features
-- [ ] Lesson 34 — Work CRUD: prototype Collection create, read, update and delete
-- [ ] Lesson 35 — Gallery CRUD: prototype Photo create, read, update and delete
-- [ ] Lesson 36 — Admin Forms: validation, errors, cancel/reset and accessible form states
+- [x] Lesson 33 — Local persistence: seed and manage Work / Gallery content through a browser-local Admin prototype
+- [ ] Lesson 34 — Work CRUD refinement: strengthen validation and asset-reference guidance
+- [ ] Lesson 35 — Gallery CRUD refinement: strengthen relationship and image-field validation
+- [ ] Lesson 36 — Admin Forms refinement: improve errors and accessible form states
 
-Lessons 34–36 may use a LocalStorage Adapter for learning and prototyping. That
-adapter must stay behind the Content Service boundary and must be clearly
-labelled as browser-local prototype storage, not a production CMS database.
+Lesson 33 uses a LocalStorage Adapter for learning and prototyping. The adapter
+stays behind the Content Service boundary and the Admin page clearly labels it
+as browser-local prototype storage, not a production CMS database. The explicit
+Lesson 33 task included the initial Work and Gallery CRUD flows; Lessons 34–36
+remain focused on validation and interface refinement.
 
 ## Production Content System
 
@@ -639,14 +641,11 @@ These are optional and should not distract from the core portfolio.
 Current development priority:
 
 ```text
-Lessons 27-32
-Verify and publish the Collection / Photo content foundation
+Lesson 34
+Strengthen Work validation and asset-reference guidance
     ↓
-Lesson 33
-Build a read-only Admin Dashboard shell
-    ↓
-Lessons 34-36
-Add LocalStorage-backed CRUD as an explicitly labelled prototype
+Lessons 35-36
+Refine Gallery relationships and accessible Admin form states
     ↓
 Lessons 37-42
 Choose and connect production backend, storage and authentication
@@ -658,9 +657,8 @@ before the public data model is stable.
 
 The immediate objective is:
 
-> Verify the data-driven Work cards, Collection template, Photo relationships,
-> Content Service boundary and source-to-`dist/` parity. Then review the branch
-> before beginning the Admin prototype.
+> Begin Lesson 34 by strengthening Work input validation and asset-reference
+> guidance without changing the browser-local prototype architecture.
 
 ---
 

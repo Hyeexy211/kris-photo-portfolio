@@ -150,7 +150,9 @@ function setupGalleryLightbox() {
 
         if (!trigger || !galleryContainer.contains(trigger)) return;
 
-        const photo = contentService.getPhotos().find((item) => item.id === trigger.dataset.id);
+        // 直接从当前显示列表取回同一个对象，避免重新读取 localStorage 后对象引用不同，
+        // 导致 openLightbox() 无法找到被点击照片的正确索引。
+        const photo = renderedPhotos.find((item) => item.id === trigger.dataset.id);
 
         if (!photo) return;
 

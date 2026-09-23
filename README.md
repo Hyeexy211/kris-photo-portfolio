@@ -36,15 +36,16 @@
 - `projects/portrait.html`、`projects/documentary.html`、`projects/landscape.html` 分别展示三张现有照片。每页的 `../css/style.css`、`../images/...` 都从 `projects/` 返回到项目根目录。
 - 当前仓库没有课程示例的京都照片，因此没有添加空白的 `Kyoto Night` 页面，也没有填写未经确认的拍摄地点、年份或器材。以后有真实素材时，可以参照现有作品页复制一份，再在首页添加对应卡片。
 
-## 第 27～32 课：CMS 内容架构基础
+## 第 27～33 课：CMS 内容架构与本地持久化
 
-- `data/collections.js` 是 Collection 的唯一基础数据源；`order` 决定首页显示顺序，数量不再写死在 HTML 中。
+- `data/collections.js` 与 `data/photos.js` 现在只提供首次初始化和重置时使用的默认数据；运行时内容保存在浏览器 `localStorage` 中。
 - `js/work.js` 的 `createWorkCard()` 与 `renderWorks()` 复用原来的 `.project-card` DOM 结构和 CSS，因此视觉与响应式行为保持不变。
 - 每张 Photo 使用 `collectionId` 建立一对多关系；Collection 不复制完整 Photo 对象，没有 `collectionId` 的 Photo 仍可保留在总 Gallery 中。
-- `js/content-service.js` 提供 `getPhotos()`、`getCollections()`、`getCollectionById()`、`getCollectionBySlug()` 与 `getPhotosByCollection()`。未来替换存储方式时，页面 UI 尽量不改。
+- `js/storage-service.js` 是唯一直接访问 `localStorage` 的文件；`js/content-service.js` 负责初始化、查询、Work / Gallery CRUD 与恢复默认内容。
+- 合法的空数组会被保留；存储缺失、JSON 损坏或数据类型错误时，对应内容会从仓库默认数据恢复。
 - `collection.html?slug=portrait`、`collection.html?slug=documentary` 与 `collection.html?slug=landscape` 共用一个模板。新增 Collection 时不再必须新建 HTML 页面。
 - `projects/*.html` 目前继续保留，避免删除已有页面和破坏旧链接；确认通用模板长期稳定后再决定是否设置迁移策略。
-- 这一阶段仍是静态 JavaScript 数据。GitHub Pages 不能把浏览器中的编辑直接写回仓库；Admin、localStorage 原型、数据库、图片存储和登录属于后续课程。
+- `admin.html` 提供克制的浏览器本地管理原型；创建、编辑、删除与重置会在刷新后保留，但不会写回 Git、同步其他浏览器或替代生产数据库。
 
 ## 第 22 课：照片数据层
 
@@ -79,7 +80,9 @@
 ```sh
 node --check data/photos.js
 node --check data/collections.js
+node --check js/storage-service.js
 node --check js/content-service.js
+node --check js/admin.js
 node --check js/work.js
 node --check js/collection-page.js
 node --check js/main.js

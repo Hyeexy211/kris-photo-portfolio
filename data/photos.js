@@ -3,8 +3,8 @@
 // 这个文件只描述“有哪些照片”；页面结构由 js/main.js 根据这些数据创建。
 // ================================================================
 
-// photos 是一个数组，可以把它理解成存放照片资料的盒子。
-const photos = [
+// defaultPhotos 是首次打开网站时写入浏览器存储的默认照片资料。
+const defaultPhotos = [
     {
         id: "portrait-001",
         src: "images/portrait/portrait-01-1200.webp",
