@@ -9,8 +9,9 @@ const cloudAdminService = Object.freeze({
         return (await this.getGalleryItems()).find((photo) => photo.id === id) || null;
     },
     photoRowExists: (id) => supabaseRepository.photoRowExists(id),
+    imageRowUsesUrl: (tableName, id, url) => supabaseRepository.imageRowUsesUrl(tableName, id, url),
     createWork(values) {
-        return supabaseRepository.createCollection({ ...values, id: createContentId("work") });
+        return supabaseRepository.createCollection({ ...values, id: values.id || createContentId("work") });
     },
     updateWork(id, values) {
         return supabaseRepository.updateCollection(id, values);

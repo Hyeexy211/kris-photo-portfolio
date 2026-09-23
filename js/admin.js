@@ -21,20 +21,47 @@ const authHeading = document.querySelector("#admin-auth-title");
 const loginForm = document.querySelector("#admin-login-form");
 const signOutButton = document.querySelector("#admin-sign-out");
 const resetSection = document.querySelector("#admin-reset");
-const galleryUploadField = document.querySelector("#gallery-upload-field");
-const galleryUploadFile = document.querySelector("#gallery-upload-file");
-const galleryUploadProgress = document.querySelector("#gallery-upload-progress");
-const galleryUploadMessage = document.querySelector("#gallery-upload-message");
-const galleryUploadCount = document.querySelector("#gallery-upload-count");
+const imageControls = {
+    work: {
+        form: workForm,
+        field: document.querySelector("#work-upload-field"),
+        file: document.querySelector("#work-upload-file"),
+        fileName: document.querySelector("#work-file-name"),
+        clear: document.querySelector("#clear-work-image"),
+        preview: document.querySelector("#work-image-preview"),
+        previewImage: document.querySelector("#work-preview-image"),
+        previewCaption: document.querySelector("#work-preview-caption"),
+        progress: document.querySelector("#work-upload-progress"),
+        message: document.querySelector("#work-upload-message"),
+        count: document.querySelector("#work-upload-count"),
+        imageField: "cover"
+    },
+    gallery: {
+        form: galleryForm,
+        field: document.querySelector("#gallery-upload-field"),
+        file: document.querySelector("#gallery-upload-file"),
+        fileName: document.querySelector("#gallery-file-name"),
+        clear: document.querySelector("#clear-gallery-image"),
+        preview: document.querySelector("#gallery-image-preview"),
+        previewImage: document.querySelector("#gallery-preview-image"),
+        previewCaption: document.querySelector("#gallery-preview-caption"),
+        progress: document.querySelector("#gallery-upload-progress"),
+        message: document.querySelector("#gallery-upload-message"),
+        count: document.querySelector("#gallery-upload-count"),
+        imageField: "src"
+    }
+};
 const adminI18n = window.siteI18n;
 const adminT = (key, values) => adminI18n.t(key, values);
 let cloudAccessGeneration = 0;
+let workSaving = false;
 let gallerySaving = false;
 let adminAccessAllowed = false;
 let currentWorks = null;
 let currentGalleryItems = null;
 let currentStatus = null;
-let currentUploadProgress = null;
+const currentUploadProgress = { work: null, gallery: null };
+const previewObjectUrls = { work: null, gallery: null };
 
 function renderAdminStatus() {
     if (!currentStatus) return;
@@ -71,9 +98,10 @@ function showAdminError(error) {
     showAdminStatusParts(errorParts(error), true);
 }
 
-function renderGalleryUploadProgress() {
-    if (!currentUploadProgress) return;
-    galleryUploadMessage.textContent = adminT(currentUploadProgress.key, currentUploadProgress.values);
+function renderUploadProgress(kind) {
+    const progress = currentUploadProgress[kind];
+    if (!progress) return;
+    imageControls[kind].message.textContent = adminT(progress.key, progress.values);
 }
 
 function getFormValues(form, numberFields) {
@@ -102,6 +130,7 @@ function resetWorkForm() {
     workForm.elements.id.value = "";
     document.querySelector("#work-form-title").textContent = adminT("admin.works.createTitle");
     cancelWorkEdit.hidden = true;
+    resetImageControl("work");
 }
 
 function resetGalleryForm() {
@@ -109,29 +138,74 @@ function resetGalleryForm() {
     galleryForm.elements.id.value = "";
     document.querySelector("#gallery-form-title").textContent = adminT("admin.gallery.createTitle");
     cancelGalleryEdit.hidden = true;
-    galleryUploadProgress.hidden = true;
-    currentUploadProgress = null;
-    syncGalleryUploadFields();
+    resetImageControl("gallery");
 }
 
-function syncGalleryUploadFields() {
-    const useUpload = cloudMode && !galleryForm.elements.id.value && galleryUploadFile.files.length > 0;
-    galleryUploadField.hidden = !cloudMode || Boolean(galleryForm.elements.id.value);
-    galleryUploadFile.disabled = gallerySaving || Boolean(galleryForm.elements.id.value);
-    ["src", "fullSrc"].forEach((fieldName) => {
-        galleryForm.elements[fieldName].required = !useUpload;
-        galleryForm.elements[fieldName].readOnly = useUpload;
+function syncImageFields(kind) {
+    const { form, field, file, clear } = imageControls[kind];
+    field.hidden = !cloudMode;
+    form.querySelectorAll(".admin-manual-image-field").forEach((label) => {
+        label.hidden = cloudMode;
     });
-    ["srcset", "width", "height"].forEach((fieldName) => {
-        galleryForm.elements[fieldName].readOnly = useUpload;
+    const requiredFields = kind === "work" ? ["cover"] : ["src", "fullSrc"];
+    requiredFields.forEach((fieldName) => {
+        form.elements[fieldName].required = !cloudMode;
     });
+    file.disabled = !cloudMode || (kind === "work" ? workSaving : gallerySaving);
+    clear.disabled = file.disabled;
 }
 
-function showGalleryUploadProgress(key, completed, values = {}) {
-    galleryUploadProgress.hidden = false;
-    currentUploadProgress = { key, values };
-    renderGalleryUploadProgress();
-    galleryUploadCount.value = completed;
+function renderImagePreview(kind) {
+    const control = imageControls[kind];
+    const selectedFile = control.file.files[0];
+    if (previewObjectUrls[kind]) URL.revokeObjectURL(previewObjectUrls[kind]);
+    previewObjectUrls[kind] = null;
+    control.clear.hidden = !selectedFile;
+    control.fileName.textContent = selectedFile?.name || "";
+
+    if (selectedFile) {
+        try {
+            validateCloudImageFile(selectedFile);
+        } catch (error) {
+            control.file.value = "";
+            showAdminError(error);
+            renderImagePreview(kind);
+            return;
+        }
+        previewObjectUrls[kind] = URL.createObjectURL(selectedFile);
+        control.previewImage.src = previewObjectUrls[kind];
+        control.previewCaption.textContent = adminT("admin.upload.selectedPreview");
+        control.preview.hidden = false;
+        return;
+    }
+
+    const currentUrl = control.form.elements.id.value
+        ? control.form.elements[control.imageField].value : "";
+    if (currentUrl) {
+        control.previewImage.src = currentUrl;
+        control.previewCaption.textContent = adminT("admin.upload.currentPreview");
+        control.preview.hidden = false;
+    } else {
+        control.previewImage.removeAttribute("src");
+        control.preview.hidden = true;
+    }
+}
+
+function resetImageControl(kind) {
+    const control = imageControls[kind];
+    control.file.value = "";
+    control.progress.hidden = true;
+    currentUploadProgress[kind] = null;
+    renderImagePreview(kind);
+    syncImageFields(kind);
+}
+
+function showUploadProgress(kind, key, completed, values = {}) {
+    const control = imageControls[kind];
+    control.progress.hidden = false;
+    currentUploadProgress[kind] = { key, values };
+    renderUploadProgress(kind);
+    control.count.value = completed;
 }
 
 function createAdminItem(item, metaText, itemTypeKey) {
@@ -242,150 +316,192 @@ async function renderAdmin() {
     await Promise.all([renderWorksAdmin(), renderGalleryAdmin()]);
 }
 
-workForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    try {
-        const { id, values } = getFormValues(workForm, ["order", "coverWidth", "coverHeight"]);
-        const duplicateSlug = (await adminStore.getWorks())
-            .some((work) => work.slug === values.slug && work.id !== id);
-
-        if (duplicateSlug) {
-            showAdminStatus("admin.works.duplicateSlug", true);
-            return;
-        }
-
-        const savedWork = id
-            ? await adminStore.updateWork(id, values)
-            : await adminStore.createWork(values);
-
-        if (!savedWork) throw localizedError("admin.works.saveFailed");
-
-        resetWorkForm();
-        await renderAdmin();
-        showAdminStatus(id ? "admin.works.updated" : "admin.works.created");
-    } catch (error) {
-        showAdminError(error);
-    }
-});
-
-galleryForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    if (gallerySaving) return;
-
-    const { id, values } = getFormValues(galleryForm, ["order", "width", "height"]);
-    const selectedFile = cloudMode ? galleryUploadFile.files[0] : null;
-    const disabledControls = [...galleryForm.elements].map((field) => [field, field.disabled]);
-    gallerySaving = true;
-    disabledControls.forEach(([field]) => { field.disabled = true; });
-    if (cloudMode) signOutButton.disabled = true;
-    syncGalleryUploadFields();
+async function saveImageRecord(kind, id, values, selectedFile) {
+    const isWork = kind === "work";
+    const recordId = id || createContentId(isWork ? "work" : "photo");
     const uploadedPaths = [];
-    let uploadPhotoId = "";
-    let databaseInsertAttempted = false;
-    let rowPublished = false;
+    const accessGeneration = cloudAccessGeneration;
+    let databaseWriteAttempted = false;
+    let uploadedUrl = "";
 
     try {
-        values.tags = values.tags.split(",").map((tag) => tag.trim()).filter(Boolean);
-
-        if (selectedFile && id) {
-            throw localizedError("admin.gallery.fileOnlyNew");
+        if (cloudMode && !id && !selectedFile) {
+            throw localizedError("admin.upload.imageRequired");
         }
         if (selectedFile) {
-            uploadPhotoId = createContentId("photo");
-            showGalleryUploadProgress("admin.upload.preparing", 0);
+            showUploadProgress(kind, "admin.upload.preparing", 0);
             const exports = await prepareCloudWebExports(selectedFile);
-            const accessGeneration = cloudAccessGeneration;
-            const images = await uploadCloudWebExports(uploadPhotoId, exports, (path) => {
-                uploadedPaths.push(path);
-                showGalleryUploadProgress("admin.upload.filesUploaded", uploadedPaths.length, {
-                    count: uploadedPaths.length
-                });
-            });
+            const images = await uploadCloudWebExports(
+                isWork ? "collections" : "photos", recordId, exports, (path) => {
+                    uploadedPaths.push(path);
+                    showUploadProgress(kind, "admin.upload.filesUploaded", uploadedPaths.length, {
+                        count: uploadedPaths.length
+                    });
+                }
+            );
             if (accessGeneration !== cloudAccessGeneration) {
                 throw localizedError("admin.upload.sessionChanged");
             }
-            Object.assign(values, {
-                id: uploadPhotoId,
+            uploadedUrl = images.src;
+            Object.assign(values, isWork ? {
+                cover: images.src,
+                coverSrcset: images.srcset,
+                coverWidth: images.width,
+                coverHeight: images.height
+            } : {
                 src: images.src,
                 fullSrc: images.fullSrc,
                 srcset: images.srcset,
                 width: images.width,
                 height: images.height
             });
-            showGalleryUploadProgress("admin.upload.savingRecord", 3);
-            databaseInsertAttempted = true;
+            showUploadProgress(kind, "admin.upload.savingRecord", 3);
         }
 
-        const savedItem = id
-            ? await adminStore.updateGalleryItem(id, values)
-            : await adminStore.createGalleryItem(values);
-
-        if (!savedItem) throw localizedError("admin.gallery.saveFailed");
-        rowPublished = true;
-
-        resetGalleryForm();
-        await renderGalleryAdmin();
-        showAdminStatus(id ? "admin.gallery.updated" : selectedFile
-            ? "admin.gallery.createdWithFiles"
-            : "admin.gallery.created");
+        if (!id && cloudMode) values.id = recordId;
+        databaseWriteAttempted = true;
+        let saved;
+        if (isWork) {
+            saved = id ? await adminStore.updateWork(id, values) : await adminStore.createWork(values);
+        } else {
+            saved = id ? await adminStore.updateGalleryItem(id, values)
+                : await adminStore.createGalleryItem(values);
+        }
+        if (!saved) throw localizedError(isWork ? "admin.works.saveFailed" : "admin.gallery.saveFailed");
+        return saved;
     } catch (error) {
         const messages = errorParts(error);
-        if (rowPublished && uploadPhotoId) {
-            messages.push({ key: "admin.gallery.rowSavedListStale" });
-        }
-        if (uploadedPaths.length > 0 && !rowPublished) {
+        if (uploadedPaths.length > 0) {
             let cleanupIsSafe = true;
-            if (databaseInsertAttempted) {
+            if (databaseWriteAttempted) {
                 try {
-                    const existing = await cloudAdminService.photoRowExists(uploadPhotoId);
-                    if (existing) {
+                    if (await cloudAdminService.imageRowUsesUrl(
+                        isWork ? "collections" : "photos", recordId, uploadedUrl
+                    )) {
                         cleanupIsSafe = false;
-                        messages.push({ key: "admin.gallery.rowExistsFilesKept" });
+                        messages.push({ key: "admin.upload.rowUsesFilesKept" });
                     }
                 } catch {
                     cleanupIsSafe = false;
-                    messages.push({ key: "admin.gallery.rowCheckFailedFilesKept" });
+                    messages.push({ key: "admin.upload.rowCheckFailedFilesKept" });
                 }
             }
             if (cleanupIsSafe) {
                 try {
                     await removeCloudWebExports(uploadedPaths);
-                    messages.push({ key: "admin.gallery.cleanupRemoved" });
+                    messages.push({ key: "admin.upload.cleanupRemoved" });
                 } catch (cleanupError) {
-                    messages.push({ key: "admin.gallery.cleanupFailed" });
+                    messages.push({ key: "admin.upload.cleanupFailed" });
                     messages.push(...errorParts(cleanupError, false));
-                    messages.push({ key: "admin.gallery.cleanupPaths", values: {
+                    messages.push({ key: "admin.upload.cleanupPaths", values: {
                         bucket: CLOUD_WEB_BUCKET,
                         paths: uploadedPaths.join(", ")
                     } });
                 }
             }
+            showUploadProgress(kind, "admin.upload.stopped", uploadedPaths.length);
         }
         showAdminStatusParts(messages, true);
-        if (uploadedPaths.length > 0) {
-            showGalleryUploadProgress("admin.upload.stopped", uploadedPaths.length);
+        return null;
+    }
+}
+
+workForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (workSaving || gallerySaving) return;
+
+    const { id, values } = getFormValues(workForm, ["order", "coverWidth", "coverHeight"]);
+    const selectedFile = cloudMode ? imageControls.work.file.files[0] : null;
+    const disabledControls = [...workForm.elements].map((field) => [field, field.disabled]);
+    workSaving = true;
+    disabledControls.forEach(([field]) => { field.disabled = true; });
+    if (cloudMode) signOutButton.disabled = true;
+    syncImageFields("work");
+
+    try {
+        const duplicateSlug = (await adminStore.getWorks())
+            .some((work) => work.slug === values.slug && work.id !== id);
+        if (duplicateSlug) {
+            showAdminStatus("admin.works.duplicateSlug", true);
+            return;
         }
+        const saved = await saveImageRecord("work", id, values, selectedFile);
+        if (!saved) return;
+
+        resetWorkForm();
+        try {
+            await renderAdmin();
+            showAdminStatus(id ? selectedFile ? "admin.works.updatedWithFile" : "admin.works.updated"
+                : selectedFile ? "admin.works.createdWithFile" : "admin.works.created");
+        } catch (error) {
+            showAdminStatusParts([...errorParts(error), { key: "admin.upload.rowSavedListStale" }], true);
+        }
+    } catch (error) {
+        showAdminError(error);
+    } finally {
+        workSaving = false;
+        disabledControls.forEach(([field, wasDisabled]) => { field.disabled = wasDisabled; });
+        if (cloudMode) signOutButton.disabled = workSaving || gallerySaving;
+        syncImageFields("work");
+    }
+});
+
+galleryForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (gallerySaving || workSaving) return;
+
+    const { id, values } = getFormValues(galleryForm, ["order", "width", "height"]);
+    const selectedFile = cloudMode ? imageControls.gallery.file.files[0] : null;
+    const disabledControls = [...galleryForm.elements].map((field) => [field, field.disabled]);
+    gallerySaving = true;
+    disabledControls.forEach(([field]) => { field.disabled = true; });
+    if (cloudMode) signOutButton.disabled = true;
+    syncImageFields("gallery");
+
+    try {
+        values.tags = values.tags.split(",").map((tag) => tag.trim()).filter(Boolean);
+        const saved = await saveImageRecord("gallery", id, values, selectedFile);
+        if (!saved) return;
+
+        resetGalleryForm();
+        try {
+            await renderGalleryAdmin();
+            showAdminStatus(id ? selectedFile ? "admin.gallery.updatedWithFile" : "admin.gallery.updated"
+                : selectedFile ? "admin.gallery.createdWithFiles" : "admin.gallery.created");
+        } catch (error) {
+            showAdminStatusParts([...errorParts(error), { key: "admin.upload.rowSavedListStale" }], true);
+        }
+    } catch (error) {
+        showAdminError(error);
     } finally {
         gallerySaving = false;
         disabledControls.forEach(([field, wasDisabled]) => { field.disabled = wasDisabled; });
-        if (cloudMode) signOutButton.disabled = false;
-        syncGalleryUploadFields();
+        if (cloudMode) signOutButton.disabled = workSaving || gallerySaving;
+        syncImageFields("gallery");
     }
 });
 
 workList.addEventListener("click", async (event) => {
     const button = event.target.closest("button[data-action]");
     if (!button || !workList.contains(button)) return;
+    if (workSaving) {
+        showAdminStatus("admin.works.waitSave");
+        return;
+    }
 
     try {
         const work = await adminStore.getWorkById(button.dataset.id);
         if (!work) return;
 
         if (button.dataset.action === "edit") {
+            imageControls.work.file.value = "";
             fillForm(workForm, work);
             document.querySelector("#work-form-title").textContent = adminT("admin.works.editTitle");
             cancelWorkEdit.hidden = false;
+            imageControls.work.progress.hidden = true;
+            currentUploadProgress.work = null;
+            renderImagePreview("work");
+            syncImageFields("work");
             workForm.scrollIntoView({ behavior: "smooth", block: "start" });
             workForm.elements.title.focus({ preventScroll: true });
             return;
@@ -417,13 +533,14 @@ galleryList.addEventListener("click", async (event) => {
         if (!item) return;
 
         if (button.dataset.action === "edit") {
-            galleryUploadFile.value = "";
+            imageControls.gallery.file.value = "";
             fillForm(galleryForm, item);
             document.querySelector("#gallery-form-title").textContent = adminT("admin.gallery.editTitle");
             cancelGalleryEdit.hidden = false;
-            galleryUploadProgress.hidden = true;
-            currentUploadProgress = null;
-            syncGalleryUploadFields();
+            imageControls.gallery.progress.hidden = true;
+            currentUploadProgress.gallery = null;
+            renderImagePreview("gallery");
+            syncImageFields("gallery");
             galleryForm.scrollIntoView({ behavior: "smooth", block: "start" });
             galleryForm.elements.title.focus({ preventScroll: true });
             return;
@@ -444,7 +561,18 @@ galleryList.addEventListener("click", async (event) => {
 
 cancelWorkEdit.addEventListener("click", resetWorkForm);
 cancelGalleryEdit.addEventListener("click", resetGalleryForm);
-galleryUploadFile.addEventListener("change", syncGalleryUploadFields);
+Object.entries(imageControls).forEach(([kind, control]) => {
+    function refreshSelection() {
+        control.progress.hidden = true;
+        currentUploadProgress[kind] = null;
+        renderImagePreview(kind);
+    }
+    control.file.addEventListener("change", refreshSelection);
+    control.clear.addEventListener("click", () => {
+        control.file.value = "";
+        refreshSelection();
+    });
+});
 
 resetContentButton.addEventListener("click", async () => {
     if (cloudMode) return;
@@ -571,14 +699,23 @@ function updateAdminLanguage() {
     if (currentWorks) renderWorksList(currentWorks);
     if (currentGalleryItems) renderGalleryList(currentGalleryItems);
     renderAdminStatus();
-    renderGalleryUploadProgress();
+    Object.keys(imageControls).forEach((kind) => {
+        renderUploadProgress(kind);
+        if (!imageControls[kind].preview.hidden) {
+            imageControls[kind].previewCaption.textContent = adminT(
+                imageControls[kind].file.files.length
+                    ? "admin.upload.selectedPreview" : "admin.upload.currentPreview"
+            );
+        }
+    });
 }
 
 adminI18n.onChange(updateAdminLanguage);
 updateAdminLanguage();
 
 if (cloudMode) {
-    syncGalleryUploadFields();
+    syncImageFields("work");
+    syncImageFields("gallery");
     setAdminAccess(false);
     getSupabaseClient().then((client) => {
         client.auth.onAuthStateChange((event) => {
@@ -590,6 +727,8 @@ if (cloudMode) {
         initializeCloudAdmin();
     }).catch((error) => showAdminStatus("admin.auth.cloudUnavailable", true, { message: error.message }));
 } else {
+    syncImageFields("work");
+    syncImageFields("gallery");
     setAdminAccess(true);
     renderAdmin().catch(showAdminError);
 }

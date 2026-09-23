@@ -43,9 +43,9 @@ the work branch has been merged to the public GitHub Pages `main` branch.
   previews, captions and mobile Lightbox swipe, optional local tags/metadata,
   1200px web-size downloads, sitemap, and local performance checks
 - On that branch: authenticated cloud Admin code, owner-only RLS migration,
-  Storage bucket migration, a new-photo web-export upload path, and a
-  public-content export script are prepared; their live account and Storage
-  flows have **not** been verified
+  Storage bucket migration, Collection/Gallery create-and-edit image upload,
+  and a public-content export script are prepared; their live account and
+  Storage flows have **not** been verified
 
 ## In Progress
 
@@ -394,8 +394,8 @@ Requirements:
 
 The comparison, tentative Supabase Storage choice, key layout, access rules,
 and live acceptance checks are in `docs/storage-architecture.md` and
-`docs/supabase-storage-setup.md`. A bucket/RLS migration is committed but has
-not run in the live project. No bucket or CDN is configured yet. Existing
+`docs/supabase-storage-setup.md`. A bucket/RLS migration is committed; whether
+it has been applied to the live project must be checked there. Existing
 source photographs stay in this repository by the owner's decision.
 
 ---
@@ -459,11 +459,13 @@ Allow photographs to be uploaded and managed through the website.
 - [x] Restore the repository seed data
 - [ ] Connect Admin writes to authenticated cloud data
 
-This prototype is intentionally not a secure cloud CMS. It has no login and its
-changes do not update Supabase, Git, or another device.
+This prototype is intentionally not a secure cloud CMS. It has no login, still
+uses existing-image path fields, and its changes do not update Supabase, Git,
+or another device.
 
 `supabase/migrations/20260923_admin_auth.sql` prepares owner-only write policies
-and optional photo metadata columns, but the live project has not run it.
+and optional photo metadata columns; live application status must be checked
+in the Supabase project.
 `admin.html?mode=cloud` has an owner sign-in gate and repository-backed CRUD
 code; local mock tests passed, but no real authenticated cloud write was made.
 Creating the owner's Auth user, enrolling its real UUID, and testing the live
@@ -479,25 +481,29 @@ provides the data boundary.
 
 ## Upload
 
-- [x] Select a new photograph in the prepared Cloud Admin form
+- [x] Select an image for a new or existing Collection/Gallery item in Cloud Admin
+- [x] Preview the current or newly selected image before saving
 - [ ] Upload photographs to the live owner-controlled Storage bucket
 - [x] Show completed-file progress for the three prepared web exports
 - [x] Generate 640px, 1200px, and 1800px WebP exports in the browser
 - [x] Generate the 640px Gallery thumbnail export
 - [ ] Store originals
 
-The prepared upload path is limited to **new** cloud photographs. It accepts
-JPEG, WebP, or browser-decodable AVIF at least 1800 pixels wide, no larger than
-25 MiB or 40 megapixels. The browser renders three WebP exports, rejects
-EXIF/XMP chunks in each output, and never sends the selected source file to
-Storage. Progress counts completed files, not bytes. A photo database row is
-created only after all three uploads succeed. On an upload or confirmed
-database failure, the editor attempts to remove only the new keys from that
-attempt and reports any cleanup failure. A network-ambiguous database result
-requires manual review before deleting those objects.
+The prepared Cloud Admin upload handles Collection covers and Gallery photos
+on create or edit. It accepts JPEG, PNG, WebP, or browser-decodable AVIF at
+least 1800 pixels wide, no larger than 25 MiB or 40 megapixels. It previews
+the current image or selected replacement; without a new file, editing keeps
+the old URL. Cloud forms do not require manual image paths. The browser
+renders three WebP exports, rejects EXIF/XMP chunks in each output, and never
+sends the selected source file to Storage. Progress counts completed files,
+not bytes. A database row is saved only after all three uploads succeed.
+On an upload or confirmed database failure, the editor attempts to remove
+only the new keys from that attempt. Ambiguous writes or cleanup failures
+require manual review. Replacing an image does not delete its older objects.
 
-The desktop and mobile upload flow, partial failure, database rejection, and
-cleanup failure passed local browser tests with a mocked Storage service. A
+The new Collection and Gallery create/edit flows, desktop and mobile previews,
+database rejection, partial upload failure, and cleanup passed local browser
+tests with mocked Storage and database services. A
 temporary JPEG containing GPS EXIF was exported in Chromium; ExifTool found
 no GPS/EXIF/XMP fields in its 1200px WebP. This does not establish a universal
 color-profile guarantee or replace live Auth, bucket, RLS, upload, and public
@@ -735,8 +741,8 @@ originals in the repository and to publish no unverified photo metadata.
 | Status | Roadmap item | Required action |
 | --- | --- | --- |
 | MANUAL ACTION REQUIRED | Release this work branch | Review and merge to `main`, then check the live GitHub Pages build, image downloads, links, Console, and social previews. |
-| MANUAL ACTION REQUIRED | Cloud Admin and Auth | Create the real owner Auth user, apply `20260923_admin_auth.sql`, enroll that user's verified UUID, and test owner, other-user, and anonymous reads/writes. See `docs/supabase-admin-setup.md`. |
-| MANUAL ACTION REQUIRED | Storage and CDN | Review existing policies, apply `20260923_storage_buckets.sql`, test access with expendable files, then stage and verify web exports before changing any photo URL. See `docs/supabase-storage-setup.md`. No live bucket is claimed. |
+| MANUAL ACTION REQUIRED | Cloud Admin and Auth | Verify the real owner Auth user and `20260923_admin_auth.sql` state; create/apply only what is missing, enroll the verified UUID, and test owner, other-user, and anonymous reads/writes. See `docs/supabase-admin-setup.md`. |
+| MANUAL ACTION REQUIRED | Storage and CDN | Review buckets and policies, apply the full `20260923_storage_buckets.sql` migration or just its new Collection policy as appropriate, then test uploads and public reads with expendable files. See `docs/supabase-storage-setup.md`. No live bucket is claimed. |
 | MANUAL ACTION REQUIRED | Complete backup and monitoring | Select an external backup destination and monitoring service, then test restoration and production alerts. The public JSON export is only a partial copy. |
 | OWNER CONTENT REQUIRED | Real date, location, gear, GPS | Leave the optional fields blank until trustworthy source information and a privacy decision are supplied. |
 | OWNER DECISION | Archive and original protection | Keep all originals in the public repository for now, as requested. This means already published originals are publicly accessible even if a private Storage bucket is configured later. |

@@ -2,14 +2,14 @@
 
 面向访客和网站所有者的中文版功能与操作说明见 [`docs/user-guide.zh-CN.md`](docs/user-guide.zh-CN.md)。
 
-这是一个不依赖框架的摄影作品集。首页通过 Content Service 读取作品集与照片，并在下方生成可筛选 Gallery；点击作品卡片后会进入通用的 `collection.html?slug=...` 页面。HTML 负责内容结构，CSS 负责外观与响应式布局，JavaScript 负责数据读取、动态渲染、灯箱、手机菜单和滚动动画。图片保存在 `images/` 下，`dist/` 是给 Sites 预览和托管使用的同内容副本。
+这是一个不依赖框架的摄影作品集。首页通过 Content Service 读取作品集与照片，并在下方生成可筛选 Gallery；点击作品卡片后会进入通用的 `collection.html?slug=...` 页面。HTML 负责内容结构，CSS 负责外观与响应式布局，JavaScript 负责数据读取、动态渲染、灯箱、手机菜单和滚动动画。现有照片保存在 `images/` 下；Cloud Admin 新上传的网页图使用 Supabase Storage。`dist/` 是给 Sites 预览和托管使用的同内容副本。
 
 ## 当前项目状态（2026-09-23）
 
 - 当前稳定检查点是第 34 课：公开页面已经通过 Content Service 和 Repository 从 Supabase 只读加载 3 个作品集与 9 张照片。
 - Supabase 的 Collections 或 Photos 任一读取失败时，两组资料会一起回退到浏览器本地种子，避免一页混用不同来源；页面不直接依赖数据库 SDK。
 - `admin.html` 是第 33 课的浏览器本地原型，可以用 localStorage 新增、编辑、删除和恢复内容，但没有登录、云端写入或跨设备同步。
-- 工作分支另提供 `admin.html?mode=cloud` 的认证界面及云端 CRUD 代码，并准备了数据库 RLS 迁移；迁移尚未在线上执行，尚不能宣称云端 Admin 可用。原本的 `admin.html` 本地模式保持可用。
+- 工作分支另提供 `admin.html?mode=cloud` 的认证界面、云端 CRUD，以及 Collection 和 Gallery 新增／编辑时的本地选图上传；真实账号、RLS 和 Storage 是否已在线上启用仍需核查，不能宣称云端 Admin 已验证可用。原本的 `admin.html` 本地模式保持可用。
 - GitHub Pages 已发布在 <https://hyeexy211.github.io/kris-photo-portfolio/>，桌面端、390px 移动端、筛选、动态 Collection、Lightbox 与云端失败回退已经过部署后验证。
 - 原片按目前决定继续留在仓库；LCP/CLS、Lighthouse 和 200 张模拟卡片已在本地测试，真实访客性能数据仍未完成。云端 Admin 尚待真实账号和迁移验证；对象存储已准备空桶策略与浏览器网页图上传代码，尚未在线上连接和测试。
 - 现有 9 张照片页按你的选择提供 1200px WebP 网页尺寸下载；按钮不指向 1800px 展示图或原片。仓库公开且保留原片，所以这不等于原片受保护。
@@ -34,7 +34,7 @@
 | `data/*.js` | 保存浏览器本地种子资料 | 数组、对象、`id`、`collectionId`、真实图片路径 |
 | `js/content-service.js` | 为 UI 提供统一内容读取接口 | `async/await`、数据源切换、失败回退 |
 | `js/repositories/*.js` | 分别读取 localStorage 与 Supabase | Repository 边界、字段映射、只读查询 |
-| `js/cloud-photo-upload.js` | 在 Cloud Admin 中生成并上传新照片的 3 张 WebP 网页图 | 文件验证、Canvas 导出、Storage 路径与失败清理；需真实账号和桶测试 |
+| `js/cloud-photo-upload.js` | 为 Cloud Admin 的作品集封面和 Gallery 照片生成、上传 3 张 WebP 网页图 | 文件验证、Canvas 导出、Storage 路径与失败清理；需真实账号和桶测试 |
 | `collection.html` | 按 `slug` 展示一个作品集 | URL 参数、异步状态、动态 Lightbox 按钮 |
 | `css/style.css` | 布局、颜色、动画和响应式 | 选择器、Grid、Flexbox、媒体查询 |
 | `js/main.js` | 动态渲染与用户交互 | DOM 创建、筛选、事件监听、函数、状态 class |
@@ -70,8 +70,15 @@
 - Work、Gallery 与通用 Collection 页面继续只调用 `contentService`，不会直接调用 Supabase。
 - `js/repositories/supabase-repository.js` 是唯一包含数据库 `.from(...)` 查询的文件，并把数据库的 snake_case 字段转换回页面现有的 camelCase 数据结构。
 - `js/repositories/local-repository.js` 保留 localStorage 与默认种子；当前正式配置优先使用 `supabase`，云端配置缺失或读取失败时会安全回退到本地仓库。
-- 本课只开放 `SELECT`。Admin 的新增、编辑、删除继续保存在当前浏览器，不会写入 Supabase。
+- 第 34 课只开放 `SELECT`；不带 `?mode=cloud` 的本地 Admin 仍只保存在当前浏览器，不会写入 Supabase。
 - 数据库表、外键、RLS、公开只读策略、真实种子和手动配置步骤见 `docs/supabase-setup.md`。
+
+## Cloud Admin 图片上传（待线上验证）
+
+- 直接访问 `admin/` 可进入 Dashboard，再进入 `admin.html?mode=cloud` 管理内容；公开页面不提供后台入口。
+- Cloud Admin 新建或编辑 Collection、Gallery 时，可从电脑选择 JPEG、PNG、WebP 或 AVIF。表单会预览现有图片和新选择的图片；不选新文件就保留原图，不需要手填图片路径。
+- 保存时浏览器生成 640、1200、1800px WebP 网页图并上传到 Supabase Storage，成功后才将 URL 写入现有数据库字段。替换图片不会自动删除旧文件；上传或数据库写入失败会尽可能清理本次新文件。
+- `admin.html` 的浏览器本地原型继续使用已有图片的相对路径字段，不上传文件。两种模式的操作和 Supabase 手动配置见 `docs/user-guide.zh-CN.md` 与 `docs/supabase-storage-setup.md`。
 
 ## 照片资料字段（浏览器本地原型）
 

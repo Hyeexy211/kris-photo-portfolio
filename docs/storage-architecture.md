@@ -3,12 +3,12 @@
 The nine published photographs already have responsive web exports in `images/`.
 The owner chose to keep the JPEG originals and full-size WebPs in this
 repository for now. Do not delete or move them as part of a storage migration.
-No storage bucket, billing account, or image CDN has been configured for this
-branch.
+The repository cannot confirm the current live Storage bucket or billing state.
 `supabase/migrations/20260923_storage_buckets.sql` and
 `docs/supabase-storage-setup.md` now prepare empty buckets, owner-only web
-export writes, and live acceptance checks. They have not been applied to the
-Supabase project, and the website still serves the checked-in image paths.
+export writes, and live acceptance checks. Check their status in the live
+Supabase project before using Cloud Admin. Existing published photographs still
+serve their checked-in image paths.
 
 ## Services considered
 
@@ -27,7 +27,8 @@ or delivery requirements change.
 ## Object and access rules for implementation
 
 - Public bucket `portfolio-web`: immutable, browser-readable exports only.
-  Object keys follow `photos/<photo-id>/<revision>/<size>.<format>` with
+  Object keys follow `photos/<photo-id>/<revision>/<size>.webp` or
+  `collections/<collection-id>/<revision>/<size>.webp` with
   lower-case IDs and predictable size labels such as `640.webp`, `1200.webp`,
   and `1800.webp`. A new revision gets a new path so long-lived cache headers
   cannot show an old image after an edit.
@@ -41,7 +42,7 @@ or delivery requirements change.
   membership is verified, and Storage policies must repeat that check. An
   `anon` request must fail for upload, overwrite, and delete. Browser code must
   contain only the publishable key, never a service-role or S3 secret.
-- Store the public web URLs and measured dimensions in the existing photo row
+- Store the public web URLs and measured dimensions in the existing Collection or photo row
   only after every required export has uploaded and returned a successful
   response. On partial failure, leave the current photo row and image paths
   unchanged. Do not delete older objects until the new page has been checked.

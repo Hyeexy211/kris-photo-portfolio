@@ -47,12 +47,7 @@ async function assertNoExifOrXmp(blob) {
 }
 
 async function prepareCloudWebExports(file) {
-    if (!file || !["image/jpeg", "image/webp", "image/avif"].includes(file.type)) {
-        throw cloudUploadError("admin.upload.chooseImage");
-    }
-    if (file.size > 25 * 1024 * 1024) {
-        throw cloudUploadError("admin.upload.fileTooLarge");
-    }
+    validateCloudImageFile(file);
 
     let image;
     try {
@@ -95,6 +90,18 @@ async function prepareCloudWebExports(file) {
     }
 }
 
+function validateCloudImageFile(file) {
+    if (!file || !["image/jpeg", "image/png", "image/webp", "image/avif"].includes(file.type)) {
+        throw cloudUploadError("admin.upload.chooseImage");
+    }
+    if (file.size === 0) {
+        throw cloudUploadError("admin.upload.emptyFile");
+    }
+    if (file.size > 25 * 1024 * 1024) {
+        throw cloudUploadError("admin.upload.fileTooLarge");
+    }
+}
+
 function getVerifiedCloudPublicUrl(storage, path) {
     const { data } = storage.getPublicUrl(path);
     const actual = new URL(data?.publicUrl || "");
@@ -106,15 +113,16 @@ function getVerifiedCloudPublicUrl(storage, path) {
     return actual.href;
 }
 
-async function uploadCloudWebExports(photoId, exports, onUploaded) {
+async function uploadCloudWebExports(kind, contentId, exports, onUploaded) {
     const revision = createContentId("revision");
-    if (!/^[a-z0-9-]+$/.test(photoId) || !/^[a-z0-9-]+$/.test(revision)) {
-        throw cloudUploadError("admin.upload.unsafePhotoId");
+    if (!["photos", "collections"].includes(kind)
+        || !/^[a-z0-9-]+$/.test(contentId) || !/^[a-z0-9-]+$/.test(revision)) {
+        throw cloudUploadError("admin.upload.unsafeContentId");
     }
 
     const client = await getSupabaseClient();
     const storage = client.storage.from(CLOUD_WEB_BUCKET);
-    const prefix = `photos/${photoId}/${revision}`;
+    const prefix = `${kind}/${contentId}/${revision}`;
     const urls = {};
 
     for (const item of exports) {
@@ -131,6 +139,7 @@ async function uploadCloudWebExports(photoId, exports, onUploaded) {
                 message: error.message
             });
         }
+        onUploaded(path);
         if (data?.path !== path) {
             throw cloudUploadError("admin.upload.unexpectedStoragePath", {
                 path,
@@ -138,7 +147,6 @@ async function uploadCloudWebExports(photoId, exports, onUploaded) {
             });
         }
 
-        onUploaded(path);
         urls[item.width] = getVerifiedCloudPublicUrl(storage, path);
     }
 

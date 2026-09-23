@@ -154,6 +154,19 @@ const supabaseRepository = Object.freeze({
         return data !== null;
     },
 
+    async imageRowUsesUrl(tableName, id, url) {
+        const imageColumn = tableName === "collections" ? "cover"
+            : tableName === "photos" ? "src" : null;
+        if (!imageColumn) throw new Error("Unsupported image table.");
+        const client = await getSupabaseClient();
+        const { data, error } = await client.from(tableName)
+            .select(`id, ${imageColumn}`)
+            .eq("id", id)
+            .maybeSingle();
+        if (error) throw new Error(`Could not check ${tableName} image: ${error.message}`);
+        return data?.[imageColumn] === url;
+    },
+
     async createCollection(collection) {
         return mapSupabaseCollection(await writeSupabaseRow("collections", "insert", toSupabaseCollection(collection)));
     },

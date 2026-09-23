@@ -2,15 +2,18 @@
 
 The SQL migration in `supabase/migrations/20260923_admin_auth.sql` prepares
 browser-authenticated writes without giving anonymous visitors write access.
-It also adds optional public metadata columns. It has **not** been run on the
-live Supabase project in this branch.
+It also adds optional public metadata columns. This repository does not prove
+whether it has been run on the live Supabase project; inspect the live project
+before running it again.
 
 1. In the existing Supabase project, create or invite the owner's Auth user.
    Disable open signup if this project is owner-only. Do not put a password or
    service-role key in the repository.
-2. Run the migration in Supabase SQL Editor. Review the SQL before running it;
-   it adds a `portfolio_admins` membership table, a membership function, and
-   RLS policies for `collections` and `photos`.
+2. In Supabase Dashboard, check that the `portfolio_admins` membership table,
+   `is_portfolio_admin()` function, and owner-only RLS policies for
+   `collections` and `photos` exist. If the migration is absent, review and
+   run it in SQL Editor. If the live state differs from the checked-in SQL,
+   reconcile it before relying on Cloud Admin writes.
 3. In the Auth dashboard, copy the actual user UUID. Enroll that user from SQL
    Editor using `insert into public.portfolio_admins (user_id) values
    ('<ACTUAL_AUTH_USER_UUID>');` with the placeholder replaced.

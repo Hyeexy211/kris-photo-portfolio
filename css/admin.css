@@ -214,6 +214,95 @@
     resize: vertical;
 }
 
+.admin-image-field {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.admin-image-field > .admin-label,
+.admin-image-hint,
+.admin-image-preview {
+    width: 100%;
+}
+
+.admin-image-field > .admin-label {
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.admin-form .admin-file-picker {
+    position: relative;
+    display: inline-flex;
+    width: auto;
+    cursor: pointer;
+}
+
+.admin-form .admin-file-picker input[type="file"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.admin-file-picker .admin-button {
+    display: inline-flex;
+    align-items: center;
+}
+
+.admin-form .admin-file-picker .admin-button {
+    color: var(--color-text);
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.admin-file-picker:hover .admin-button {
+    border-color: var(--color-text);
+}
+
+.admin-file-picker:focus-within .admin-button {
+    outline: 2px solid var(--color-text);
+    outline-offset: 3px;
+}
+
+.admin-file-picker input:disabled + .admin-button {
+    opacity: 0.5;
+    cursor: wait;
+}
+
+.admin-file-name,
+.admin-image-hint,
+.admin-image-preview figcaption {
+    color: var(--color-muted);
+    font-size: 13px;
+}
+
+.admin-file-name {
+    overflow-wrap: anywhere;
+}
+
+.admin-image-preview {
+    margin: 4px 0 0;
+}
+
+.admin-image-preview img {
+    display: block;
+    max-width: min(100%, 260px);
+    max-height: 220px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+.admin-image-preview figcaption {
+    margin-top: 8px;
+}
+
 .admin-upload-progress p {
     margin-bottom: 8px;
     color: var(--color-muted);

@@ -59,8 +59,14 @@ python3 -m http.server 4173 --bind 127.0.0.1
 ## 5. 云端数据与 Cloud Admin 的现状
 
 - **已经可用：**公开页面的 Supabase 只读数据。仓库中的 `collections`、`photos` 结构、默认种子和公开读取策略已有配置与实际读取记录。云端读取异常时会回退到浏览器本地内容。
-- **已有代码，但尚未完成线上启用验证：**`admin.html?mode=cloud` 的邮箱密码登录、管理员身份检查、作品集和照片记录的云端增删改，以及新照片网页尺寸图上传。真实所有者账号、管理员 RLS 迁移、Storage 桶迁移和实地权限／上传／恢复检查仍待完成。现在不要依靠它管理正式照片。
-- **新照片上传的设计边界：**准备中的表单接受符合条件的 JPEG、WebP 或 AVIF，浏览器会生成 640、1200、1800px 三份 WebP 网页图。原始文件不会由这个流程上传；云端删除照片记录也不会自动删除 Storage 里的网页图。详情见 [`supabase-admin-setup.md`](supabase-admin-setup.md) 与 [`supabase-storage-setup.md`](supabase-storage-setup.md)。
+- **已有代码，但尚未完成线上启用验证：**`admin.html?mode=cloud` 的邮箱密码登录、管理员身份检查、作品集和照片记录的云端增删改，以及两种内容在新增／编辑时的图片上传。真实所有者账号、管理员 RLS、Storage 桶与策略是否已在实地启用仍须核查，权限／上传／恢复测试尚未完成。现在不要依靠它管理正式照片。
+- **图片上传的设计边界：**Cloud Admin 接受符合条件的 JPEG、PNG、WebP 或 AVIF。选择后可看新图预览，编辑时也能看现有图片；不选新文件就保留原图。保存时浏览器会生成 640、1200、1800px 三份 WebP 网页图，上传成功后再把 URL 写入 Supabase。云端模式无需手填图片路径；旧图在替换后暂不自动删除，原始文件也不会由此流程上传。浏览器本地原型仍使用已有图片的相对路径字段。详情见 [`supabase-admin-setup.md`](supabase-admin-setup.md) 与 [`supabase-storage-setup.md`](supabase-storage-setup.md)。
+
+待 Supabase 手动配置和线上权限测试完成后，使用步骤是：
+
+1. 在站点根地址后加 `admin/` 打开 Dashboard，登录所有者账号，进入 **Manage Work** 或 **Manage Gallery**。公开页面不显示 Dashboard 入口；也可在站点根地址后直接打开 `admin.html?mode=cloud`。
+2. 新建 Collection 时填写标题等内容，点 **Choose image** 从电脑选封面，确认预览后保存。编辑时选择新文件可替换封面；不选择则保留当前封面。
+3. 在 Gallery 新建或编辑照片时同样选择本地图片并确认预览，然后保存。上传过程中保存按钮不可重复点击；失败时先看表单状态和错误信息，不要把未确认的 URL 当作已发布内容。
 
 即使日后 Cloud Admin 可以写入 Supabase，它也不能直接改写 GitHub Pages 上的静态 HTML。现有 9 张照片的独立分享页及其社交预览资料需要重新生成、审核并发布；新云端照片暂时只有通用照片页。公开仓库中仍保留原片，因此网页尺寸下载限制**不等于**原片已受到保护。
 
@@ -69,7 +75,7 @@ python3 -m http.server 4173 --bind 127.0.0.1
 | 状态 | 功能 |
 | --- | --- |
 | 当前仓库已实现 | 响应式首页与手机导航；3 个作品集和 9 张照片；动态 Work / Gallery；分类筛选及空状态；照片灯箱、键盘和手机滑动；独立照片页；现有照片的 1200px WebP 下载；本地 Admin 新增／编辑／删除／重置；Supabase 公开只读和失败回退；`srcset` 响应式图片；基础 SEO、站点地图及 9 张照片的静态分享页。 |
-| 已准备，仍需真实环境验证 | 有权限控制的 Cloud Admin 增删改、照片网页图上传、Storage 策略、相应的发布与恢复流程。 |
+| 已准备，仍需真实环境验证 | 有权限控制的 Cloud Admin 增删改、Collection 封面与 Gallery 照片上传／替换、Storage 策略、相应的发布与恢复流程。 |
 | 尚未实现或完成 | 本地 Admin 跨设备同步；对现有原片的访问保护；云端新照片的独立静态分享页和下载按钮；完整的图片、Auth 与数据库备份及恢复；真实访客性能监控；自定义域名、站内搜索、多语言与其他长期功能。 |
 
 截至本说明编写时，当前 Git 分支是 `feature/roadmap-completion`，而公开 GitHub Pages 的最新部署不应被视为已经包含本分支所有功能。合并发布前，下载、分享页和 Cloud Admin 的状态以本地仓库及相应检查记录为准。项目的后续顺序见 [`roadmap.md`](roadmap.md)；代码学习说明见 [`README.md`](../README.md)。

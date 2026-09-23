@@ -1,5 +1,5 @@
 -- Run after 20260923_admin_auth.sql and owner enrollment.
--- This creates empty buckets and Storage policies; it does not move any photos.
+-- This provisions empty buckets when absent and Storage policies; it does not move any photos.
 -- Storage objects must be uploaded and removed through the Storage API, not SQL.
 
 begin;
@@ -62,6 +62,17 @@ with check (
     bucket_id = 'portfolio-web'
     and (select public.is_portfolio_admin())
     and name ~ '^photos/[a-z0-9-]+/[a-z0-9-]+/(640|1200|1800)\.(webp|avif)$'
+);
+
+-- Collection covers use the same immutable web exports and owner identity.
+-- This separate policy can be added without changing the existing photo path.
+drop policy if exists "Portfolio admin uploads collection covers" on storage.objects;
+create policy "Portfolio admin uploads collection covers"
+on storage.objects for insert to authenticated
+with check (
+    bucket_id = 'portfolio-web'
+    and (select public.is_portfolio_admin())
+    and name ~ '^collections/[a-z0-9-]+/[a-z0-9-]+/(640|1200|1800)\.webp$'
 );
 
 -- There is intentionally no UPDATE policy: a published key is never overwritten.
