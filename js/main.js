@@ -212,6 +212,7 @@ const lightbox = document.querySelector("#lightbox");
 
 // 找到灯箱中用来显示当前作品的大图元素。
 const lightboxImage = document.querySelector("#lightbox-image");
+const lightboxCaption = document.querySelector("#lightbox-caption");
 
 // 找到灯箱右上角的关闭按钮。
 const lightboxClose = document.querySelector("#lightbox-close");
@@ -276,6 +277,7 @@ function showLightboxImage(index) {
 
     // 把照片说明同步给灯箱大图。
     lightboxImage.alt = photo.alt || photo.title || "Photography work";
+    if (lightboxCaption) lightboxCaption.textContent = photo.title || photo.alt || "";
 }
 
 // 同一个 openLightbox 同时接收首页 Content Service 数据与项目页整理出的照片数据。
@@ -368,6 +370,27 @@ lightbox?.addEventListener("click", (event) => {
     // event.target 是用户实际点击到的元素。
     if (event.target === lightbox) closeLightbox();
 });
+
+// A horizontal swipe on the image moves between photos; vertical gestures are ignored.
+let lightboxTouchStart = null;
+
+lightboxImage?.addEventListener("touchstart", (event) => {
+    if (!lightbox?.classList.contains("active") || event.touches.length !== 1) return;
+    lightboxTouchStart = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+}, { passive: true });
+
+lightboxImage?.addEventListener("touchend", (event) => {
+    if (!lightboxTouchStart || event.changedTouches.length !== 1) return;
+
+    const distanceX = event.changedTouches[0].clientX - lightboxTouchStart.x;
+    const distanceY = event.changedTouches[0].clientY - lightboxTouchStart.y;
+    lightboxTouchStart = null;
+
+    if (Math.abs(distanceX) < 50 || Math.abs(distanceX) <= Math.abs(distanceY)) return;
+    showLightboxImage(currentImageIndex + (distanceX < 0 ? 1 : -1));
+}, { passive: true });
+
+lightboxImage?.addEventListener("touchcancel", () => { lightboxTouchStart = null; });
 
 // ================================================================
 // 4. 移动端导航

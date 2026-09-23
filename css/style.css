@@ -708,10 +708,10 @@ section p {
     max-width: 90vw;
 
     /* 图片高度最多占视口 88%。 */
-    max-height: 88vh;
+    max-height: calc(100vh - 160px);
 
     /* 动态视口单位更适合手机地址栏变化。 */
-    max-height: 88dvh;
+    max-height: calc(100dvh - 160px);
 
     /* 宽度由图片原始比例和最大尺寸共同决定。 */
     width: auto;
@@ -733,6 +733,18 @@ section p {
 .lightbox.active .lightbox-image {
     /* 恢复到 100% 大小，形成轻微进入动画。 */
     transform: scale(1);
+}
+
+.lightbox-caption {
+    position: absolute;
+    right: 72px;
+    bottom: 24px;
+    left: 72px;
+    margin: 0;
+    color: var(--color-on-dark);
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: center;
 }
 
 /* lightbox-close 是右上角关闭按钮。 */
@@ -1059,6 +1071,12 @@ footer {
 
     .lightbox-prev {
         left: 2px;
+    }
+
+    .lightbox-caption {
+        right: var(--page-padding-mobile);
+        bottom: 20px;
+        left: var(--page-padding-mobile);
     }
 
     .lightbox-next {

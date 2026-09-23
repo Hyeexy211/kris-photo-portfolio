@@ -130,12 +130,12 @@ Create initial categories:
 - [x] Display portrait and landscape photographs in the gallery
 - [x] Give Portrait, Documentary, and Landscape their own static URLs
 - [x] Link full-size project cards on the homepage to those pages
-- [ ] Add image captions
+- [x] Add image captions
 
 ## Navigation
 
 - [x] Connect Work navigation to the project cards
-- [ ] Add active category state
+- [x] Add active category state
 - [x] Add smooth anchor scrolling, with reduced-motion support
 
 ### Phase 2 Definition of Done
@@ -166,11 +166,11 @@ Make viewing individual photographs immersive.
 - [x] Previous photograph
 - [x] Next photograph
 - [x] Keyboard navigation between photographs
-- [ ] Mobile swipe support
+- [x] Mobile swipe support
 
 ## Photo Information
 
-- [ ] Photo title
+- [x] Photo title
 - [ ] Location
 - [ ] Shooting date
 - [ ] Camera
