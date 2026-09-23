@@ -22,8 +22,8 @@ Avoid implementing later-stage infrastructure before the current stage is stable
 The first GitHub Pages release belongs to the current static-site stage; the later
 backend and storage phases are optional expansion, not release prerequisites.
 
-Checkboxes describe completed work. An item present only in the uncommitted
-working tree stays open until it has been checked and is ready to publish.
+Checkboxes describe verified work in this repository. They do not imply that
+the work branch has been merged to the public GitHub Pages `main` branch.
 
 ---
 
@@ -39,22 +39,35 @@ working tree stays open until it has been checked and is ready to publish.
 - Content Service plus local and Supabase Repository boundaries
 - Real Supabase `collections` / `photos` tables, seed data, public-read RLS, and verified cloud reads
 - Public GitHub Pages release at `https://hyeexy211.github.io/kris-photo-portfolio/`
+- On `feature/roadmap-completion`: nine static photograph pages with individual
+  previews, captions and mobile Lightbox swipe, optional local tags/metadata,
+  1200px web-size downloads, sitemap, and local performance checks
+- On that branch: authenticated cloud Admin code, owner-only RLS migration,
+  Storage bucket migration, and a public-content export script are prepared;
+  their live account and Storage flows have **not** been verified
 
 ## In Progress
 
-- Phase 5 source-image/archive cleanup and measured performance checks
-- Keeping the editable course document aligned with implemented lessons; `Weblesson.docx` currently ends at Lesson 18 and previews Lesson 19
+- Owner Auth enrollment, live RLS and Storage checks, and release of this branch
+- Phase 5 archive cleanup is paused by the owner's decision to keep originals
+  in the public repository; real photographs have no verified date, location,
+  or equipment values to publish
 
 ## Next
 
-- Complete the remaining Phase 5 image and Network/Lighthouse checks
-- Select the next bounded lesson only after the current release remains stable
+- Review and merge the work branch, then verify the deployed site and social previews
+- Apply and test the prepared cloud migrations after the real owner Auth account
+  and access policies are reviewed in Supabase
 
 ## Deferred
 
-- Authenticated cloud Admin writes and protected routes
-- Object Storage upload, processing, and original-photo protection
-- Rich metadata, tags, individual photo URLs, downloads, analytics, and optional platform features
+- Original-file removal, verified but unavailable photo metadata, and a decision
+  about Street/Cafe work
+- Full upload/processing pipeline, production CDN, monitoring, custom domain,
+  and full database/image backup until service and account setup is available
+- Analytics and long-term platform ideas until the owner chooses their scope
+
+`Weblesson.docx` is outside this roadmap execution at the owner's request.
 
 ---
 
@@ -181,6 +194,8 @@ Make viewing individual photographs immersive.
 - [ ] ISO
 
 Metadata should only be displayed when useful.
+The interfaces accept these optional fields, but the nine published photos
+have no owner-confirmed values. Their public values intentionally stay blank.
 
 The interface should remain visually minimal.
 
@@ -236,23 +251,32 @@ Make the first static portfolio fast while preserving photographic quality.
 - [ ] Keep RAW and high-quality photo archives outside the website repository; publish only web-ready assets
 - [ ] Resize the hero export to roughly 2000-2400px on its longest edge
 - [ ] Resize gallery exports to roughly 1600-1800px on their longest edge
-- [ ] Export in sRGB; compare JPEG and WebP at suitable quality by eye and file size
-- [ ] Finish integrating the WebP files into the site and remove redundant large website assets when safe
+- [x] Export responsive WebPs with embedded sRGB; compare JPEG and WebP at suitable quality by eye and file size
+- [x] Integrate the responsive WebP files into the site
+- [ ] Remove redundant large website assets after a separately verified archive exists
 - [x] Use actual image dimensions for HTML `width` and `height`, including correct aspect ratios
 - [x] Keep the hero eager-loaded and lazy-load below-the-fold gallery images
 - [x] Replace numbered placeholder `alt` text with meaningful descriptions of the photographs
 
 The responsive WebP set now contains real 640px, 1200px, and 1800px-wide
 files. Its total size fell from roughly 128 MiB to 6.4 MiB, and the HTML
-dimensions match each default `src`. The original JPEGs and redundant
-full-resolution WebPs are still in the repository, so archive cleanup and
-color-profile verification remain open tasks.
+dimensions match each default `src`. ExifTool confirms embedded sRGB ICC
+profiles in all 30 responsive variants. The 10 source JPEGs and 10 unnumbered
+full-resolution WebPs have neither an embedded ICC profile nor EXIF ColorSpace;
+`sips` reporting sRGB for the JPEGs does not establish an embedded profile.
+At matched 1200px dimensions, 10 current WebPs totaled 1.93 MiB, compared
+with 3.28 MiB for temporary JPEG quality 80 and 3.97 MiB at quality 85.
+Equal-pixel crops were inspected by eye; the current WebPs remain suitable.
+See `docs/performance-audit.md` for the method and limits. The 1800px label
+describes width: the hero and five portrait Gallery variants are 1800 × 2700,
+so the longest-edge export targets above remain open. The owner chose to
+retain all originals and full-size WebPs in the repository for now.
 
 ## Later Image Pipeline
 
 - [ ] Generate thumbnails and medium-resolution images when the collection grows
 - [x] Add responsive `srcset` where device-size variants are useful
-- [ ] Evaluate AVIF after the JPEG/WebP workflow is stable
+- [x] Evaluate AVIF after the JPEG/WebP workflow is stable; keep WebP for now (see `docs/avif-evaluation.md`)
 
 Possible future pipeline:
 
@@ -368,9 +392,10 @@ Requirements:
 - [ ] predictable file naming
 
 The comparison, tentative Supabase Storage choice, key layout, access rules,
-and live acceptance checks are in `docs/storage-architecture.md`. No bucket or
-CDN is configured yet. Existing source photographs stay in this repository by
-the owner's decision.
+and live acceptance checks are in `docs/storage-architecture.md` and
+`docs/supabase-storage-setup.md`. A bucket/RLS migration is committed but has
+not run in the live project. No bucket or CDN is configured yet. Existing
+source photographs stay in this repository by the owner's decision.
 
 ---
 
@@ -462,12 +487,12 @@ provides the data boundary.
 
 ## Management
 
-- [ ] Edit photo title
-- [ ] Edit category
-- [ ] Edit tags
-- [ ] Edit location
-- [ ] Edit description
-- [ ] Delete photograph
+- [ ] Verify cloud editing of photo title
+- [ ] Verify cloud editing of category
+- [ ] Verify cloud editing of tags
+- [ ] Verify cloud editing of location
+- [ ] Verify cloud editing of description
+- [ ] Verify cloud deletion of a photograph
 - [x] Reorder photographs by an optional numeric display order in Admin
 
 Possible future workflow:
@@ -571,8 +596,9 @@ The public site is available at
 September 23, 2026 covered desktop, 390px mobile, the three Collections, all
 nine Gallery photographs, filters, dynamic/static Lightbox flows, browser-local
 Admin compatibility, real Supabase `200` reads, and simulated cloud fallback.
-The exact Pages build-source setting was not read from GitHub repository
-settings, so that administrative check remains open.
+The authenticated GitHub Pages API confirmed `main` and repository root as
+the current build source, with HTTPS enforced; see
+`docs/deployment-settings-audit.md`. This work branch is not deployed there.
 
 ## Later Production Improvements
 
@@ -670,23 +696,31 @@ These are optional and should not distract from the core portfolio.
 Current development priority:
 
 ```text
-Phase 5
-Finish source-image cleanup and measured performance checks
+Review feature/roadmap-completion and merge when approved
     ↓
-Phase 12
-Keep the verified static release healthy
+Verify Pages, social previews, downloads, and public reads after deployment
     ↓
-Next bounded lesson
-Choose explicitly; cloud Admin and Storage remain deferred
+Enroll the real owner Auth account and test the prepared RLS/Storage migrations
+    ↓
+Choose whether to activate upload, analytics, and optional platform ideas
 ```
 
-Lesson 34's read-only Supabase integration is complete. Do not expand it into
-authentication, cloud CRUD, or upload infrastructure without a separate lesson.
+The local release checks are complete as recorded in `docs/performance-audit.md`.
+Cloud Admin and Storage remain prepared code and migrations until real account,
+permissions, upload, and recovery checks pass. The owner has decided to keep
+originals in the repository and to publish no unverified photo metadata.
 
-The immediate objective is:
+## Manual actions and owner decisions
 
-> Finish the remaining image/archive and performance measurements while keeping
-> the current public release stable. Then choose one clearly bounded next lesson.
+| Status | Roadmap item | Required action |
+| --- | --- | --- |
+| MANUAL ACTION REQUIRED | Release this work branch | Review and merge to `main`, then check the live GitHub Pages build, image downloads, links, Console, and social previews. |
+| MANUAL ACTION REQUIRED | Cloud Admin and Auth | Create the real owner Auth user, apply `20260923_admin_auth.sql`, enroll that user's verified UUID, and test owner, other-user, and anonymous reads/writes. See `docs/supabase-admin-setup.md`. |
+| MANUAL ACTION REQUIRED | Storage and CDN | Review existing policies, apply `20260923_storage_buckets.sql`, test access with expendable files, then stage and verify web exports before changing any photo URL. See `docs/supabase-storage-setup.md`. No live bucket is claimed. |
+| MANUAL ACTION REQUIRED | Complete backup and monitoring | Select an external backup destination and monitoring service, then test restoration and production alerts. The public JSON export is only a partial copy. |
+| OWNER CONTENT REQUIRED | Real date, location, gear, GPS | Leave the optional fields blank until trustworthy source information and a privacy decision are supplied. |
+| OWNER DECISION | Archive and original protection | Keep all originals in the public repository for now, as requested. This means already published originals are publicly accessible even if a private Storage bucket is configured later. |
+| OPTIONAL | Custom domain, analytics, Street/Cafe, and long-term ideas | Define actual content, service, and privacy requirements before implementation. These are not prerequisites for the current portfolio release. |
 
 ---
 

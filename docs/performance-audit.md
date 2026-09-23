@@ -8,11 +8,40 @@
   `-640.webp`, `-1200.webp` and `-1800.webp` files. No current page/data/seed
   reference to an original JPEG or the unnumbered full-size WebPs was found.
 - The hero `-1800.webp` is 1800 × 2700 pixels and has a 640px alternative.
-  The JPEG original is 4672 × 7008 pixels. `sips` reports the WebP as RGB;
-  this alone does not prove an embedded sRGB profile.
+  The JPEG original is 4672 × 7008 pixels. ExifTool confirms embedded sRGB
+  ICC profiles in all 30 responsive WebPs. None of the 10 source JPEGs or 10
+  retained full-resolution, unnumbered WebPs contains an ICC profile or EXIF
+  ColorSpace tag. `sips` displays sRGB for the untagged JPEGs, but that is its
+  interpretation, not evidence of an embedded profile. The `-1800` suffix
+  denotes width, so the hero and five portrait Gallery exports have a 2700px
+  longest edge; the roadmap's longest-edge targets remain open.
 - Original photographs were retained. Their archive destination and integrity
   have not been established, so deleting them from Git would risk user content.
   The owner chose on 2026-09-23 to keep them in the repository for now.
+
+## JPEG/WebP export comparison
+
+On 2026-09-23, each of the 10 source JPEGs was temporarily resized with
+`sips` to match its existing `-1200.webp` dimensions and exported at JPEG
+quality settings 80 and 85. The one panoramic photo used explicit 1200 × 511
+dimensions to match the existing WebP's rounding. ExifTool added an EXIF
+`ColorSpace=sRGB` tag to the temporary JPEGs without changing the site files.
+The WebPs themselves contain embedded sRGB ICC profiles.
+
+| Ten 1200px-wide files | Total size | Compared with existing WebP |
+| --- | ---: | ---: |
+| Existing WebP | 1.93 MiB | baseline |
+| Temporary JPEG, quality 80 | 3.28 MiB | 1.70× as large |
+| Temporary JPEG, quality 85 | 3.97 MiB | 2.06× as large |
+
+The WebP was smaller for every photograph. I inspected equal-pixel 100% crops
+from all 10 WebP/JPEG-80 pairs, including foliage, textured interiors, dark
+windows, a smooth dusk sky and bright lamps; four JPEG-85 pairs were also
+checked. Both formats look usable at web viewing size. The existing WebPs show
+no obvious blocking or banding in those crops and retain fine sky/foliage
+texture at substantially smaller file sizes. Keep the current responsive
+WebPs; this visual check is subjective and cannot establish the original
+untagged JPEGs' true color space.
 
 ## Browser measurement
 
