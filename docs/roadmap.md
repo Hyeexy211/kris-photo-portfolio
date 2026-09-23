@@ -43,14 +43,23 @@ their own deployment check.
 - Merged into local `main` from `feature/roadmap-completion`: nine static photograph pages with individual
   previews, captions and mobile Lightbox swipe, optional local tags/metadata,
   1200px web-size downloads, sitemap, and local performance checks
-- In that merged source: authenticated cloud Admin code, owner-only RLS migration,
-  Storage bucket migration, Collection/Gallery create-and-edit image upload,
-  and a public-content export script are prepared; their live account and
-  Storage flows have **not** been verified
+- Live owner sign-in and administrator identity were verified on 2026-09-23;
+  the content-field and Collection unlink migration was applied, preserving
+  all previous fields and timestamps of the three Collections and nine Photos
+- Live SQL inspection confirmed the two Storage buckets and four owner-only
+  policies already existed; both buckets were empty at that inspection and
+  the Storage migration was not rerun
+- Post-migration owner CRUD, cover/photo upload and replacement, category
+  changes, membership/order, and deletion passed against real Supabase from
+  the current source's HTTP preview; the original three Collections and nine
+  Photos matched the baseline afterward and all 15 test exports were removed
+- Anonymous database INSERT and Storage upload were denied; a public-content
+  export script is also implemented
 
 ## In Progress
 
-- Owner Auth enrollment, live RLS and Storage checks, and verification after publishing merged `main`
+- Remaining negative permission and failure-cleanup checks, including a second
+  signed-in non-admin account, and verification after publishing the current source
 - Phase 5 archive cleanup is paused by the owner's decision to keep originals
   in the public repository; real photographs have no verified date, location,
   or equipment values to publish
@@ -58,8 +67,8 @@ their own deployment check.
 ## Next
 
 - Verify the merged `main` release on the deployed site and check social previews
-- Apply and test the prepared cloud migrations after the real owner Auth account
-  and access policies are reviewed in Supabase
+- Complete the remaining permission/failure scenarios with temporary content,
+  then remove it and compare original records with the baseline
 
 ## Deferred
 
@@ -348,8 +357,9 @@ Lesson 24 expands that data to the nine existing portfolio photographs and uses
 `createPhotoCard()` plus `renderGallery()` to build a filterable homepage
 Gallery. Unverified dates remain empty and are not rendered. The category
 filters preserve the repository's real Portrait, Documentary and Landscape
-collections. The requested Street filter remains available as an honest empty
-state until real Street work is added.
+categories. The later Gallery implementation generates filters from categories
+used by actual Photos. Street has no Photo now, so its filter is hidden until
+real Street work is added. The empty dataset still has an empty state.
 
 ---
 
@@ -395,9 +405,13 @@ Requirements:
 
 The comparison, tentative Supabase Storage choice, key layout, access rules,
 and live acceptance checks are in `docs/storage-architecture.md` and
-`docs/supabase-storage-setup.md`. A bucket/RLS migration is committed; whether
-it has been applied to the live project must be checked there. Existing
-source photographs stay in this repository by the owner's decision.
+`docs/supabase-storage-setup.md`. On 2026-09-23, SQL inspection confirmed the
+expected public web-export bucket, private originals bucket, and four
+owner-only object policies; neither bucket contained objects at inspection.
+No Storage migration was rerun. Owner upload, replacement, public delivery,
+and explicit cleanup of test objects subsequently passed. Anonymous upload
+was denied; remaining permission/failure checks are listed in the setup guide.
+Existing source photographs stay in this repository by the owner's decision.
 
 ---
 
@@ -458,27 +472,31 @@ Allow photographs to be uploaded and managed through the website.
 - [x] Create, edit, and delete Work and Gallery records in the current browser
 - [x] Persist browser-local changes with localStorage
 - [x] Restore the repository seed data
-- [ ] Connect Admin writes to authenticated cloud data
+- [x] Connect Admin writes to authenticated cloud data
 
 This prototype is intentionally not a secure cloud CMS. It has no login, still
 uses existing-image path fields, and its changes do not update Supabase, Git,
 or another device.
 
-`supabase/migrations/20260923_admin_auth.sql` prepares owner-only write policies
-and optional photo metadata columns; live application status must be checked
-in the Supabase project.
+`supabase/migrations/20260923_admin_auth.sql` defines owner-only write policies
+and optional photo metadata columns. Live owner sign-in, administrator
+identity, and the existing Auth/RLS configuration were verified on 2026-09-23.
 The default `admin.html` (and compatible `?mode=cloud` URL) has an owner sign-in
 gate and repository-backed CRUD code; `?mode=local` retains the browser-local
-prototype. Local mock tests passed, but no real authenticated cloud write was
-made.
-Creating the owner's Auth user, enrolling its real UUID, and testing the live
-policies are manual actions before cloud Admin can be marked complete.
+prototype. Local CRUD tests passed. Live temporary row creation/deletion and
+category changes passed before the content migration; missing-field and old-FK
+errors were then resolved by applying `20260923_collection_content.sql`.
+Post-migration owner forms, membership, ordering, cover/photo uploads and
+replacement, and deletion passed using temporary content against real
+Supabase. Original rows matched the baseline afterward, and all test exports
+were removed. Anonymous INSERT/upload was denied; a second signed-in
+non-admin account and broader negative cases remain untested.
 The static Admin URL itself cannot be server-protected by GitHub Pages; RLS
 provides the data boundary.
 
 ## Authentication
 
-- [ ] Admin login
+- [x] Admin login with the verified live owner account
 - [ ] Session management
 - [ ] Protected admin routes
 
@@ -486,15 +504,17 @@ provides the data boundary.
 
 - [x] Select an image for a new or existing Collection/Gallery item in Cloud Admin
 - [x] Preview the current or newly selected image before saving
-- [ ] Upload photographs to the live owner-controlled Storage bucket
+- [x] Upload photographs to the live owner-controlled Storage bucket
 - [x] Show completed-file progress for the three prepared web exports
 - [x] Generate 640px, 1200px, and 1800px WebP exports in the browser
 - [x] Generate the 640px Gallery thumbnail export
 - [ ] Store originals
 
-The prepared Cloud Admin upload handles Collection covers and Gallery photos
+Cloud Admin upload handles Collection covers and Gallery photos
 on create or edit. It accepts JPEG, PNG, WebP, or browser-decodable AVIF at
-least 1800 pixels wide, no larger than 25 MiB or 40 megapixels. It previews
+least 1800 pixels on the longest edge, no larger than 25 MiB or 40 megapixels.
+The three export sizes refer to longest edges; portrait and landscape images
+keep their proportions, and `srcset` uses each export’s real width. It previews
 the current image or selected replacement; without a new file, editing keeps
 the old URL. Cloud forms do not require manual image paths. The browser
 renders three WebP exports, rejects EXIF/XMP chunks in each output, and never
@@ -508,20 +528,24 @@ The new Collection and Gallery create/edit flows, desktop and mobile previews,
 database rejection, partial upload failure, and cleanup passed local browser
 tests with mocked Storage and database services. A
 temporary JPEG containing GPS EXIF was exported in Chromium; ExifTool found
-no GPS/EXIF/XMP fields in its 1200px WebP. This does not establish a universal
-color-profile guarantee or replace live Auth, bucket, RLS, upload, and public
-page checks. New cloud photos currently use generic `photo.html?id=...` pages;
+no GPS/EXIF/XMP fields in its 1200px WebP. Real owner tests also uploaded
+1080 × 1920 portraits, producing 360 × 640, 675 × 1200, and 1013 × 1800
+exports with matching `srcset` widths. Cover/photo replacement, public page
+reads, and explicit deletion of all 15 test exports passed. These results do
+not establish a universal color-profile guarantee or complete the remaining
+non-admin, invalid-upload, overwrite, and injected-failure checks. New cloud
+photos currently use generic `photo.html?id=...` pages;
 they have no static social preview or download button until those separate
 publishing paths are extended.
 
 ## Management
 
-- [ ] Verify cloud editing of photo title
-- [ ] Verify cloud editing of category
+- [x] Verify cloud editing of photo title on a temporary record
+- [x] Verify cloud editing of category on temporary records
 - [ ] Verify cloud editing of tags
 - [ ] Verify cloud editing of location
 - [ ] Verify cloud editing of description
-- [ ] Verify cloud deletion of a photograph
+- [x] Verify cloud deletion of a temporary photograph
 - [x] Reorder photographs by an optional numeric display order in Admin
 
 Possible future workflow:
@@ -565,9 +589,11 @@ Privacy rule:
 
 GPS information should never automatically become public.
 
-The review script extracts only non-GPS values and a GPS-presence flag. The
-10 current website JPEGs contain none of these EXIF values; automatic
-publication and private GPS handling remain open.
+The command-line review script and the browser's JPEG upload review extract
+only supported non-GPS values and a GPS-presence flag. Browser suggestions
+require separate per-field acceptance and a Photo save; they are never
+published automatically. The 10 current website JPEGs contain none of these
+EXIF values. GPS coordinates are not entered into the public site.
 
 Location publishing must remain optional.
 
@@ -731,23 +757,29 @@ Confirm the default Cloud Admin entry reaches GitHub Pages
     ↓
 Verify Pages, social previews, downloads, and public reads after deployment
     ↓
-Enroll the real owner Auth account and test the prepared RLS/Storage migrations
+Complete remaining non-admin, invalid-upload, and failure-cleanup checks
+    ↓
+Keep test cleanup and original-record comparison as acceptance requirements
     ↓
 Choose whether to activate upload, analytics, and optional platform ideas
 ```
 
 The local release checks are complete as recorded in `docs/performance-audit.md`.
-Cloud Admin and Storage remain prepared code and migrations until real account,
-permissions, upload, and recovery checks pass. The owner has decided to keep
-originals in the repository and to publish no unverified photo metadata.
+Live owner identity, content migration, Storage configuration, and owner
+upload/CRUD workflows are verified. Test rows and all test exports were
+removed; original rows and timestamps were unchanged. Remaining negative
+permission, failure-cleanup, and recovery checks are recorded in
+`docs/crud-test-report-2026-09-23.md`. The owner has decided to keep originals
+in the repository and to publish no unverified photo metadata.
 
 ## Manual actions and owner decisions
 
 | Status | Roadmap item | Required action |
 | --- | --- | --- |
 | MANUAL ACTION REQUIRED | Verify the next release | Check the live default Admin entry, image downloads, links, Console, and social previews after publishing the next `main` update. |
-| MANUAL ACTION REQUIRED | Cloud Admin and Auth | Verify the real owner Auth user and `20260923_admin_auth.sql` state; create/apply only what is missing, enroll the verified UUID, and test owner, other-user, and anonymous reads/writes. See `docs/supabase-admin-setup.md`. |
-| MANUAL ACTION REQUIRED | Storage and CDN | Review buckets and policies, apply the full `20260923_storage_buckets.sql` migration or just its new Collection policy as appropriate, then test uploads and public reads with expendable files. See `docs/supabase-storage-setup.md`. No live bucket is claimed. |
+| OWNER WORKFLOWS VERIFIED; PERMISSION CHECKS REMAIN | Cloud Admin and Auth | Owner sign-in and CRUD passed; anonymous INSERT was denied. Test a second signed-in non-admin account and remaining negative cases. See `docs/supabase-admin-setup.md`. |
+| VERIFIED | Collection story and Photo metadata | `20260923_collection_content.sql` was applied on 2026-09-23. Story/time edits, independent Collection order, membership changes, and deletion retaining Photos passed; original rows and timestamps matched after cleanup. See `docs/user-guide.zh-CN.md`. |
+| OWNER UPLOAD VERIFIED; NEGATIVE CHECKS REMAIN | Storage and CDN | Existing buckets/policies were retained. Owner upload, replacement, public delivery, and cleanup passed; anonymous upload was denied. Complete non-admin, invalid-path/MIME/size, overwrite, and live failure-cleanup cases. See `docs/supabase-storage-setup.md`. |
 | MANUAL ACTION REQUIRED | Complete backup and monitoring | Select an external backup destination and monitoring service, then test restoration and production alerts. The public JSON export is only a partial copy. |
 | OWNER CONTENT REQUIRED | Real date, location, gear, GPS | Leave the optional fields blank until trustworthy source information and a privacy decision are supplied. |
 | OWNER DECISION | Archive and original protection | Keep all originals in the public repository for now, as requested. This means already published originals are publicly accessible even if a private Storage bucket is configured later. |

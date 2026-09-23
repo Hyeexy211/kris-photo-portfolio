@@ -653,6 +653,29 @@ section p {
     transition: transform var(--transition-medium);
 }
 
+.gallery-item img[hidden],
+.lightbox-image[hidden] {
+    display: none;
+}
+
+.gallery-image-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 180px;
+    aspect-ratio: 3 / 2;
+    padding: 24px;
+    background: var(--color-section-alt);
+    color: var(--color-muted);
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.gallery-image-fallback[hidden] {
+    display: none;
+}
+
 /* 鼠标悬停或键盘聚焦作品按钮时放大内部图片。 */
 .gallery-item:hover img,
 .gallery-item:focus-visible img {
@@ -789,6 +812,81 @@ section p {
 .lightbox-caption a:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 4px;
+}
+
+.lightbox-details-toggle {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+}
+
+.lightbox-caption a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+}
+
+.lightbox-details-toggle:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+}
+
+.lightbox-details {
+    position: absolute;
+    right: 50%;
+    bottom: 96px;
+    z-index: 2;
+    width: min(520px, calc(100vw - 40px));
+    max-height: min(300px, 42dvh);
+    padding: 20px 24px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    transform: translateX(50%);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(15, 15, 15, 0.97);
+    color: var(--color-on-dark);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.lightbox-details[hidden] {
+    display: none;
+}
+
+.lightbox-details dl {
+    margin: 0;
+}
+
+.lightbox-details dl div {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 16px;
+    padding: 8px 0;
+}
+
+.lightbox-details dt {
+    color: #aaaaaa;
+}
+
+.lightbox-details dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.lightbox.details-open {
+    align-items: flex-start;
+}
+
+.lightbox.details-open .lightbox-image {
+    max-height: calc(100dvh - 430px);
 }
 
 /* lightbox-close 是右上角关闭按钮。 */
@@ -1133,8 +1231,18 @@ footer {
 
     .lightbox-caption {
         right: var(--page-padding-mobile);
-        bottom: 20px;
+        bottom: 12px;
         left: var(--page-padding-mobile);
+    }
+
+    .lightbox-details {
+        bottom: 124px;
+        max-height: min(300px, 40dvh);
+        padding: 14px 16px;
+    }
+
+    .lightbox-details dl div {
+        grid-template-columns: 100px minmax(0, 1fr);
     }
 
     .lightbox-next {
@@ -1383,7 +1491,28 @@ footer {
     transition: transform var(--transition-medium);
 }
 
+.project-card-image img[hidden],
+.project-card-image-fallback[hidden] {
+    display: none;
+}
+
+.project-card-image-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 4 / 5;
+    padding: 24px;
+    color: var(--color-muted);
+    font-size: clamp(20px, 3vw, 36px);
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
 .project-card:nth-child(3) .project-card-image img {
+    aspect-ratio: 16 / 7;
+}
+
+.project-card:nth-child(3) .project-card-image-fallback {
     aspect-ratio: 16 / 7;
 }
 
@@ -1564,6 +1693,46 @@ footer {
     line-height: 1.7;
 }
 
+.collection-cover {
+    margin: 0 var(--page-padding) 80px;
+}
+
+.collection-cover[hidden],
+.collection-story[hidden] {
+    display: none;
+}
+
+.collection-cover img {
+    display: block;
+    max-width: 100%;
+    max-height: 80vh;
+    max-height: 80dvh;
+    width: auto;
+    height: auto;
+    margin: 0 auto;
+    object-fit: contain;
+}
+
+.collection-story {
+    max-width: 760px;
+    margin: 0 var(--page-padding) 96px;
+}
+
+.collection-story h2 {
+    margin-bottom: 20px;
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+}
+
+.collection-story p {
+    color: var(--color-muted);
+    font-size: 17px;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+    white-space: pre-line;
+}
+
 .project-gallery {
     min-height: 0;
     padding: 0 var(--page-padding) var(--section-spacing);
@@ -1690,6 +1859,10 @@ footer {
         aspect-ratio: 4 / 5;
     }
 
+    .project-card:nth-child(3) .project-card-image-fallback {
+        aspect-ratio: 4 / 5;
+    }
+
     .project-card-overlay {
         display: none;
     }
@@ -1714,6 +1887,18 @@ footer {
 
     .project-description {
         margin-top: 28px;
+        font-size: 16px;
+    }
+
+    .collection-cover {
+        margin: 0 var(--page-padding-mobile) 56px;
+    }
+
+    .collection-story {
+        margin: 0 var(--page-padding-mobile) 72px;
+    }
+
+    .collection-story p {
         font-size: 16px;
     }
 

@@ -48,11 +48,35 @@ const localRepository = Object.freeze({
     },
 
     getCollections() {
-        return sortLocalCollections(loadLocalContentArray(STORAGE_KEYS.WORKS, defaultCollections));
+        return sortLocalCollections(loadLocalContentArray(STORAGE_KEYS.WORKS, defaultCollections))
+            .map((collection) => ({
+                ...collection,
+                story: typeof collection.story === "string" ? collection.story : ""
+            }));
     },
 
     getPhotos() {
-        return sortLocalPhotos(loadLocalContentArray(STORAGE_KEYS.GALLERY, defaultPhotos));
+        const collectionPositions = new Map();
+
+        return sortLocalPhotos(loadLocalContentArray(STORAGE_KEYS.GALLERY, defaultPhotos))
+            .map((photo) => {
+                const collectionId = photo.collectionId || null;
+                let collectionOrder = null;
+
+                if (collectionId) {
+                    const position = (collectionPositions.get(collectionId) || 0) + 1;
+                    collectionPositions.set(collectionId, position);
+                    collectionOrder = Number.isFinite(photo.collectionOrder)
+                        ? photo.collectionOrder : position;
+                }
+
+                return {
+                    ...photo,
+                    collectionId,
+                    collectionOrder,
+                    captureTime: typeof photo.captureTime === "string" ? photo.captureTime : ""
+                };
+            });
     },
 
     saveCollections(collections) {

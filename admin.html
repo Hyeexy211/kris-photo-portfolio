@@ -8,8 +8,8 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#000000">
     <link rel="icon" href="images/favicon/favicon.png">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/style.css?v=20260923-curation">
+    <link rel="stylesheet" href="css/admin.css?v=20260923-curation">
 </head>
 <body class="project-site admin-site">
     <a class="skip-link" href="#main-content" data-i18n="common.skipToContent">Skip to content</a>
@@ -82,6 +82,10 @@
                     <span class="admin-label" data-i18n="admin.fields.description">Description</span>
                     <textarea name="description" rows="3" required></textarea>
                 </label>
+                <label class="admin-field-wide">
+                    <span class="admin-label" data-i18n="admin.fields.story">Collection story</span>
+                    <textarea name="story" rows="7"></textarea>
+                </label>
                 <div class="admin-image-field admin-field-wide" id="work-upload-field" hidden>
                     <span class="admin-label" data-i18n="admin.fields.coverImage">Cover image</span>
                     <label class="admin-file-picker">
@@ -90,7 +94,7 @@
                     </label>
                     <span class="admin-file-name" id="work-file-name"></span>
                     <button class="admin-button admin-clear-image" id="clear-work-image" type="button" data-i18n="admin.upload.clearSelection" hidden>Clear selection</button>
-                    <span class="admin-image-hint" data-i18n="admin.upload.imageHint">JPEG, PNG, WebP or AVIF, up to 25 MiB and at least 1800 pixels wide. Three WebP sizes are uploaded; the source stays on this device.</span>
+                    <span class="admin-image-hint" data-i18n="admin.upload.imageHint">JPEG, PNG, WebP or AVIF, up to 25 MiB and a longest edge of at least 1800 pixels. Three WebP sizes are uploaded; the source stays on this device.</span>
                     <figure class="admin-image-preview" id="work-image-preview" hidden>
                         <img id="work-preview-image" alt="">
                         <figcaption id="work-preview-caption"></figcaption>
@@ -136,6 +140,22 @@
             </form>
 
             <div class="admin-list" id="work-list" aria-live="polite"></div>
+
+            <section class="admin-batch" aria-labelledby="collection-photos-title">
+                <h3 id="collection-photos-title" data-i18n="admin.membership.title">Choose photos for a collection</h3>
+                <p data-i18n="admin.membership.intro">Each photo belongs to at most one collection. Adding a photo from another collection moves it.</p>
+                <div class="admin-batch-controls">
+                    <label><span data-i18n="admin.membership.collection">Collection</span><select id="membership-collection"></select></label>
+                    <label><span data-i18n="admin.membership.search">Search by title or category</span><input id="membership-search" type="search"></label>
+                </div>
+                <p id="membership-summary" class="admin-batch-summary" role="status" aria-live="polite"></p>
+                <div id="membership-list" class="admin-photo-list"></div>
+                <div class="admin-form-actions admin-batch-actions">
+                    <button class="admin-button admin-button-primary" id="membership-add" type="button" data-i18n="admin.membership.add">Add selected</button>
+                    <button class="admin-button" id="membership-remove" type="button" data-i18n="admin.membership.remove">Remove selected</button>
+                    <button class="admin-button" id="membership-save-order" type="button" data-i18n="admin.membership.saveOrder">Save collection order</button>
+                </div>
+            </section>
         </section>
 
         <section class="admin-section" id="gallery-admin" aria-labelledby="gallery-admin-title" hidden>
@@ -160,14 +180,14 @@
                     <input name="alt" type="text" placeholder="Describe what is visible; blank uses the title" data-i18n-placeholder="admin.fields.imageAltPlaceholder">
                 </label>
                 <div class="admin-image-field admin-field-wide" id="gallery-upload-field" hidden>
-                    <span class="admin-label" data-i18n="admin.fields.photoImage">Photo image</span>
+                    <span class="admin-label" id="gallery-upload-label" data-i18n="admin.fields.photoImage">Photo image</span>
                     <label class="admin-file-picker">
                         <input id="gallery-upload-file" type="file" accept="image/jpeg,image/png,image/webp,image/avif" data-i18n-aria-label="admin.upload.chooseImageButton">
                         <span class="admin-button" data-i18n="admin.upload.chooseImageButton">Choose image</span>
                     </label>
                     <span class="admin-file-name" id="gallery-file-name"></span>
                     <button class="admin-button admin-clear-image" id="clear-gallery-image" type="button" data-i18n="admin.upload.clearSelection" hidden>Clear selection</button>
-                    <span class="admin-image-hint" data-i18n="admin.upload.imageHint">JPEG, PNG, WebP or AVIF, up to 25 MiB and at least 1800 pixels wide. Three WebP sizes are uploaded; the source stays on this device.</span>
+                    <span class="admin-image-hint" id="gallery-upload-hint" data-i18n="admin.upload.imageHint">JPEG, PNG, WebP or AVIF, up to 25 MiB and a longest edge of at least 1800 pixels. Three WebP sizes are uploaded; the source stays on this device.</span>
                     <figure class="admin-image-preview" id="gallery-image-preview" hidden>
                         <img id="gallery-preview-image" alt="">
                         <figcaption id="gallery-preview-caption"></figcaption>
@@ -191,7 +211,8 @@
                 </label>
                 <label>
                     <span class="admin-label" data-i18n="admin.fields.category">Category</span>
-                    <input name="category" type="text" required>
+                    <input name="category" type="text" list="gallery-category-options" required>
+                    <datalist id="gallery-category-options"></datalist>
                 </label>
                 <label>
                     <span class="admin-label" data-i18n="admin.fields.collectionId">Collection ID</span>
@@ -203,9 +224,23 @@
                     <input name="order" type="number" min="0" step="1">
                 </label>
                 <label>
+                    <span class="admin-label" data-i18n="admin.fields.collectionOrder">Collection order</span>
+                    <input name="collectionOrder" type="number" min="0" step="1">
+                </label>
+                <label>
                     <span class="admin-label" data-i18n="admin.fields.shootingDate">Shooting date</span>
                     <input name="date" type="date">
                 </label>
+                <label>
+                    <span class="admin-label" data-i18n="admin.fields.captureTime">Capture time (local camera time)</span>
+                    <input name="captureTime" type="time" step="1">
+                </label>
+                <section class="admin-exif-review admin-field-wide" id="exif-review" aria-labelledby="exif-review-title" hidden>
+                    <h4 id="exif-review-title" data-i18n="admin.exif.title">Review JPEG EXIF suggestions</h4>
+                    <p data-i18n="admin.exif.intro">Suggestions stay on this device. Accept each field to copy it into the form, then save the photo.</p>
+                    <p id="exif-review-status" role="status" aria-live="polite"></p>
+                    <div id="exif-review-fields"></div>
+                </section>
                 <label>
                     <span class="admin-label" data-i18n="admin.fields.location">Location (only if approved for publication)</span>
                     <input name="location" type="text">
@@ -258,6 +293,16 @@
             </form>
 
             <div class="admin-list" id="gallery-list" aria-live="polite"></div>
+
+            <form class="admin-batch" id="category-rename-form">
+                <h3 data-i18n="admin.categories.title">Rename or merge a category</h3>
+                <p data-i18n="admin.categories.intro">All photos in the old category move to the new name. Photos remain in the Gallery.</p>
+                <div class="admin-batch-controls">
+                    <label><span data-i18n="admin.categories.source">Current category</span><select name="source" required></select></label>
+                    <label><span data-i18n="admin.categories.target">New or existing category</span><input name="target" type="text" list="category-merge-options" required><datalist id="category-merge-options"></datalist></label>
+                </div>
+                <button class="admin-button admin-button-primary" type="submit" data-i18n="admin.categories.apply">Rename or merge</button>
+            </form>
         </section>
 
         <section class="admin-reset" id="admin-reset" aria-labelledby="reset-title" hidden>
@@ -272,19 +317,20 @@
 
     <footer><p data-i18n="footer.copyright">© 2026 Kris Photography</p></footer>
 
-    <script src="locales/en.js?v=20260923-cloud-default"></script>
-    <script src="locales/zh-CN.js?v=20260923-cloud-default"></script>
-    <script src="js/i18n.js"></script>
+    <script src="locales/en.js?v=20260923-long-edge"></script>
+    <script src="locales/zh-CN.js?v=20260923-long-edge"></script>
+    <script src="js/i18n.js?v=20260923-curation"></script>
     <script src="js/config/data-source.js"></script>
     <script src="data/collections.js"></script>
     <script src="data/photos.js"></script>
     <script src="js/storage-service.js"></script>
-    <script src="js/repositories/local-repository.js"></script>
+    <script src="js/repositories/local-repository.js?v=20260923-curation"></script>
     <script src="js/config/supabase-client.js?v=20260923-cloud-default"></script>
-    <script src="js/repositories/supabase-repository.js"></script>
-    <script src="js/content-service.js"></script>
+    <script src="js/repositories/supabase-repository.js?v=20260923-curation"></script>
+    <script src="js/content-service.js?v=20260923-curation"></script>
     <script src="js/cloud-admin-service.js"></script>
-    <script src="js/cloud-photo-upload.js"></script>
-    <script src="js/admin.js?v=20260923-cloud-default"></script>
+    <script src="js/cloud-photo-upload.js?v=20260923-long-edge"></script>
+    <script src="js/jpeg-exif-review.js"></script>
+    <script src="js/admin.js?v=20260923-curation"></script>
 </body>
 </html>

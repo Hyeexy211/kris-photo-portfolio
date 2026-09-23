@@ -59,6 +59,7 @@
 
     function category(value) {
         const key = String(value || "").trim().toLowerCase();
+        if (!["street", "portrait", "documentary", "landscape"].includes(key)) return value || "";
         return lookup(dictionaries[currentLanguage], `categories.${key}`)
             || lookup(dictionaries[fallbackLanguage], `categories.${key}`)
             || value

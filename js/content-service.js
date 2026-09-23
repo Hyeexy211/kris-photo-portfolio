@@ -72,7 +72,15 @@ async function getCollectionBySlug(slug) {
 
 async function getPhotosByCollection(collectionId) {
     const photos = await getPhotos();
-    return photos.filter((photo) => photo.collectionId === collectionId);
+    return photos
+        .filter((photo) => photo.collectionId === collectionId)
+        .sort((photoA, photoB) => {
+            const orderA = Number.isFinite(photoA.collectionOrder)
+                ? photoA.collectionOrder : Number.MAX_SAFE_INTEGER;
+            const orderB = Number.isFinite(photoB.collectionOrder)
+                ? photoB.collectionOrder : Number.MAX_SAFE_INTEGER;
+            return orderA - orderB;
+        });
 }
 
 // The methods below preserve Lesson 33's browser-local Admin prototype.
@@ -123,7 +131,23 @@ function deleteWork(id) {
 
     if (nextWorks.length === works.length) return false;
 
-    return localRepository.saveCollections(nextWorks);
+    const photos = getGalleryItems();
+    if (!photos.some((photo) => photo.collectionId === id)) {
+        return localRepository.saveCollections(nextWorks);
+    }
+
+    const updatedAt = new Date().toISOString();
+    const detachedPhotos = photos.map((photo) => photo.collectionId === id
+        ? { ...photo, collectionId: null, collectionOrder: null, updatedAt }
+        : photo);
+
+    // Keep the Collection if its photos cannot first be detached.
+    if (!localRepository.savePhotos(detachedPhotos)) return false;
+    if (localRepository.saveCollections(nextWorks)) return true;
+
+    // A failed Collection write leaves it in place. Restore its photo links when possible.
+    localRepository.savePhotos(photos);
+    return false;
 }
 
 function createGalleryItem(itemData) {
@@ -153,6 +177,12 @@ function updateGalleryItem(id, updates) {
         id: galleryItems[itemIndex].id,
         updatedAt: new Date().toISOString()
     };
+
+    if (Object.prototype.hasOwnProperty.call(updates, "collectionId")
+        && !Object.prototype.hasOwnProperty.call(updates, "collectionOrder")) {
+        updatedItem.collectionOrder = null;
+    }
+    if (!updatedItem.collectionId) updatedItem.collectionOrder = null;
 
     galleryItems[itemIndex] = updatedItem;
 

@@ -1,7 +1,8 @@
 // Cloud Admin renders small public WebP files from a selected local photograph.
 // The selected source file is never sent to Storage.
 const CLOUD_WEB_BUCKET = "portfolio-web";
-const CLOUD_WEB_WIDTHS = [640, 1200, 1800];
+// Size labels use the longest edge; srcset uses each export's actual width.
+const CLOUD_WEB_SIZES = [640, 1200, 1800];
 const CLOUD_WEB_MAX_FILE_BYTES = 6 * 1024 * 1024;
 
 function cloudUploadError(key, values = {}) {
@@ -57,16 +58,16 @@ async function prepareCloudWebExports(file) {
     }
 
     try {
-        if (image.width < 1800 || image.height < 1 || image.width * image.height > 40000000) {
+        const longestEdge = Math.max(image.width, image.height);
+        if (longestEdge < 1800 || image.width < 1 || image.height < 1
+            || image.width * image.height > 40000000) {
             throw cloudUploadError("admin.upload.invalidDimensions");
         }
 
         const exports = [];
-        for (const width of CLOUD_WEB_WIDTHS) {
-            const height = Math.round(image.height * width / image.width);
-            if (height > 8192) {
-                throw cloudUploadError("admin.upload.tooTall");
-            }
+        for (const size of CLOUD_WEB_SIZES) {
+            const width = Math.max(1, Math.round(image.width * size / longestEdge));
+            const height = Math.max(1, Math.round(image.height * size / longestEdge));
 
             const canvas = document.createElement("canvas");
             canvas.width = width;
@@ -79,10 +80,10 @@ async function prepareCloudWebExports(file) {
             canvas.height = 0;
 
             if (blob.size > CLOUD_WEB_MAX_FILE_BYTES) {
-                throw cloudUploadError("admin.upload.exportTooLarge", { width });
+                throw cloudUploadError("admin.upload.exportTooLarge", { size });
             }
             await assertNoExifOrXmp(blob);
-            exports.push({ width, height, blob });
+            exports.push({ size, width, height, blob });
         }
         return exports;
     } finally {
@@ -126,7 +127,7 @@ async function uploadCloudWebExports(kind, contentId, exports, onUploaded) {
     const urls = {};
 
     for (const item of exports) {
-        const path = `${prefix}/${item.width}.webp`;
+        const path = `${prefix}/${item.size}.webp`;
         const { data, error } = await storage.upload(path, item.blob, {
             contentType: "image/webp",
             cacheControl: "31536000",
@@ -134,7 +135,7 @@ async function uploadCloudWebExports(kind, contentId, exports, onUploaded) {
         });
         if (error) {
             throw cloudUploadError("admin.upload.storageUploadFailed", {
-                width: item.width,
+                size: item.size,
                 path,
                 message: error.message
             });
@@ -147,14 +148,14 @@ async function uploadCloudWebExports(kind, contentId, exports, onUploaded) {
             });
         }
 
-        urls[item.width] = getVerifiedCloudPublicUrl(storage, path);
+        urls[item.size] = getVerifiedCloudPublicUrl(storage, path);
     }
 
-    const display = exports.find((item) => item.width === 1200);
+    const display = exports.find((item) => item.size === 1200);
     return {
         src: urls[1200],
         fullSrc: urls[1800],
-        srcset: exports.map((item) => `${urls[item.width]} ${item.width}w`).join(", "),
+        srcset: exports.map((item) => `${urls[item.size]} ${item.width}w`).join(", "),
         width: display.width,
         height: display.height
     };

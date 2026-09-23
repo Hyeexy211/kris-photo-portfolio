@@ -9,6 +9,7 @@ function mapSupabaseCollection(row) {
         slug: row.slug,
         title: row.title,
         description: row.description || "",
+        story: row.story || "",
         cover: row.cover,
         coverSrcset: row.cover_srcset || "",
         coverAlt: row.cover_alt || `${row.title} collection cover`,
@@ -35,6 +36,7 @@ function mapSupabasePhoto(row) {
         category: row.category || "",
         location: row.location || "",
         date: row.shot_at || "",
+        captureTime: row.capture_time || "",
         description: row.description || "",
         tags: Array.isArray(row.tags) ? row.tags : [],
         camera: row.camera || "",
@@ -44,6 +46,10 @@ function mapSupabasePhoto(row) {
         shutterSpeed: row.shutter_speed || "",
         iso: row.iso || "",
         order: row.sort_order,
+        collectionOrder: row.collection_id
+            ? Number.isFinite(row.collection_order)
+                ? row.collection_order : Number.isFinite(row.sort_order) ? row.sort_order : null
+            : null,
         width: row.width,
         height: row.height,
         createdAt: row.created_at || "",
@@ -72,6 +78,7 @@ function toSupabaseCollection(collection) {
         slug: collection.slug,
         title: collection.title,
         description: collection.description || "",
+        story: collection.story || "",
         cover: collection.cover,
         cover_srcset: collection.coverSrcset || "",
         cover_alt: collection.coverAlt || "",
@@ -96,6 +103,9 @@ function toSupabasePhoto(photo) {
         category: photo.category || "",
         location: photo.location || "",
         shot_at: photo.date || null,
+        capture_time: photo.captureTime || null,
+        collection_order: photo.collectionId && Number.isFinite(photo.collectionOrder)
+            ? photo.collectionOrder : null,
         description: photo.description || "",
         tags: Array.isArray(photo.tags) ? photo.tags : [],
         camera: photo.camera || "",
@@ -112,6 +122,19 @@ function toSupabasePhoto(photo) {
     return row;
 }
 
+function onlyProvidedColumns(input, mapped, fieldColumns) {
+    const values = {};
+
+    Object.entries(fieldColumns).forEach(([field, column]) => {
+        if (Object.prototype.hasOwnProperty.call(input, field)
+            && Object.prototype.hasOwnProperty.call(mapped, column)) {
+            values[column] = mapped[column];
+        }
+    });
+
+    return values;
+}
+
 async function writeSupabaseRow(tableName, operation, values, id) {
     const client = await getSupabaseClient();
     let query;
@@ -121,16 +144,24 @@ async function writeSupabaseRow(tableName, operation, values, id) {
     if (operation === "delete") query = client.from(tableName).delete().eq("id", id).select("id").single();
 
     const { data, error } = await query;
-    if (error) throw new Error(`Supabase ${operation} on ${tableName} failed: ${error.message}`);
+    if (error) {
+        const newColumn = ["story", "collection_order", "capture_time"]
+            .find((column) => error.message?.includes(column));
+        if (newColumn && ["PGRST204", "42703"].includes(error.code)) {
+            throw new Error(`Supabase ${operation} on ${tableName} needs migration supabase/migrations/20260923_collection_content.sql (${newColumn} column is missing), or a PostgREST schema cache refresh if that migration is already applied. ${error.message}`);
+        }
+        if (tableName === "collections" && operation === "delete" && error.code === "23503") {
+            throw new Error(`Collection deletion needs migration supabase/migrations/20260923_collection_content.sql so linked photos can be detached. ${error.message}`);
+        }
+        throw new Error(`Supabase ${operation} on ${tableName} failed: ${error.message}`);
+    }
     return data;
 }
 
 const supabaseRepository = Object.freeze({
     async getCollections() {
-        const rows = await querySupabaseTable(
-            "collections",
-            "id, slug, title, description, cover, cover_srcset, cover_alt, cover_width, cover_height, year, location, category, sort_order, created_at, updated_at"
-        );
+        // Selecting existing rows without naming optional columns also works before migration.
+        const rows = await querySupabaseTable("collections", "*");
 
         return rows.map(mapSupabaseCollection);
     },
@@ -171,8 +202,12 @@ const supabaseRepository = Object.freeze({
         return mapSupabaseCollection(await writeSupabaseRow("collections", "insert", toSupabaseCollection(collection)));
     },
     async updateCollection(id, collection) {
-        const values = toSupabaseCollection(collection);
-        delete values.id;
+        const values = onlyProvidedColumns(collection, toSupabaseCollection(collection), {
+            slug: "slug", title: "title", description: "description", story: "story",
+            cover: "cover", coverSrcset: "cover_srcset", coverAlt: "cover_alt",
+            coverWidth: "cover_width", coverHeight: "cover_height", year: "year",
+            location: "location", category: "category", order: "sort_order"
+        });
         values.updated_at = new Date().toISOString();
         return mapSupabaseCollection(await writeSupabaseRow("collections", "update", values, id));
     },
@@ -184,8 +219,28 @@ const supabaseRepository = Object.freeze({
         return mapSupabasePhoto(await writeSupabaseRow("photos", "insert", toSupabasePhoto(photo)));
     },
     async updatePhoto(id, photo) {
-        const values = toSupabasePhoto(photo);
-        delete values.id;
+        const values = onlyProvidedColumns(photo, toSupabasePhoto(photo), {
+            collectionId: "collection_id", collectionOrder: "collection_order",
+            title: "title", alt: "alt", src: "src", fullSrc: "full_src",
+            srcset: "srcset", category: "category", location: "location",
+            date: "shot_at", captureTime: "capture_time", description: "description",
+            tags: "tags", camera: "camera", lens: "lens",
+            focalLength: "focal_length", aperture: "aperture",
+            shutterSpeed: "shutter_speed", iso: "iso", width: "width",
+            height: "height", order: "sort_order"
+        });
+        if (Object.prototype.hasOwnProperty.call(photo, "collectionOrder")) {
+            values.collection_order = Number.isFinite(photo.collectionOrder)
+                ? photo.collectionOrder : null;
+        }
+        if (Object.prototype.hasOwnProperty.call(photo, "collectionId")
+            && !Object.prototype.hasOwnProperty.call(photo, "collectionOrder")) {
+            // A previous Collection's position must not become the new one's position.
+            values.collection_order = null;
+        }
+        if (Object.prototype.hasOwnProperty.call(photo, "collectionId") && !photo.collectionId) {
+            values.collection_order = null;
+        }
         values.updated_at = new Date().toISOString();
         return mapSupabasePhoto(await writeSupabaseRow("photos", "update", values, id));
     },

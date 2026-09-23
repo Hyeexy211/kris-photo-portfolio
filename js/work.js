@@ -31,11 +31,22 @@ function createWorkCard(collection, photoCount) {
     imageWrapper.className = "project-card-image";
 
     const image = document.createElement("img");
-    image.src = collection.cover;
     image.alt = siteI18n.content(collection, "coverAlt")
         || siteI18n.t("work.coverAlt", { title: siteI18n.content(collection, "title") });
     image.loading = "lazy";
     image.decoding = "async";
+    const imageFallback = document.createElement("span");
+    imageFallback.className = "project-card-image-fallback";
+    imageFallback.textContent = siteI18n.content(collection, "title");
+    imageFallback.hidden = Boolean(collection.cover);
+    image.hidden = !collection.cover;
+    if (collection.cover) {
+        image.src = collection.cover;
+        image.addEventListener("error", () => {
+            image.hidden = true;
+            imageFallback.hidden = false;
+        });
+    }
 
     if (collection.coverSrcset) {
         image.srcset = collection.coverSrcset;
@@ -52,7 +63,7 @@ function createWorkCard(collection, photoCount) {
     overlay.setAttribute("aria-hidden", "true");
     overlay.textContent = siteI18n.t("work.viewProject");
 
-    imageWrapper.append(image, overlay);
+    imageWrapper.append(image, imageFallback, overlay);
 
     const info = document.createElement("div");
     info.className = "project-card-info";
@@ -80,6 +91,7 @@ function createWorkCard(collection, photoCount) {
 function updateWorkCardLanguage(card, collection, photoCount) {
     card.querySelector(".project-card-image img").alt = siteI18n.content(collection, "coverAlt")
         || siteI18n.t("work.coverAlt", { title: siteI18n.content(collection, "title") });
+    card.querySelector(".project-card-image-fallback").textContent = siteI18n.content(collection, "title");
     card.querySelector(".project-card-overlay").textContent = siteI18n.t("work.viewProject");
     card.querySelector(".project-card-info h3").textContent = siteI18n.content(collection, "title");
     const [type, count] = card.querySelectorAll(".project-card-meta span");

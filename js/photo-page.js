@@ -126,8 +126,9 @@ function refreshPhotoLanguage() {
         details.push(createPhotoInfo(siteI18n.t("work.collection"), siteI18n.content(collection, "title")));
     }
     const optionalFields = [
-        ["location", "photo.location"],
         ["date", "photo.captureDate"],
+        ["captureTime", "photo.captureTime"],
+        ["location", "photo.location"],
         ["camera", "photo.camera"],
         ["lens", "photo.lens"],
         ["focalLength", "photo.focalLength"],

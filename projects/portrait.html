@@ -113,8 +113,15 @@
     </div>
 
     <footer><p data-i18n="footer.copyright">© 2026 Kris Photography</p></footer>
-    <!-- 第 23 课：共用 main.js 读取 photos 前，先加载照片数据。 -->
+    <!-- 旧作品页保留静态图片布局；灯箱按照片 ID 经 Content Service 读取完整资料。 -->
+    <script src="../js/config/data-source.js"></script>
+    <script src="../data/collections.js"></script>
     <script src="../data/photos.js"></script>
+    <script src="../js/storage-service.js"></script>
+    <script src="../js/repositories/local-repository.js"></script>
+    <script src="../js/config/supabase-client.js"></script>
+    <script src="../js/repositories/supabase-repository.js"></script>
+    <script src="../js/content-service.js"></script>
     <script src="../locales/en.js"></script>
     <script src="../locales/zh-CN.js"></script>
     <script src="../js/i18n.js"></script>

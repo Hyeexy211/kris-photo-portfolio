@@ -5,6 +5,10 @@
 
 const collectionTitle = document.querySelector("#collection-title");
 const collectionDescription = document.querySelector("#collection-description");
+const collectionCover = document.querySelector("#collection-cover");
+const collectionCoverImage = document.querySelector("#collection-cover-image");
+const collectionStory = document.querySelector("#collection-story");
+const collectionStoryText = document.querySelector("#collection-story-text");
 const collectionGallery = document.querySelector("#collection-gallery");
 const collectionInfo = document.querySelector("#collection-info");
 let currentCollection = null;
@@ -29,10 +33,21 @@ function createCollectionPhoto(photo, index) {
     button.setAttribute("aria-label", siteI18n.t("gallery.openPhoto", { title: collectionPhotoLabel(photo) }));
 
     const image = document.createElement("img");
-    image.src = photo.src;
     image.alt = collectionPhotoLabel(photo);
     image.loading = index === 0 ? "eager" : "lazy";
     image.decoding = "async";
+    const imageFallback = document.createElement("span");
+    imageFallback.className = "gallery-image-fallback";
+    imageFallback.textContent = collectionPhotoLabel(photo);
+    imageFallback.hidden = Boolean(photo.src);
+    image.hidden = !photo.src;
+    if (photo.src) {
+        image.src = photo.src;
+        image.addEventListener("error", () => {
+            image.hidden = true;
+            imageFallback.hidden = false;
+        });
+    }
 
     if (photo.srcset) {
         image.srcset = photo.srcset;
@@ -44,7 +59,7 @@ function createCollectionPhoto(photo, index) {
         image.height = photo.height;
     }
 
-    button.appendChild(image);
+    button.append(image, imageFallback);
     figure.appendChild(button);
 
     return figure;
@@ -104,6 +119,8 @@ function refreshCollectionLanguage() {
     collectionGallery.removeAttribute("data-i18n-aria-label");
 
     if (collectionPageState === "loading") {
+        collectionCover.hidden = true;
+        collectionStory.hidden = true;
         collectionTitle.textContent = siteI18n.t("work.collection");
         collectionDescription.textContent = siteI18n.t("work.loadingCollection");
         collectionGallery.setAttribute("aria-label", siteI18n.t("work.photographs"));
@@ -111,6 +128,8 @@ function refreshCollectionLanguage() {
     }
 
     if (collectionPageState === "notFound") {
+        collectionCover.hidden = true;
+        collectionStory.hidden = true;
         const title = siteI18n.t("work.collectionNotFound");
         const description = siteI18n.t("work.collectionNotFoundHelp");
         setCollectionTextMetadata(title, description, siteI18n.t("seo.collectionNotFoundTitle"));
@@ -122,6 +141,8 @@ function refreshCollectionLanguage() {
     }
 
     if (collectionPageState === "error") {
+        collectionCover.hidden = true;
+        collectionStory.hidden = true;
         const title = siteI18n.t("work.collectionUnavailable");
         const description = siteI18n.t("work.collectionErrorHelp");
         setCollectionTextMetadata(title, description, siteI18n.t("seo.collectionErrorTitle"));
@@ -136,6 +157,11 @@ function refreshCollectionLanguage() {
     updateCollectionMetadata(currentCollection);
     collectionTitle.textContent = title;
     collectionDescription.textContent = siteI18n.content(currentCollection, "description");
+    collectionCoverImage.alt = siteI18n.content(currentCollection, "coverAlt")
+        || siteI18n.t("work.coverAlt", { title });
+    const story = siteI18n.content(currentCollection, "story");
+    collectionStoryText.textContent = story;
+    collectionStory.hidden = !String(story).trim();
     collectionGallery.setAttribute("aria-label", siteI18n.t("work.collectionPhotographs", { title }));
 
     const buttons = collectionGallery.querySelectorAll(".lightbox-trigger");
@@ -144,6 +170,7 @@ function refreshCollectionLanguage() {
         const label = collectionPhotoLabel(photo);
         buttons[index].setAttribute("aria-label", siteI18n.t("gallery.openPhoto", { title: label }));
         buttons[index].querySelector("img").alt = label;
+        buttons[index].querySelector(".gallery-image-fallback").textContent = label;
     });
 
     if (currentCollectionPhotos.length === 0) {
@@ -171,6 +198,21 @@ async function renderCollectionPage() {
     const collectionPhotos = await contentService.getPhotosByCollection(collection.id);
     currentCollection = collection;
     currentCollectionPhotos = collectionPhotos;
+
+    if (collection.cover) {
+        collectionCoverImage.src = collection.cover;
+        collectionCoverImage.decoding = "async";
+        if (collection.coverSrcset) {
+            collectionCoverImage.srcset = collection.coverSrcset;
+            collectionCoverImage.sizes = "calc(100vw - 96px)";
+        }
+        if (collection.coverWidth && collection.coverHeight) {
+            collectionCoverImage.width = collection.coverWidth;
+            collectionCoverImage.height = collection.coverHeight;
+        }
+        collectionCover.hidden = false;
+        collectionCoverImage.addEventListener("error", () => { collectionCover.hidden = true; }, { once: true });
+    }
 
     const galleryFragment = document.createDocumentFragment();
     collectionPhotos.forEach((photo, index) => {

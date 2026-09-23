@@ -30,8 +30,12 @@ or delivery requirements change.
   Object keys follow `photos/<photo-id>/<revision>/<size>.webp` or
   `collections/<collection-id>/<revision>/<size>.webp` with
   lower-case IDs and predictable size labels such as `640.webp`, `1200.webp`,
-  and `1800.webp`. A new revision gets a new path so long-lived cache headers
-  cannot show an old image after an edit.
+  and `1800.webp`. These labels identify the maximum edge length, not always
+  the width: a portrait 1200 export can be 675 × 1200 pixels. Scale down
+  proportionally without enlarging the source; require a source longest edge
+  of at least 1800 pixels. Use measured widths in `srcset` descriptors and the
+  1200 export's actual width/height in the database. A new revision gets a new
+  path so long-lived cache headers cannot show an old image after an edit.
 - Private bucket `portfolio-originals`: source files only if the owner later
   chooses to upload them. Public pages must never receive its object keys,
   direct URLs, signed URLs, or credentials. Existing repository originals stay

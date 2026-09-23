@@ -6,11 +6,10 @@
 // 首页动态 Gallery 的容器；独立作品页没有这个元素，因此会安全跳过渲染。
 const galleryContainer = document.querySelector("#photo-gallery");
 
-// 所有分类按钮使用相同的 click 处理逻辑。
-const filterButtons = document.querySelectorAll(".filter-button");
+const galleryFilters = document.querySelector(".gallery-filters");
 
-// 当前分类是 Gallery 的唯一筛选状态；初始值与 HTML 的 All 按钮一致。
-let activeCategory = "all";
+// null 表示「全部」，不会与用户填写的真实分类名称冲突。
+let activeCategory = null;
 
 // 保存当前真正显示在 Gallery 中的照片，供灯箱上一张 / 下一张使用。
 let renderedPhotos = [];
@@ -31,10 +30,22 @@ function createPhotoCard(photo) {
     }));
 
     const image = document.createElement("img");
-    image.src = photo.src;
-    image.alt = siteI18n.content(photo, "alt") || siteI18n.content(photo, "title") || siteI18n.t("gallery.photographyWork");
+    const imageLabel = siteI18n.content(photo, "alt") || siteI18n.content(photo, "title") || siteI18n.t("gallery.photographyWork");
+    image.alt = imageLabel;
     image.loading = "lazy";
     image.decoding = "async";
+    const imageFallback = document.createElement("span");
+    imageFallback.className = "gallery-image-fallback";
+    imageFallback.textContent = imageLabel;
+    imageFallback.hidden = Boolean(photo.src);
+    image.hidden = !photo.src;
+    if (photo.src) {
+        image.src = photo.src;
+        image.addEventListener("error", () => {
+            image.hidden = true;
+            imageFallback.hidden = false;
+        });
+    }
 
     // 数据提供响应式图片时继续复用现有 640 / 1200 / 1800 WebP。
     if (photo.srcset) {
@@ -48,15 +59,15 @@ function createPhotoCard(photo) {
         image.height = photo.height;
     }
 
-    card.appendChild(image);
+    card.append(image, imageFallback);
     return card;
 }
 
 // 根据 activeCategory 返回唯一一份应该显示的数据，不在 DOM 中另外保存照片资料。
 function getFilteredPhotos() {
-    if (activeCategory === "all") return allGalleryPhotos;
+    if (activeCategory === null) return allGalleryPhotos;
 
-    return allGalleryPhotos.filter((photo) => photo.category === activeCategory);
+    return allGalleryPhotos.filter((photo) => String(photo.category || "").trim() === activeCategory);
 }
 
 // ================================================================
@@ -130,20 +141,42 @@ function renderGallery(photoList) {
     observeRevealElements(galleryContainer);
 }
 
-// 分类按钮只绑定一次；每次点击先更新状态，再从 Content Service 查询并渲染。
+// 只用当前照片的分类生成筛选项；Collection 的 category 不参与 Gallery。
+function renderGalleryFilters() {
+    if (!galleryFilters) return;
+
+    const categories = [...new Set(allGalleryPhotos.map((photo) => String(photo.category || "").trim()).filter(Boolean))];
+    const fragment = document.createDocumentFragment();
+
+    [null, ...categories].forEach((category) => {
+        const button = document.createElement("button");
+        button.className = "filter-button";
+        button.type = "button";
+        if (category === null) button.dataset.filterAll = "true";
+        else button.dataset.category = category;
+        button.setAttribute("aria-pressed", String(category === activeCategory));
+        button.classList.toggle("active", category === activeCategory);
+        button.textContent = category === null ? siteI18n.t("categories.all") : siteI18n.category(category);
+        fragment.appendChild(button);
+    });
+
+    galleryFilters.replaceChildren(fragment);
+}
+
+// 委托到持久存在的筛选容器，按钮重新生成也不会重复绑定事件。
 function setupGalleryFilters() {
-    filterButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-            activeCategory = button.dataset.category;
+    galleryFilters?.addEventListener("click", (event) => {
+        const button = event.target.closest(".filter-button");
+        if (!button || !galleryFilters.contains(button)) return;
 
-            filterButtons.forEach((filterButton) => {
-                const isActive = filterButton === button;
-                filterButton.classList.toggle("active", isActive);
-                filterButton.setAttribute("aria-pressed", String(isActive));
-            });
-
-            renderGallery(getFilteredPhotos());
+        activeCategory = button.dataset.filterAll === "true" ? null : button.dataset.category;
+        galleryFilters.querySelectorAll(".filter-button").forEach((filterButton) => {
+            const isActive = filterButton === button;
+            filterButton.classList.toggle("active", isActive);
+            filterButton.setAttribute("aria-pressed", String(isActive));
         });
+
+        renderGallery(getFilteredPhotos());
     });
 }
 
@@ -189,16 +222,8 @@ async function initGallery() {
         galleryContainer.removeAttribute("aria-busy");
     }
 
-    // 以 HTML 当前的 active 按钮为准，避免初始视觉与 JavaScript 状态不同步。
-    const activeButton = [...filterButtons].find((button) => button.classList.contains("active"));
-    activeCategory = activeButton?.dataset.category || "all";
-
-    filterButtons.forEach((filterButton) => {
-        const isActive = filterButton.dataset.category === activeCategory;
-        filterButton.classList.toggle("active", isActive);
-        filterButton.setAttribute("aria-pressed", String(isActive));
-    });
-
+    activeCategory = null;
+    renderGalleryFilters();
     setupGalleryFilters();
     setupGalleryLightbox();
     renderGallery(getFilteredPhotos());
@@ -217,7 +242,45 @@ const lightbox = document.querySelector("#lightbox");
 
 // 找到灯箱中用来显示当前作品的大图元素。
 const lightboxImage = document.querySelector("#lightbox-image");
+lightboxImage?.addEventListener("error", () => { lightboxImage.hidden = true; });
 const lightboxCaption = document.querySelector("#lightbox-caption");
+let lightboxCaptionTitle = null;
+let lightboxPhotoLink = null;
+let lightboxPhotoLinkGroup = null;
+let lightboxDetailsToggle = null;
+let lightboxDetails = null;
+
+function prepareLightboxDetails() {
+    if (!lightbox || !lightboxCaption) return;
+
+    lightboxCaptionTitle = document.createElement("span");
+    lightboxPhotoLink = document.createElement("a");
+    lightboxPhotoLinkGroup = document.createElement("span");
+    lightboxPhotoLinkGroup.append(" · ", lightboxPhotoLink);
+
+    lightboxDetailsToggle = document.createElement("button");
+    lightboxDetailsToggle.className = "lightbox-details-toggle";
+    lightboxDetailsToggle.type = "button";
+    lightboxDetailsToggle.setAttribute("aria-expanded", "false");
+    lightboxDetailsToggle.setAttribute("aria-controls", "lightbox-details");
+    lightboxDetailsToggle.addEventListener("click", () => {
+        const isOpen = lightboxDetailsToggle.getAttribute("aria-expanded") === "true";
+        lightboxDetailsToggle.setAttribute("aria-expanded", String(!isOpen));
+        lightboxDetails.hidden = isOpen;
+        lightbox.classList.toggle("details-open", !isOpen);
+    });
+
+    lightboxDetails = document.createElement("div");
+    lightboxDetails.id = "lightbox-details";
+    lightboxDetails.className = "lightbox-details";
+    lightboxDetails.hidden = true;
+    lightboxDetails.setAttribute("aria-live", "polite");
+
+    lightboxCaption.replaceChildren(lightboxCaptionTitle, lightboxPhotoLinkGroup, " · ", lightboxDetailsToggle);
+    lightbox.appendChild(lightboxDetails);
+}
+
+prepareLightboxDetails();
 
 // 找到灯箱右上角的关闭按钮。
 const lightboxClose = document.querySelector("#lightbox-close");
@@ -267,6 +330,43 @@ function updatePageScroll() {
 // ================================================================
 
 // 根据索引找出照片，并把它的地址和替代文字放进灯箱。
+function renderLightboxDetails(photo) {
+    if (!lightboxDetails) return;
+
+    const fields = [
+        ["date", "photo.captureDate"],
+        ["captureTime", "photo.captureTime"],
+        ["location", "photo.location"],
+        ["camera", "photo.camera"],
+        ["lens", "photo.lens"],
+        ["focalLength", "photo.focalLength"],
+        ["aperture", "photo.aperture"],
+        ["shutterSpeed", "photo.shutterSpeed"],
+        ["iso", "photo.iso"]
+    ];
+    const values = fields.map(([field, key]) => [siteI18n.t(key), siteI18n.content(photo, field)])
+        .filter(([, value]) => String(value || "").trim());
+
+    if (values.length === 0) {
+        const empty = document.createElement("p");
+        empty.textContent = siteI18n.t("lightbox.noMetadata");
+        lightboxDetails.replaceChildren(empty);
+        return;
+    }
+
+    const list = document.createElement("dl");
+    values.forEach(([label, value]) => {
+        const row = document.createElement("div");
+        const term = document.createElement("dt");
+        const detail = document.createElement("dd");
+        term.textContent = label;
+        detail.textContent = value;
+        row.append(term, detail);
+        list.appendChild(row);
+    });
+    lightboxDetails.replaceChildren(list);
+}
+
 function showLightboxImage(index) {
     // 没有可查看的照片时立即结束，避免访问不存在的数组成员。
     if (activeLightboxPhotos.length === 0 || !lightboxImage) return;
@@ -278,15 +378,22 @@ function showLightboxImage(index) {
     const photo = activeLightboxPhotos[currentImageIndex];
 
     // 优先显示数据中的大图路径；没有提供时才回退到卡片图片。
-    lightboxImage.src = photo.fullSrc || photo.src;
+    if (photo.fullSrc || photo.src) {
+        lightboxImage.hidden = false;
+        lightboxImage.src = photo.fullSrc || photo.src;
+    } else {
+        lightboxImage.removeAttribute("src");
+        lightboxImage.hidden = true;
+    }
 
     // 把照片说明同步给灯箱大图。
     lightboxImage.alt = siteI18n.content(photo, "alt") || siteI18n.content(photo, "title") || siteI18n.t("gallery.photographyWork");
-    if (lightboxCaption) {
-        lightboxCaption.textContent = siteI18n.content(photo, "title") || siteI18n.content(photo, "alt") || "";
+    if (lightboxCaptionTitle) {
+        lightboxCaptionTitle.textContent = siteI18n.content(photo, "title") || siteI18n.content(photo, "alt") || "";
+        lightboxPhotoLinkGroup.hidden = !photo.id;
+        lightboxDetailsToggle.textContent = siteI18n.t("lightbox.photoDetails");
 
         if (photo.id) {
-            const link = document.createElement("a");
             const script = document.querySelector('script[src$="main.js"]');
             const hasStaticPage = typeof defaultPhotos !== "undefined"
                 && defaultPhotos.some((item) => item.id === photo.id);
@@ -294,11 +401,11 @@ function showLightboxImage(index) {
                 ? new URL(`../photos/${encodeURIComponent(photo.id)}.html`, script.src)
                 : new URL("../photo.html", script.src);
             if (!hasStaticPage) photoUrl.searchParams.set("id", photo.id);
-            link.href = photoUrl.href;
-            link.textContent = siteI18n.t("lightbox.viewPhoto");
-            lightboxCaption.append(" · ", link);
+            lightboxPhotoLink.href = photoUrl.href;
+            lightboxPhotoLink.textContent = siteI18n.t("lightbox.viewPhoto");
         }
     }
+    renderLightboxDetails(photo);
 }
 
 // 同一个 openLightbox 同时接收首页 Content Service 数据与项目页整理出的照片数据。
@@ -339,6 +446,9 @@ function closeLightbox() {
 
     // 移除 active，CSS 会播放淡出动画。
     lightbox.classList.remove("active");
+    lightbox.classList.remove("details-open");
+    if (lightboxDetailsToggle) lightboxDetailsToggle.setAttribute("aria-expanded", "false");
+    if (lightboxDetails) lightboxDetails.hidden = true;
 
     // 如果触发按钮仍存在于页面，就把焦点还给它。
     if (lightboxTrigger && lightboxTrigger.isConnected) lightboxTrigger.focus();
@@ -354,19 +464,31 @@ function closeLightbox() {
 }
 
 // 只给不会重新渲染的项目页照片直接绑定；首页动态照片由 Gallery 容器委托。
-function setupStaticLightbox() {
+async function setupStaticLightbox() {
     lightboxTriggers = [...document.querySelectorAll(".lightbox-trigger")].filter((trigger) => (
         !galleryContainer || !galleryContainer.contains(trigger)
     ));
+    if (lightboxTriggers.length === 0) return;
+
+    let fullPhotos = typeof defaultPhotos === "undefined" ? [] : defaultPhotos;
+    if (typeof contentService !== "undefined") {
+        try {
+            fullPhotos = await contentService.getPhotos();
+        } catch (error) {
+            console.warn("Full photo details are unavailable for this Lightbox.", error);
+        }
+    }
+    const photosById = new Map(fullPhotos.map((photo) => [photo.id, photo]));
 
     staticLightboxPhotos = lightboxTriggers.map((trigger) => {
         const image = trigger.querySelector("img");
 
         return {
+            ...(photosById.get(trigger.dataset.id) || {}),
             id: trigger.dataset.id || "",
             src: image.currentSrc || image.src,
             fullSrc: trigger.dataset.fullSrc || image.currentSrc || image.src,
-            title: image.alt
+            title: photosById.get(trigger.dataset.id)?.title || image.alt
         };
     });
 
@@ -492,7 +614,8 @@ document.addEventListener("keydown", (event) => {
 
         // 灯箱内的全部可聚焦按钮组成一个循环列表。
         if (event.key === "Tab") {
-            const lightboxFocusItems = [lightboxClose, lightboxPrev, lightboxNext].filter(Boolean);
+            const lightboxFocusItems = [...lightbox.querySelectorAll("button, a[href]")]
+                .filter((item) => !item.hidden && !item.closest("[hidden]"));
             const firstItem = lightboxFocusItems[0];
             const lastItem = lightboxFocusItems[lightboxFocusItems.length - 1];
 
@@ -605,7 +728,7 @@ if ("IntersectionObserver" in window && !prefersReducedMotion) {
 async function initPageContent() {
     if (window.collectionPageReady) await window.collectionPageReady;
 
-    setupStaticLightbox();
+    await setupStaticLightbox();
     await initGallery();
 }
 
@@ -623,8 +746,11 @@ siteI18n.onChange(() => {
             const title = siteI18n.content(photo, "alt") || siteI18n.content(photo, "title") || siteI18n.t("gallery.photographyWork");
             card.setAttribute("aria-label", siteI18n.t("gallery.openPhoto", { title }));
             card.querySelector("img").alt = title;
+            card.querySelector(".gallery-image-fallback").textContent = title;
         });
     }
+
+    if (galleryFilters) renderGalleryFilters();
 
     if (lightbox?.classList.contains("active")) showLightboxImage(currentImageIndex);
 });

@@ -9,8 +9,10 @@
 - 当前稳定检查点是第 34 课：公开页面已经通过 Content Service 和 Repository 从 Supabase 只读加载 3 个作品集与 9 张照片。
 - Supabase 的 Collections 或 Photos 任一读取失败时，两组资料会一起回退到浏览器本地种子，避免一页混用不同来源；页面不直接依赖数据库 SDK。
 - `admin.html` 默认打开有登录门槛的 Cloud Admin，提供云端 CRUD 和 Collection／Gallery 的本地选图上传；旧地址 `admin.html?mode=cloud` 仍兼容。第 33 课的浏览器本地原型保留在 `admin.html?mode=local`，只写当前浏览器的 localStorage。
-- GitHub Pages 已发布在 <https://hyeexy211.github.io/kris-photo-portfolio/>。2026-09-23 对此前合并版本的线上检查确认：首页、主要 CSS／JS 静态文件与当时的 `main` 一致，`admin/` 路由可访问；本次默认后台入口调整发布后仍需复查。真实所有者账号、RLS 和 Storage 上传也需实地核查，不能宣称云端写入已验证可用。
-- 原片按目前决定继续留在仓库；LCP/CLS、Lighthouse 和 200 张模拟卡片已在本地测试，真实访客性能数据仍未完成。云端 Admin 尚待真实账号和迁移验证；对象存储已准备空桶策略与浏览器网页图上传代码，尚未在线上连接和测试。
+- GitHub Pages 已发布在 <https://hyeexy211.github.io/kris-photo-portfolio/>。2026-09-23 对此前合并版本的线上检查确认：首页、主要 CSS／JS 静态文件与当时的 `main` 一致，`admin/` 路由可访问；本次后台与上传改动发布后仍需复查。
+- 2026-09-23 已确认真实所有者登录和管理员身份，并在 Supabase 执行内容字段迁移：`story`、`collection_order`、`capture_time` 已存在，作品集外键已改为 `ON DELETE SET NULL`。`portfolio-web`、`portfolio-originals` 和 4 条所有者 Storage 策略原本已存在，因此没有重跑 Storage 迁移。
+- 当前源码的 HTTP 预览已连接真实 Supabase 完成所有者复测：新增作品集和照片、封面与照片上传／替换、故事编辑、拍摄时刻保存／清空、分类修改、批量归属、集内排序及删除均通过。测试后原有 3 个作品集、9 张照片逐字段（含时间戳）与基线一致，15 个测试网页图（含替换前版本）已清理。匿名数据库新增和 Storage 上传被拒绝；第二个已登录非管理员账号尚未测试。
+- 原片按目前决定继续留在仓库；LCP/CLS、Lighthouse 和 200 张模拟卡片已在本地测试，真实访客性能数据仍未完成。实测过程与剩余验收项见 `docs/crud-test-report-2026-09-23.md`。
 - 现有 9 张照片页按你的选择提供 1200px WebP 网页尺寸下载；按钮不指向 1800px 展示图或原片。仓库公开且保留原片，所以这不等于原片受保护。
 - `scripts/export-public-content.js` 可把 Supabase 的公开作品集和照片资料导出到仓库外的 JSON，供人工留存；它不包含图片、Auth 用户或数据库策略，完整备份和恢复仍需在服务端验证。
 - `Weblesson.docx` 目前完整写到第 18 课并预告第 19 课，尚未同步第 19～34 课的教学内容。
@@ -33,7 +35,7 @@
 | `data/*.js` | 保存浏览器本地种子资料 | 数组、对象、`id`、`collectionId`、真实图片路径 |
 | `js/content-service.js` | 为 UI 提供统一内容读取接口 | `async/await`、数据源切换、失败回退 |
 | `js/repositories/*.js` | 分别读取 localStorage 与 Supabase | Repository 边界、字段映射、只读查询 |
-| `js/cloud-photo-upload.js` | 为 Cloud Admin 的作品集封面和 Gallery 照片生成、上传 3 张 WebP 网页图 | 文件验证、Canvas 导出、Storage 路径与失败清理；需真实账号和桶测试 |
+| `js/cloud-photo-upload.js` | 为 Cloud Admin 的作品集封面和 Gallery 照片生成、上传 3 张 WebP 网页图 | 长边缩放、实际宽度 srcset、Storage 路径与失败清理；所有者真实上传／替换已验证 |
 | `collection.html` | 按 `slug` 展示一个作品集 | URL 参数、异步状态、动态 Lightbox 按钮 |
 | `css/style.css` | 布局、颜色、动画和响应式 | 选择器、Grid、Flexbox、媒体查询 |
 | `js/main.js` | 动态渲染与用户交互 | DOM 创建、筛选、事件监听、函数、状态 class |
@@ -58,9 +60,8 @@
 
 - `createPhotoCard(photo)` 使用 `document.createElement()` 把一条照片数据转换成正式的 `.gallery-item.lightbox-trigger.reveal` 照片按钮，继续复用原 Gallery 的样式、Hover、响应式与键盘行为。
 - `renderGallery(photoList)` 使用 `replaceChildren()` 一次替换旧内容，再逐张调用 `createPhotoCard()`；空数组会显示 `No photos found.`，不会与旧卡片叠加。
-- All、Street、Portrait、Documentary 与 Landscape 按钮通过 `filter()` 筛选同一个 `photos` 数组，所以连续切换不会叠加或重复卡片。
-- 仓库当前没有 Street 作品；保留课程要求的 Street 按钮用于真实演示空状态，但没有把 Documentary 照片错误改名或虚构 Street 素材。
-- 首页的动态 Gallery 是浏览全部照片的入口；`photos.js` 是首页作品的唯一数据源，`index.html` 只保留容器、筛选按钮和 Lightbox 结构。
+- Gallery 从当前 Photo 的 `category` 去重生成筛选按钮，始终保留 All／全部；没有 Street 照片时不显示 Street。新分类按用户原文显示，内置分类仍有中英文译名。
+- 首页的动态 Gallery 是浏览全部照片的入口；页面从 Content Service 读取数据，`index.html` 只保留容器、初始 All 按钮和 Lightbox 结构。
 - 首页 Lightbox 在持久存在的 Gallery 容器上使用事件委托，通过 `data-id` 回到 `photos` 查找数据；重新筛选后不需要重复绑定监听器。
 - 动态创建的 `.reveal` 会在每次 render 后交给页面共用的同一个 `IntersectionObserver`，不会为每次筛选重复创建观察器。
 
@@ -72,21 +73,21 @@
 - 第 34 课的公开数据接口只开放 `SELECT`；显式的 `admin.html?mode=local` 本地原型仍只保存在当前浏览器，不会写入 Supabase。
 - 数据库表、外键、RLS、公开只读策略、真实种子和手动配置步骤见 `docs/supabase-setup.md`。
 
-## Cloud Admin 图片上传（待线上验证）
+## Cloud Admin 图片上传
 
 - 直接访问 `admin/` 可进入 Dashboard，再进入默认的 `admin.html` 管理内容；`admin.html?mode=cloud` 旧地址仍兼容。公开页面不提供后台入口。
 - Cloud Admin 新建或编辑 Collection、Gallery 时，可从电脑选择 JPEG、PNG、WebP 或 AVIF。表单会预览现有图片和新选择的图片；不选新文件就保留原图，不需要手填图片路径。
-- 保存时浏览器生成 640、1200、1800px WebP 网页图并上传到 Supabase Storage，成功后才将 URL 写入现有数据库字段。替换图片不会自动删除旧文件；上传或数据库写入失败会尽可能清理本次新文件。
+- 源图最长边须至少 1800px。保存时浏览器保持比例，按最长边生成 640、1200、1800px WebP 网页图，`srcset` 使用实际输出宽度；上传到 Supabase Storage 成功后才将 URL 写入现有数据库字段。替换图片不会自动删除旧文件；上传或数据库写入失败会尽可能清理本次新文件。
 - `admin.html?mode=local` 的浏览器本地原型继续使用已有图片的相对路径字段，不上传文件。直接用 `file://` 打开云端编辑页时，应按页面提示改用线上或本地 HTTP 地址。两种模式的操作和 Supabase 手动配置见 `docs/user-guide.zh-CN.md` 与 `docs/supabase-storage-setup.md`。
 
-## 照片资料字段（浏览器本地原型）
+## 照片资料字段
 
-- Admin 的 Gallery 表单可录入已确认的标签、说明、地点、日期和器材资料；标签以逗号分隔，保存后是数组。逐张照片页只显示有值的字段。
+- Admin 的 Gallery 表单可录入已确认的标签、说明、地点、日期、拍摄时刻和器材资料；标签以逗号分隔，保存后是数组。选择 JPEG 后可逐字段审核 EXIF 候选值，只有接受并保存才会公开。逐张照片页只显示有值的字段。
 - 现有 9 张照片尚未补充未经确认的资料；GPS 不进入公开数据。字段定义和云端同步边界见 `docs/photo-metadata.md`。
 
 ## 现有交互与可访问性
 
-- 首页 Gallery、通用 Collection 页和三个旧作品页的灯箱会显示已有照片标题；手机上可在大图上左右滑动切换照片。空的可选拍摄资料不会被编造或显示。
+- 首页 Gallery、通用 Collection 页和三个旧作品页的共用灯箱可展开照片信息；手机上可在大图上左右滑动切换照片，并滚动信息区。缺失的拍摄资料不会被编造；全部缺失时显示简短提示。
 - 灯箱标题旁的 `View photo` 会为现有 9 张照片打开 `photos/照片ID.html`，每页初始 HTML 含独立标题、图片、Open Graph 和 ImageObject 资料，可供社交爬虫读取。通用 `photo.html?id=照片ID` 保留给未来的云端新照片；这种新照片要获得独立社交卡片，需加入静态发布流程。修改种子照片后运行 `node scripts/generate-photo-pages.js`；在 Cloud Admin 修改这 9 张照片后运行 `node scripts/generate-photo-pages.js --source=supabase`，检查生成差异，再将 `photos/` 与 `dist/` 一起发布。新增或删除照片还须检查 `sitemap.xml`。
 - `sitemap.xml` 列出当前 3 个作品集、9 张静态照片页以及首页和旧作品页；新增内容后需要同步更新。`robots.txt` 随项目发布，但 GitHub Pages 的项目站点不能控制域名根路径的 `/robots.txt`，所以搜索引擎是否采用它还要在正式域名上验证。
 - 原先 CSS 和 JavaScript 有 `.reveal` 滚动动画逻辑，但 HTML 没有使用 `.reveal`，所以动画从未启动。现在作品标题和图片都已接入；如果浏览器不支持观察器或用户选择减少动画，内容仍会直接显示。
@@ -117,7 +118,7 @@ python3 -m http.server 4173 --bind 127.0.0.1 --directory dist
 
 首次访问按浏览器语言选择：`zh` 开头使用简体中文，其余使用英文；英文也是无法读取浏览器语言时的回退语言。用户手动选择会保存在 `localStorage.preferredLanguage`，刷新和跨页面后继续生效。切换只更新前端界面，不改变 URL 或重新请求公开内容。
 
-数据库现有的 `title`、`description`、`alt` 等是单语言内容，作品名称和已保存描述会按原文显示。`siteI18n.content(record, field)` 已为未来的 `title_zh`、`title_en` 等字段预留读取入口；真正启用多语言内容时，还须协调 Supabase schema、Repository 字段映射、Admin 表单和静态照片页生成流程。当前没有修改数据库结构。
+数据库现有的 `title`、`description`、`alt` 等是单语言内容，作品名称和已保存描述会按原文显示。`siteI18n.content(record, field)` 已为未来的 `title_zh`、`title_en` 等字段预留读取入口；真正启用多语言内容时，还须协调 Supabase schema、Repository 字段映射、Admin 表单和静态照片页生成流程。本次新增的 `story`、`collection_order`、`capture_time` 已于 2026-09-23 在真实数据库完成迁移；迁移状态与发布边界见 `docs/user-guide.zh-CN.md`。
 
 `640`、`1200`、`1800` 三组 WebP 已按文件名生成真实宽度。浏览器会结合 `srcset` 和 `sizes` 选择合适版本，手机无需再下载原尺寸照片；30 个响应式文件的总大小由约 128 MiB 降至约 6.4 MiB。
 
