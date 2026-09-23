@@ -539,7 +539,7 @@ Make the website publicly accessible.
 
 - [x] Create a GitHub remote for this repository (`origin`)
 - [x] Review completed work, commit it, and push a clean `main`
-- [ ] Confirm the exact GitHub Pages build-source setting in repository settings
+- [x] Confirm the exact GitHub Pages build-source setting in repository settings
 - [x] Confirm the public URL returns `200`
 - [x] Test the live hero, Collections, Gallery filters, navigation, Lightbox, and mobile menu
 - [x] Confirm the deployed page loads its CSS, scripts, photographs, and Supabase reads without console errors
@@ -555,7 +555,7 @@ settings, so that administrative check remains open.
 ## Later Production Improvements
 
 - [ ] Custom domain
-- [ ] HTTPS
+- [x] HTTPS
 - [ ] Production CDN
 - [ ] Environment configuration
 - [ ] Error monitoring
