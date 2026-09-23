@@ -1,6 +1,6 @@
 # Kris Photography 使用说明
 
-> 根据 2026-09-23 的 `feature/roadmap-completion` 分支整理。本说明区分仓库当前代码与已发布的 GitHub Pages：分支中的新功能需要合并、发布并检查后，才能视为线上可用。
+> 根据 2026-09-23 已并入本地 `main` 的 `feature/roadmap-completion` 代码整理。本说明区分仓库当前代码与已发布的 GitHub Pages：新功能需要发布并检查后，才能视为线上可用。
 
 ## 1. 这是什么网站
 
@@ -10,7 +10,7 @@
 
 ## 2. 访客怎样使用
 
-公开地址：<https://hyeexy211.github.io/kris-photo-portfolio/>。这个地址已经有过发布和检查；本分支新增的功能仍以本地代码为准，发布状态见第 6 节。
+公开地址：<https://hyeexy211.github.io/kris-photo-portfolio/>。这个地址已经有过发布和检查；本次合并新增的功能仍以本地代码为准，发布状态见第 6 节。
 
 | 目的 | 操作 | 当前结果 |
 | --- | --- | --- |
@@ -43,7 +43,7 @@
 python3 -m http.server 4173 --bind 127.0.0.1
 ```
 
-然后在浏览器打开 `http://127.0.0.1:4173/` 看当前分支源码，或打开 `http://127.0.0.1:4173/admin.html` 试用本地编辑器。运行服务器的终端中按 `Ctrl+C` 停止。请通过 HTTP 地址预览，不要直接双击 HTML 文件；部分浏览器功能和资源加载行为在 `file://` 下不同。
+然后在浏览器打开 `http://127.0.0.1:4173/` 看当前源码，或打开 `http://127.0.0.1:4173/admin.html` 试用本地编辑器。运行服务器的终端中按 `Ctrl+C` 停止。请通过 HTTP 地址预览，不要直接双击 HTML 文件；部分浏览器功能和资源加载行为在 `file://` 下不同。
 
 | 位置 | 用途 |
 | --- | --- |
@@ -78,4 +78,4 @@ python3 -m http.server 4173 --bind 127.0.0.1
 | 已准备，仍需真实环境验证 | 有权限控制的 Cloud Admin 增删改、Collection 封面与 Gallery 照片上传／替换、Storage 策略、相应的发布与恢复流程。 |
 | 尚未实现或完成 | 本地 Admin 跨设备同步；对现有原片的访问保护；云端新照片的独立静态分享页和下载按钮；完整的图片、Auth 与数据库备份及恢复；真实访客性能监控；自定义域名、站内搜索、多语言与其他长期功能。 |
 
-截至本说明编写时，当前 Git 分支是 `feature/roadmap-completion`，而公开 GitHub Pages 的最新部署不应被视为已经包含本分支所有功能。合并发布前，下载、分享页和 Cloud Admin 的状态以本地仓库及相应检查记录为准。项目的后续顺序见 [`roadmap.md`](roadmap.md)；代码学习说明见 [`README.md`](../README.md)。
+截至本说明更新时，`feature/roadmap-completion` 已并入本地 `main`，但公开 GitHub Pages 的最新部署不应被视为已经包含本次合并的所有功能。完成发布与线上复查前，下载、分享页和 Cloud Admin 的状态以本地仓库及相应检查记录为准。项目的后续顺序见 [`roadmap.md`](roadmap.md)；代码学习说明见 [`README.md`](../README.md)。

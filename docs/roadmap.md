@@ -23,7 +23,7 @@ The first GitHub Pages release belongs to the current static-site stage; the lat
 backend and storage phases are optional expansion, not release prerequisites.
 
 Checkboxes describe verified work in this repository. They do not imply that
-the work branch has been merged to the public GitHub Pages `main` branch.
+the merged `main` source has been deployed and verified on GitHub Pages.
 
 ---
 
@@ -39,24 +39,24 @@ the work branch has been merged to the public GitHub Pages `main` branch.
 - Content Service plus local and Supabase Repository boundaries
 - Real Supabase `collections` / `photos` tables, seed data, public-read RLS, and verified cloud reads
 - Public GitHub Pages release at `https://hyeexy211.github.io/kris-photo-portfolio/`
-- On `feature/roadmap-completion`: nine static photograph pages with individual
+- Merged into local `main` from `feature/roadmap-completion`: nine static photograph pages with individual
   previews, captions and mobile Lightbox swipe, optional local tags/metadata,
   1200px web-size downloads, sitemap, and local performance checks
-- On that branch: authenticated cloud Admin code, owner-only RLS migration,
+- In that merged source: authenticated cloud Admin code, owner-only RLS migration,
   Storage bucket migration, Collection/Gallery create-and-edit image upload,
   and a public-content export script are prepared; their live account and
   Storage flows have **not** been verified
 
 ## In Progress
 
-- Owner Auth enrollment, live RLS and Storage checks, and release of this branch
+- Owner Auth enrollment, live RLS and Storage checks, and verification after publishing merged `main`
 - Phase 5 archive cleanup is paused by the owner's decision to keep originals
   in the public repository; real photographs have no verified date, location,
   or equipment values to publish
 
 ## Next
 
-- Review and merge the work branch, then verify the deployed site and social previews
+- Verify the merged `main` release on the deployed site and check social previews
 - Apply and test the prepared cloud migrations after the real owner Auth account
   and access policies are reviewed in Supabase
 
@@ -624,7 +624,8 @@ nine Gallery photographs, filters, dynamic/static Lightbox flows, browser-local
 Admin compatibility, real Supabase `200` reads, and simulated cloud fallback.
 The authenticated GitHub Pages API confirmed `main` and repository root as
 the current build source, with HTTPS enforced; see
-`docs/deployment-settings-audit.md`. This work branch is not deployed there.
+`docs/deployment-settings-audit.md`. The newly merged source still needs a
+post-push deployment check.
 
 ## Later Production Improvements
 
@@ -673,7 +674,7 @@ from the public cloud table after a Cloud Admin edit. Review and deploy the
 generated files to update their preview metadata. New cloud-only photos still
 use `photo.html?id=...` with generic initial metadata, and a removed seed photo
 needs a deliberate static-page/sitemap review. Social crawlers still need a
-live check after this branch is deployed. On a GitHub Pages project site,
+live check after the merged source is deployed. On a GitHub Pages project site,
 this repository's `robots.txt` is served beneath `/kris-photo-portfolio/`;
 it cannot set the domain-root robots policy.
 
@@ -722,7 +723,7 @@ These are optional and should not distract from the core portfolio.
 Current development priority:
 
 ```text
-Review feature/roadmap-completion and merge when approved
+Confirm merged main reaches GitHub Pages
     ↓
 Verify Pages, social previews, downloads, and public reads after deployment
     ↓
@@ -740,7 +741,7 @@ originals in the repository and to publish no unverified photo metadata.
 
 | Status | Roadmap item | Required action |
 | --- | --- | --- |
-| MANUAL ACTION REQUIRED | Release this work branch | Review and merge to `main`, then check the live GitHub Pages build, image downloads, links, Console, and social previews. |
+| MANUAL ACTION REQUIRED | Verify the merged release | Check the live GitHub Pages build, image downloads, links, Console, and social previews after publishing `main`. |
 | MANUAL ACTION REQUIRED | Cloud Admin and Auth | Verify the real owner Auth user and `20260923_admin_auth.sql` state; create/apply only what is missing, enroll the verified UUID, and test owner, other-user, and anonymous reads/writes. See `docs/supabase-admin-setup.md`. |
 | MANUAL ACTION REQUIRED | Storage and CDN | Review buckets and policies, apply the full `20260923_storage_buckets.sql` migration or just its new Collection policy as appropriate, then test uploads and public reads with expendable files. See `docs/supabase-storage-setup.md`. No live bucket is claimed. |
 | MANUAL ACTION REQUIRED | Complete backup and monitoring | Select an external backup destination and monitoring service, then test restoration and production alerts. The public JSON export is only a partial copy. |

@@ -9,8 +9,8 @@
 - 当前稳定检查点是第 34 课：公开页面已经通过 Content Service 和 Repository 从 Supabase 只读加载 3 个作品集与 9 张照片。
 - Supabase 的 Collections 或 Photos 任一读取失败时，两组资料会一起回退到浏览器本地种子，避免一页混用不同来源；页面不直接依赖数据库 SDK。
 - `admin.html` 是第 33 课的浏览器本地原型，可以用 localStorage 新增、编辑、删除和恢复内容，但没有登录、云端写入或跨设备同步。
-- 工作分支另提供 `admin.html?mode=cloud` 的认证界面、云端 CRUD，以及 Collection 和 Gallery 新增／编辑时的本地选图上传；真实账号、RLS 和 Storage 是否已在线上启用仍需核查，不能宣称云端 Admin 已验证可用。原本的 `admin.html` 本地模式保持可用。
-- GitHub Pages 已发布在 <https://hyeexy211.github.io/kris-photo-portfolio/>，桌面端、390px 移动端、筛选、动态 Collection、Lightbox 与云端失败回退已经过部署后验证。
+- 当前源码另提供 `admin.html?mode=cloud` 的认证界面、云端 CRUD，以及 Collection 和 Gallery 新增／编辑时的本地选图上传；真实账号、RLS 和 Storage 是否已在线上启用仍需核查，不能宣称云端 Admin 已验证可用。原本的 `admin.html` 本地模式保持可用。
+- GitHub Pages 已发布在 <https://hyeexy211.github.io/kris-photo-portfolio/>，此前版本的桌面端、390px 移动端、筛选、动态 Collection、Lightbox 与云端失败回退已经过部署后验证；本次合并后的功能还需线上复查。
 - 原片按目前决定继续留在仓库；LCP/CLS、Lighthouse 和 200 张模拟卡片已在本地测试，真实访客性能数据仍未完成。云端 Admin 尚待真实账号和迁移验证；对象存储已准备空桶策略与浏览器网页图上传代码，尚未在线上连接和测试。
 - 现有 9 张照片页按你的选择提供 1200px WebP 网页尺寸下载；按钮不指向 1800px 展示图或原片。仓库公开且保留原片，所以这不等于原片受保护。
 - `scripts/export-public-content.js` 可把 Supabase 的公开作品集和照片资料导出到仓库外的 JSON，供人工留存；它不包含图片、Auth 用户或数据库策略，完整备份和恢复仍需在服务端验证。

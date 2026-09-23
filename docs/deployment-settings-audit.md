@@ -13,10 +13,10 @@ cname: null
 ```
 
 This confirms the repository-root build source and enforced HTTPS. No custom
-domain is configured. The new `feature/roadmap-completion` commits are pushed
-to their branch, but the live Pages site still builds from `main`; browser tests
-of the work branch were local checks, not deployed checks. A final live check
-is needed after the branch is merged to `main`.
+domain is configured. The `feature/roadmap-completion` commits were pushed to
+their branch and fast-forward merged into local `main`. Pages builds from
+`main`, but the local browser tests do not establish that this merge has been
+deployed. Recheck the Pages build and live site after pushing `main`.
 
 To recheck without showing credentials:
 
