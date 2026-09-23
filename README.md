@@ -9,7 +9,7 @@
 - `admin.html` 是第 33 课的浏览器本地原型，可以用 localStorage 新增、编辑、删除和恢复内容，但没有登录、云端写入或跨设备同步。
 - 工作分支另提供 `admin.html?mode=cloud` 的认证界面及云端 CRUD 代码，并准备了数据库 RLS 迁移；迁移尚未在线上执行，尚不能宣称云端 Admin 可用。原本的 `admin.html` 本地模式保持可用。
 - GitHub Pages 已发布在 <https://hyeexy211.github.io/kris-photo-portfolio/>，桌面端、390px 移动端、筛选、动态 Collection、Lightbox 与云端失败回退已经过部署后验证。
-- 图片归档清理、Lighthouse/LCP/CLS 测量、云端 Admin 认证与对象存储仍未完成；它们不是当前实现的一部分。
+- 原片按目前决定继续留在仓库；LCP/CLS 已作本地模拟网络测量，但 Lighthouse 与真实访客数据仍未完成。云端 Admin 尚待真实账号和迁移验证；对象存储只完成了方案比较，尚未连接。
 - `Weblesson.docx` 目前完整写到第 18 课并预告第 19 课，尚未同步第 19～34 课的教学内容。
 
 ## 建议阅读顺序

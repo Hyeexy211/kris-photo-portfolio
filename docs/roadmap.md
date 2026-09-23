@@ -345,9 +345,9 @@ Object Storage
 
 Research:
 
-- [ ] Cloudflare R2
-- [ ] Amazon S3
-- [ ] other S3-compatible services
+- [x] Research Cloudflare R2 for a later storage option
+- [x] Research Amazon S3 with CloudFront for a later storage option
+- [x] Research Supabase Storage as the near-term object storage option
 
 Create storage structure:
 
@@ -366,6 +366,11 @@ Requirements:
 - [ ] cache headers
 - [ ] original protection strategy
 - [ ] predictable file naming
+
+The comparison, tentative Supabase Storage choice, key layout, access rules,
+and live acceptance checks are in `docs/storage-architecture.md`. No bucket or
+CDN is configured yet. Existing source photographs stay in this repository by
+the owner's decision.
 
 ---
 
