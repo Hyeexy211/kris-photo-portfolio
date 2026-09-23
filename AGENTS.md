@@ -1,120 +1,214 @@
 # AGENTS.md
 
-## Purpose
+## 1. Project Overview
 
-This file defines how AI coding agents such as Codex should work inside this repository.
+This is a long-term personal photography website project.
 
-The project is a personal photography portfolio website.
+Primary goals:
 
-The primary goals are:
+- Showcase photography work
+- Present photography collections and projects
+- Provide a gallery experience
+- Present personal and photography-related information
+- Gradually support content management
+- Later support image upload, editing, and deletion
+- Eventually become a self-maintainable photography website
 
-- clean visual design
-- photography-first presentation
-- maintainable code
-- strong performance
-- responsive layouts
-- gradual long-term evolution
+This project is also used as a Web development learning project.
 
-Agents should prioritize clarity and simplicity over unnecessary abstraction.
+Therefore, code should be:
+
+- Clear
+- Easy to understand
+- Easy to maintain
+- Easy to extend
+- No more complex than necessary
+
+Prefer simple, explicit solutions over clever abstractions.
 
 ---
 
-# 1. Current Technology
+## 2. Core Engineering Principles
 
-Current frontend stack:
+Before making any change:
 
-- HTML5
-- CSS3
-- Vanilla JavaScript
+1. Understand the existing implementation first.
+2. Preserve working behavior unless the task explicitly requires changing it.
+3. Make the smallest reasonable change that solves the task.
+4. Reuse existing structures before creating new ones.
+5. Avoid unrelated refactors.
+6. Do not redesign the project based on personal preference.
+7. Do not replace existing technologies only because another solution is more modern.
+8. New code should fit naturally into the existing codebase.
+9. Prefer maintainability over novelty.
+10. Do not over-engineer.
 
-Do not introduce:
+Core rule:
+
+> Preserve first. Improve second.
+
+---
+
+## 3. Inspect Before Editing
+
+Before implementation, inspect all files relevant to the current task.
+
+This may include:
+
+- `README.md`
+- `ROADMAP.md`
+- `AGENTS.md`
+- HTML files
+- CSS files
+- JavaScript files
+- Asset directories
+- Existing component structures
+- Existing class names
+- Existing DOM structures
+- Existing animation logic
+- Existing responsive behavior
+
+Do not create a new implementation based on assumptions if an existing solution already exists.
+
+Prefer reusing existing:
+
+- Classes
+- Functions
+- DOM structures
+- Components
+- Utilities
+- Data structures
+- Layout systems
+- Animation systems
+
+---
+
+## 4. ROADMAP.md Is the Main Development Direction
+
+The long-term project plan is defined in:
+
+```text
+ROADMAP.md
+```
+
+When the current task relates to the roadmap:
+
+1. Read `ROADMAP.md`.
+2. Identify the current development stage.
+3. Implement only what is appropriate for the current stage.
+4. Do not prematurely implement future features.
+
+Follow:
+
+> Build what the current stage needs.
+
+Do not add infrastructure only because it may be useful later.
+
+---
+
+## 5. Current Technology Stack
+
+Unless the current task or `ROADMAP.md` explicitly requires otherwise, keep the project based on:
+
+```text
+HTML
+CSS
+JavaScript
+```
+
+Prefer native browser APIs.
+
+Do not introduce the following without a clear task requirement:
 
 - React
 - Vue
-- Next.js
 - Angular
-- large UI libraries
-- unnecessary build systems
+- Next.js
+- Nuxt
+- Svelte
+- Tailwind CSS
+- Bootstrap
+- jQuery
+- UI frameworks
+- State management libraries
+- Animation frameworks
+- Backend frameworks
+- Build systems
+- Large third-party dependencies
 
-unless the task explicitly requires them or the repository architecture has already changed.
+Before adding a dependency, ask:
 
-Always inspect the existing project before proposing a new dependency.
+> Can this be implemented cleanly with the existing stack?
 
----
-
-# 2. Design Principles
-
-The visual direction should remain:
-
-- minimal
-- clean
-- photography-first
-- spacious
-- modern
-- calm
-
-The interface may take inspiration from Apple's visual discipline, but should not directly copy Apple components or layouts.
-
-Photography should remain the strongest visual element.
-
-Avoid:
-
-- excessive gradients
-- unnecessary decorative elements
-- excessive borders
-- excessive shadows
-- visual clutter
-- animation without purpose
+If yes, prefer the existing stack.
 
 ---
 
-# 3. Before Editing Code
+## 6. Avoid Unrelated Refactors
 
-Before modifying files:
+Do not perform unrelated cleanup while completing a task.
 
-1. Read the relevant files.
-2. Understand the existing implementation.
-3. Identify the smallest set of files that need modification.
-4. Check whether similar functionality already exists.
-5. Explain the proposed implementation when appropriate.
+Avoid unnecessary:
 
-Do not immediately rewrite large sections of the project.
+- File renaming
+- File moving
+- Directory restructuring
+- Full CSS rewrites
+- Full HTML rewrites
+- Full JavaScript rewrites
+- Large-scale class renaming
+- Repository-wide formatting
+- Removal of code that only appears unused
+- Replacement of existing implementation patterns
 
-Do not modify unrelated files.
+If an unrelated issue is discovered, leave it unchanged unless it blocks the current task.
+
+Mention it in the final summary instead.
 
 ---
 
-# 4. Implementation Rules
+## 7. File and Directory Rules
 
-Prefer the smallest correct implementation.
+Do not change the existing project structure without a clear reason.
 
-When solving a task:
+Before creating a file:
+
+1. Check whether a similar file already exists.
+2. Use a predictable and descriptive filename.
+3. Place it in the correct semantic directory.
+4. Avoid creating unnecessary files for very small features.
+
+Prefer lowercase filenames.
+
+For multi-word filenames, prefer:
 
 ```text
-Understand
-    ↓
-Plan
-    ↓
-Implement
-    ↓
-Verify
-    ↓
-Review
+kebab-case
 ```
 
-Keep existing behavior unless the task explicitly requires changing it.
+Examples:
 
-Avoid speculative architecture.
+```text
+gallery-item.js
+work-detail.js
+image-viewer.js
+```
 
-Do not build systems for hypothetical future requirements unless requested.
+Do not mix naming styles unless the repository already uses another convention consistently.
 
 ---
 
-# 5. HTML Rules
+## 8. HTML Guidelines
 
-Use semantic HTML whenever appropriate.
+HTML should remain:
 
-Prefer elements such as:
+- Semantic
+- Clear
+- Simple
+- Accessible
+- Structurally consistent
+
+Prefer semantic elements where appropriate:
 
 ```html
 <header>
@@ -122,558 +216,1017 @@ Prefer elements such as:
 <main>
 <section>
 <article>
-<figure>
 <footer>
+<button>
+<a>
 ```
 
-instead of using `<div>` for everything.
+Avoid unnecessary wrapper elements.
 
-Requirements:
-
-- maintain logical document structure
-- provide useful `alt` text for meaningful images
-- keep accessibility in mind
-- keep heading levels logical
-- avoid deeply nested markup
+However, do not rewrite stable markup only for theoretical semantic improvements.
 
 ---
 
-# 6. CSS Rules
+## 9. Preserve Existing DOM Contracts
 
-CSS should remain readable and organized.
+Existing CSS and JavaScript may depend on the current DOM structure.
 
-Prefer understandable class names.
+Before changing markup, inspect dependencies such as:
+
+- CSS selectors
+- JavaScript selectors
+- Animation selectors
+- Responsive selectors
+- Hover states
+- Active states
+- Event listeners
+
+Do not assume a structural change is harmless.
+
+Preserve existing DOM contracts whenever possible.
+
+---
+
+## 10. Visual Design Direction
+
+The website design direction is:
+
+> Minimal, restrained, modern, and photography-first.
+
+The visual language should favor:
+
+- Generous whitespace
+- Clear hierarchy
+- Simple typography
+- Restrained motion
+- Image-first presentation
+- Subtle interactions
+- Clean composition
+
+The overall feel may reference Apple-style minimal product presentation, without copying specific layouts.
+
+Do not introduce unnecessary:
+
+- Heavy gradients
+- Strong drop shadows
+- Highly saturated colors
+- Decorative UI
+- Excessive glassmorphism
+- Visually noisy controls
+- Inconsistent design languages
+
+Photography should remain the visual focus.
+
+---
+
+## 11. Reuse Existing CSS
+
+Before adding new CSS, inspect whether the project already has reusable rules for:
+
+- Containers
+- Grids
+- Typography
+- Spacing
+- Buttons
+- Cards
+- Animations
+- Breakpoints
+- Layout utilities
+
+Avoid creating parallel style systems such as:
+
+```css
+.work-card {}
+.work-card-new {}
+.work-card-v2 {}
+.work-card-final {}
+```
+
+Prefer extending or reusing the existing design system.
+
+---
+
+## 12. Preserve Existing Visual Behavior
+
+Unless the task explicitly requires visual changes, preserve:
+
+- Typography
+- Spacing
+- Layout
+- Grid behavior
+- Hover states
+- Transitions
+- Reveal animations
+- Scroll interactions
+- Navigation behavior
+- Image presentation
+
+Do not redesign pages while implementing functional changes.
+
+---
+
+## 13. Responsive Design
+
+All new UI and behavior must account for:
+
+```text
+Desktop
+Tablet
+Mobile
+```
+
+Check for:
+
+- Overflow
+- Distorted images
+- Broken text wrapping
+- Grid behavior
+- Navigation usability
+- Click and tap target size
+- Accidental horizontal scrolling
+
+Do not create separate duplicated pages for mobile unless explicitly required.
+
+Prefer responsive CSS.
+
+---
+
+## 14. JavaScript Guidelines
+
+JavaScript should be:
+
+- Clear
+- Readable
+- Modular
+- Focused
+- Easy to debug
+- Free from unnecessary global state
+
+Functions should preferably have a single clear responsibility.
+
+Prefer:
+
+```js
+function renderWorks() {}
+
+function createWorkCard() {}
+
+function initReveal() {}
+```
+
+over one large function containing unrelated logic.
+
+---
+
+## 15. JavaScript Naming
+
+Use descriptive names.
+
+Prefer:
+
+```js
+workGrid
+galleryItems
+renderGallery
+createWorkCard
+openLightbox
+closeLightbox
+```
+
+Avoid vague names such as:
+
+```js
+a
+x
+temp2
+data1
+thing
+foo
+test123
+```
+
+Short local loop variables are acceptable only when their meaning is obvious.
+
+---
+
+## 16. Avoid Unnecessary Duplication
+
+If meaningful logic is repeated multiple times, consider extracting:
+
+- A function
+- A helper
+- A shared class
+- A shared data structure
+
+Do not abstract aggressively for minor repetition.
+
+Follow:
+
+> Abstract when repetition becomes meaningful.
+
+Do not build abstractions for hypothetical future needs.
+
+---
+
+## 17. Safe DOM Access
+
+DOM queries must tolerate elements that may not exist on every page.
+
+Prefer:
+
+```js
+const element = document.querySelector(".example");
+
+if (element) {
+  // logic
+}
+```
+
+Do not allow a missing optional element to break the entire script with errors such as:
+
+```text
+Cannot read properties of null
+```
+
+---
+
+## 18. ES Modules
+
+If JavaScript uses:
+
+```js
+import
+export
+```
+
+the corresponding HTML must use:
+
+```html
+<script type="module" src="..."></script>
+```
+
+Verify module paths carefully.
+
+Avoid mixing module and non-module code in ways that create incorrect execution order.
+
+---
+
+## 19. Dynamic DOM and Initialization Order
+
+When JavaScript dynamically creates DOM elements, inspect whether existing functionality depends on initialization such as:
+
+```js
+document.querySelectorAll(...)
+```
+
+This is especially important for:
+
+- Reveal animations
+- `IntersectionObserver`
+- Click handlers
+- Image viewers
+- Hover logic
+- Lightboxes
+- Lazy initialization
+
+Dynamic content must either:
+
+- Be created before dependent initialization runs, or
+- Be handled by logic that supports dynamically created elements
+
+Do not allow dynamically rendered content to lose existing interactions.
+
+---
+
+## 20. Photography Asset Safety
+
+Photography assets are important project content.
+
+Do not:
+
+- Reference nonexistent files
+- Invent file paths
+- Delete real photos
+- Delete videos
+- Delete RAW files
+- Move large groups of images without explicit need
+- Rename assets unnecessarily
+
+Always verify real paths before modifying references.
+
+Pay attention to filename case.
+
+For example:
+
+```text
+Photo.jpg
+```
+
+and:
+
+```text
+photo.jpg
+```
+
+may behave differently in deployment environments.
+
+---
+
+## 21. Asset Path Rules
+
+When changing paths, consider:
+
+- Local development
+- Deployment
+- GitHub Pages
+- Relative directory depth
+
+Do not introduce machine-specific absolute paths such as:
+
+```text
+/Users/username/...
+C:\Users\...
+```
+
+All project resource paths must be portable.
+
+---
+
+## 22. Image Alt Text
+
+Important images should have meaningful `alt` text.
+
+Avoid generic values such as:
+
+```html
+alt="image"
+alt="photo"
+```
+
+Describe the visual content when appropriate.
+
+Decorative images may use:
+
+```html
+alt=""
+```
+
+---
+
+## 23. Performance
+
+This is a photography website and may contain many large images.
+
+Consider:
+
+- Image count
+- Image dimensions
+- Initial page load
+- Lazy loading
+- DOM size
+- Duplicate network requests
+
+Use:
+
+```html
+loading="lazy"
+```
+
+when appropriate for non-critical images.
+
+Do not unnecessarily lazy-load important above-the-fold images if it harms the experience.
+
+Avoid loading large numbers of full-resolution originals directly into the DOM without a clear need.
+
+---
+
+## 24. Animation Principles
+
+Animations should be:
+
+- Subtle
+- Consistent
+- Smooth
+- Content-supporting
+- Secondary to the photography
+
+Prefer performant properties such as:
+
+```text
+opacity
+transform
+```
+
+Avoid unnecessary animation of layout-heavy properties such as:
+
+```text
+width
+height
+top
+left
+```
+
+Do not give every element a different animation style.
+
+Keep motion language consistent across the site.
+
+---
+
+## 25. Preserve Animation Compatibility
+
+After structural changes, verify that existing:
+
+- Reveal animations
+- Scroll animations
+- Hover transitions
+- Initial states
+- Observers
+- Interaction handlers
+
+still work.
+
+If the project already has an animation system, reuse it rather than creating another one.
+
+---
+
+## 26. Accessibility
+
+Use native interactive elements whenever possible.
+
+Prefer:
+
+```html
+<button>
+```
+
+instead of:
+
+```html
+<div onclick="...">
+```
+
+Use:
+
+```html
+<a>
+```
+
+for navigation links.
+
+Consider:
+
+- Keyboard navigation
+- Focus states
+- `aria-label`
+- Alt text
+- Semantic markup
+
+Do not perform large accessibility rewrites outside the current task, but new code should follow good accessibility practices.
+
+---
+
+## 27. Error Handling
+
+Normal edge cases should not crash the page.
+
+Examples:
+
+- Empty data
+- Missing optional DOM elements
+- Missing optional fields
+- Image loading failures
+
+Handle errors proportionally.
+
+Do not introduce a complex error-handling framework for simple cases.
+
+---
+
+## 28. Never Invent Project Data
+
+Do not fabricate:
+
+- Photography locations
+- Dates
+- Camera models
+- Lenses
+- EXIF metadata
+- Image dimensions
+- Collection descriptions
+- File paths
+- Personal information
+
+When test data is needed:
+
+1. Prefer existing project content.
+2. Clearly mark temporary data.
+3. Never reference assets that do not exist.
+
+---
+
+## 29. GitHub Pages and Deployment Compatibility
+
+Changes must remain compatible with deployment.
+
+Pay special attention to:
+
+- Filename case
+- Relative paths
+- Module paths
+- Image paths
+- Favicon paths
+- CSS paths
+- JavaScript paths
+
+Avoid situations where:
+
+```text
+Local works
+GitHub Pages fails
+```
+
+---
+
+## 30. Keep the Browser Console Clean
+
+After implementation, check for newly introduced errors such as:
+
+```text
+Uncaught TypeError
+ReferenceError
+SyntaxError
+404
+Failed to load resource
+Failed to load module script
+```
+
+Do not introduce new runtime or loading errors.
+
+If an unrelated pre-existing error exists, mention it in the final summary.
+
+Do not hide it.
+
+---
+
+## 31. Do Not Install Dependencies Without Need
+
+Do not run commands such as:
+
+```bash
+npm install ...
+```
+
+or add third-party CDNs unless the current task explicitly requires them.
+
+If a dependency seems genuinely necessary but has not been authorized, explain why before introducing it.
+
+Prefer the current stack whenever practical.
+
+---
+
+## 32. Avoid Unnecessary Configuration Changes
+
+Do not modify unrelated configuration such as:
+
+- Git settings
+- GitHub Actions
+- Deployment configuration
+- Build configuration
+- Repository settings
+- `.gitignore`
+- Package configuration
+- Hosting configuration
+
+unless the current task requires it.
+
+---
+
+## 33. `.gitignore`
+
+If new generated or local-only files are introduced, inspect `.gitignore` first.
+
+Do not commit obvious temporary or local files such as:
+
+- OS files
+- IDE cache
+- Temporary files
+- Local secrets
+- Generated caches
+- Unnecessary build artifacts
+
+Do not add important active project directories to `.gitignore` without a clear reason.
+
+---
+
+## 34. Secrets and Sensitive Data
+
+Never hardcode:
+
+- API keys
+- Passwords
+- Private tokens
+- Database passwords
+- Authentication secrets
+
+into:
+
+- HTML
+- JavaScript
+- CSS
+- README files
+- Git repositories
+
+When secrets are eventually needed, use the appropriate environment variable or hosting secret mechanism.
+
+---
+
+## 35. Do Not Delete User Content
+
+Be especially cautious with deletion.
+
+Never automatically delete:
+
+- Photos
+- Videos
+- RAW files
+- Collections
+- Gallery content
+- User data
+
+If deletion functionality is implemented later, require explicit user action and appropriate confirmation.
+
+Do not remove real content merely to clean up the codebase.
+
+---
+
+## 36. Backward Compatibility
+
+New features should preserve existing:
+
+- Pages
+- Links
+- Styles
+- Interactions
+- Navigation
+- Content behavior
+
+whenever possible.
+
+If a breaking change is necessary, explain:
+
+1. Why it is necessary
+2. What is affected
+3. Which files or features require coordinated updates
+
+---
+
+## 37. Comments
+
+Prefer self-explanatory code.
+
+Add comments only when they provide useful context.
 
 Good:
 
-```css
-.gallery-grid
-.gallery-item
-.hero-title
-.site-header
-.photo-card
+```js
+// Re-initialize reveal observers after dynamic cards are rendered.
 ```
 
-Avoid unclear names such as:
+Unnecessary:
 
-```css
-.box1
-.test
-.abc
-.new-style
+```js
+// Create a variable
+const workGrid = ...
 ```
 
-Prefer reusable styles over duplicated CSS.
+Do not use comments to explain obvious syntax.
 
-Use CSS custom properties when values are shared across the site.
+---
+
+## 38. Remove Temporary Debugging Code
+
+Before finishing a task, remove temporary debugging code such as:
+
+```js
+console.log("test");
+console.log("123");
+alert("hello");
+```
+
+Also remove temporary:
+
+- Debug borders
+- Test backgrounds
+- Placeholder controls
+- Experimental DOM
+- Temporary buttons
+
+unless they were explicitly requested.
+
+---
+
+## 39. Avoid Meaningless Magic Values
+
+When a value has clear design meaning and is reused, consider a shared constant or CSS custom property.
 
 Example:
 
 ```css
 :root {
-  --page-width: 1440px;
-  --content-padding: 24px;
-  --header-height: 64px;
+  --header-height: 72px;
 }
 ```
 
-Do not introduce complex CSS architecture unless the project requires it.
+Do not create variables for every numeric value.
+
+Use judgment.
 
 ---
 
-# 7. JavaScript Rules
+## 40. CSS Custom Properties
 
-Prefer simple browser APIs and Vanilla JavaScript.
+If the project already uses:
 
-JavaScript should mainly handle:
-
-- interactions
-- navigation
-- dynamic gallery behavior
-- animations that cannot be handled cleanly by CSS
-- data loading
-- future API communication
-
-Avoid JavaScript for purely visual styling that can be implemented in CSS.
-
-Use descriptive names.
-
-Good:
-
-```js
-openLightbox()
-closeLightbox()
-loadGallery()
-updateNavigation()
+```css
+:root
 ```
+
+and CSS custom properties, add new global design values to the existing system when appropriate.
+
+Examples:
+
+```css
+--page-padding
+--text-primary
+--text-secondary
+--section-gap
+```
+
+Do not create duplicate variables representing the same concept.
+
+---
+
+## 41. Keep Design Tokens Consistent
+
+When working with:
+
+- Spacing
+- Font sizes
+- Border radius
+- Transitions
+- Container width
+- Colors
+
+inspect existing values first.
+
+Avoid arbitrary one-off values unless the design clearly requires them.
+
+The site should feel like one visual system.
+
+---
+
+## 42. Avoid Over-Engineering
+
+The goal is not to demonstrate architectural complexity.
+
+The goal is to build a:
+
+> Stable, elegant, understandable, and maintainable photography website.
 
 Avoid:
 
-```js
-doThing()
-test()
-func1()
-```
+- Complex class hierarchies for simple data
+- Large abstraction layers for small DOM tasks
+- Premature API design
+- Dependency injection for simple modules
+- Design patterns used only for their own sake
+
+Choose the simplest architecture that clearly solves the current problem.
 
 ---
 
-# 8. Responsive Design
+## 43. Code Should Remain Learnable
 
-Every UI feature should work across:
+The project owner is learning Web development through this project.
 
-- desktop
-- tablet
-- mobile
+When multiple solutions are equally valid, prefer the one that is easier to understand.
 
-When changing layout code, check:
+For example:
 
 ```text
-1440px
-1024px
-768px
-430px
-390px
+Option A:
+20 lines of clear JavaScript
+
+Option B:
+Advanced abstraction with multiple helpers and indirection
 ```
 
-Avoid designing only for desktop.
+Prefer Option A unless Option B solves a real, current problem.
 
-Touch interactions must remain usable on mobile devices.
+Clarity is a feature.
 
 ---
 
-# 9. Photography and Image Rules
+## 44. Post-Implementation Checks
 
-This is an image-heavy project.
+After completing a task, verify at minimum:
 
-Performance must be considered whenever images are introduced.
+### Page behavior
 
-Prefer:
+- Page opens correctly
+- Layout is intact
+- Desktop works
+- Mobile works
 
-- responsive images
-- lazy loading
-- optimized thumbnails
-- modern image formats
-- reasonable image dimensions
+### CSS
+
+- Existing styles remain intact
+- No unexpected overflow
+- Hover states work
+- Animations work
+
+### JavaScript
+
+- No new console errors
+- DOM selectors are correct
+- Events are not unintentionally bound multiple times
+- Modules load correctly
+
+### Assets
+
+- Images load correctly
+- Paths are correct
+- Filename case is correct
+
+### Deployment
+
+If the task affects entry points or asset paths:
+
+- Verify GitHub Pages compatibility
+
+---
+
+## 45. Final Response Requirements
+
+After completing a coding task, do not respond only with:
+
+```text
+Done.
+```
+
+Provide a concise implementation summary.
+
+At minimum include:
+
+### 1. What changed
+
+Summarize the main implementation.
+
+### 2. Files changed
 
 Example:
 
-```html
-<img
-  src="image.webp"
-  alt="..."
-  loading="lazy"
->
-```
-
-Do not commit large photography archives into Git.
-
-Do not commit:
-
 ```text
-*.RAW
-*.CR2
-*.CR3
-*.NEF
-*.ARW
+Modified:
+- work.html
+- css/style.css
+- js/work.js
+
+Added:
+- data/works.js
 ```
 
-Large original images should eventually live in object storage rather than the code repository.
+### 3. Why the changes were made
+
+Explain the architecture change in beginner-friendly language.
+
+### 4. How to verify
+
+Tell the user:
+
+- Which page to open
+- What interaction to test
+- What result to expect
+
+### 5. Anything incomplete
+
+If something is not finished, state it clearly.
+
+Do not claim completion when work remains.
 
 ---
 
-# 10. File Organization
+## 46. Explain Important New Concepts
 
-Current structure:
+If a task introduces an important concept such as:
 
-```text
-/
-├── index.html
-├── css/
-├── js/
-├── assets/
-├── docs/
-├── AGENTS.md
-└── README.md
-```
+- ES modules
+- APIs
+- Databases
+- `async/await`
+- Routing
+- Authentication
+- CRUD
+- `localStorage`
+- Servers
+- Deployment
 
-Do not create new directories without a clear purpose.
-
-When the project becomes larger, files may be separated into logical modules.
-
-Example:
+briefly explain:
 
 ```text
-js/
-├── gallery.js
-├── lightbox.js
-├── navigation.js
-└── main.js
+What it is
+Why the project needs it now
+How it relates to the existing architecture
 ```
 
-Do not split files prematurely.
+Keep explanations concise but sufficient for learning.
 
 ---
 
-# 11. Git Branch Strategy
+## 47. Do Not Hide Problems
 
-The repository uses a feature-branch workflow.
+If implementation reveals:
 
-The `main` branch represents the stable version of the website.
+- Existing bugs
+- Missing files
+- Broken image paths
+- ROADMAP inconsistencies
+- Architecture limitations
+- Deployment conflicts
 
-Avoid developing large features directly on `main`.
+do not pretend the project is healthy.
 
-## Branch Naming
+Use:
 
-Use the following prefixes.
+> Minimum safe change + clear explanation.
 
-### New feature
+If the issue can be safely fixed within the task scope, fix it.
 
-```text
-feature/<name>
-```
-
-Examples:
-
-```text
-feature/gallery
-feature/lightbox
-feature/photo-categories
-feature/download-button
-```
-
-### Bug fix
-
-```text
-fix/<name>
-```
-
-Examples:
-
-```text
-fix/mobile-navigation
-fix/gallery-overflow
-fix/broken-image-path
-```
-
-### Refactoring
-
-```text
-refactor/<name>
-```
-
-Examples:
-
-```text
-refactor/gallery-css
-refactor/navigation-js
-```
-
-### Documentation
-
-```text
-docs/<name>
-```
-
-Examples:
-
-```text
-docs/update-readme
-docs/gallery-architecture
-```
-
-### Performance
-
-```text
-perf/<name>
-```
-
-Examples:
-
-```text
-perf/image-loading
-perf/gallery-rendering
-```
-
-Branch names should:
-
-- use lowercase
-- use hyphens between words
-- describe one task
-- remain short
-
-Avoid:
-
-```text
-new
-test
-update
-branch1
-final
-final-v2
-kris-new-version
-```
+If it belongs to another task, report it without expanding the current scope.
 
 ---
 
-# 12. Development Workflow
+## 48. Instruction Priority
 
-For each feature:
-
-```text
-main
-  ↓
-create branch
-  ↓
-plan
-  ↓
-code
-  ↓
-test
-  ↓
-review diff
-  ↓
-commit
-  ↓
-merge into main
-```
-
-Example:
-
-```bash
-git switch main
-git pull
-git switch -c feature/gallery-lightbox
-```
-
-After implementation:
-
-```bash
-git status
-git diff
-```
-
-Review all modifications before committing.
-
-Then:
-
-```bash
-git add .
-git commit -m "feat: add gallery lightbox"
-```
-
-After verification, merge the feature back into `main`.
-
----
-
-# 13. Commit Convention
-
-Use short, descriptive commit messages.
-
-Preferred format:
+When interpreting project requirements, use this priority:
 
 ```text
-type: description
-```
-
-Supported types:
-
-```text
-feat:
-fix:
-style:
-refactor:
-perf:
-docs:
-chore:
-```
-
-Examples:
-
-```text
-feat: add photography category navigation
-
-feat: add fullscreen photo viewer
-
-fix: repair mobile navigation
-
-fix: prevent gallery overflow
-
-style: improve hero spacing
-
-refactor: simplify scroll animation
-
-perf: lazy load gallery images
-
-docs: update project roadmap
-```
-
-Avoid vague commit messages such as:
-
-```text
-update
-
-fix
-
-changes
-
-final
-
-final2
-
-new version
-```
-
-One logical task should ideally produce one focused commit.
-
----
-
-# 14. Code Review
-
-After implementing a task, review the Git diff.
-
-Check specifically for:
-
-- accidental file changes
-- duplicated code
-- unused CSS
-- unused JavaScript
-- broken paths
-- syntax errors
-- responsive problems
-- accessibility issues
-- console errors
-- unnecessary dependencies
-
-Do not automatically refactor unrelated code during review.
-
----
-
-# 15. Testing Checklist
-
-Before considering a feature complete, verify:
-
-```text
-[ ] Page loads correctly
-[ ] No obvious console errors
-[ ] Desktop layout works
-[ ] Mobile layout works
-[ ] Navigation still works
-[ ] Existing features still work
-[ ] Images load correctly
-[ ] No accidental files were changed
-[ ] Git diff has been reviewed
-```
-
-When tooling is introduced later, also run available:
-
-```text
-lint
-test
-build
-```
-
-commands.
-
----
-
-# 16. Safety Rules
-
-Do not:
-
-- delete large groups of files without explicit need
-- overwrite photography assets unnecessarily
-- expose credentials
-- commit `.env` files containing secrets
-- commit API keys
-- modify production infrastructure casually
-- perform unrelated refactors
-
-Ask for human review before destructive changes.
-
----
-
-# 17. Secrets
-
-Future API keys or credentials must use environment variables.
-
-Never place credentials directly inside:
-
-```text
-HTML
-CSS
-JavaScript
-Git history
-README
-```
-
-Files such as:
-
-```text
-.env
-.env.local
-```
-
-must be excluded from Git.
-
----
-
-# 18. Roadmap
-
-Before implementing major functionality, consult:
-
-```text
-docs/roadmap.md
-```
-
-Prefer completing the current development phase before jumping ahead to later infrastructure.
-
----
-
-# 19. Definition of Done
-
-A task is complete when:
-
-```text
-Requirement implemented
+Current explicit user request
         ↓
-Code reviewed
+Current task prompt
         ↓
-Relevant behavior tested
+AGENTS.md
         ↓
-Responsive layout checked
+ROADMAP.md
         ↓
-Git diff reviewed
-        ↓
-Ready for commit
+Existing project implementation
 ```
 
-Do not consider code complete merely because it was generated successfully.
+However, if the current task only describes what to build and does not explicitly request a redesign, continue following the preservation rules in this file.
 
-## Image Rules
+---
 
-- Do not add RAW photography files to the repository.
-- Prefer optimized WebP or JPEG assets for the website.
-- Use lowercase filenames.
-- Use `loading="lazy"` for gallery images.
-- Do not lazy-load the hero image.
-- Preserve meaningful `alt` text.
-- Include image width and height when known.
-## Responsive Image Rules
+## 49. Respect the Current Task Scope
 
-- Use `srcset` for important responsive image assets.
-- Use `sizes` that reflect the actual layout width.
-- Use multiple WebP sizes where practical.
-- Do not lazy-load hero images.
-- Use `loading="lazy"` for gallery images below the fold.
-- Include intrinsic width and height when known.
-- Avoid serving unnecessarily large images to mobile devices.
+Implement only what the current task requires.
 
-## SEO and Sharing Rules
+Do not read future roadmap items such as:
 
-- Keep one clear page title.
-- Maintain a meaningful meta description.
-- Preserve Open Graph metadata.
-- Use absolute URLs for social sharing images.
-- Keep favicon assets inside `images/favicon/`.
-- Keep social preview assets inside `images/social/`.
-- Do not remove image alt text.
+```text
+database
+admin
+authentication
+upload
+CMS
+```
+
+and implement them early.
+
+Each development stage should remain:
+
+- Understandable
+- Testable
+- Reviewable
+- Reversible
+
+---
+
+## 50. Final Standard
+
+Every change should aim to satisfy:
+
+```text
+Correct functionality
++
+Consistent visual design
++
+Readable code
++
+No regression of existing features
++
+Easy continuation into the next development stage
+```
+
+If a solution is more technically sophisticated but adds unnecessary complexity, do not prefer it by default.
+
+If a simpler solution is stable, clear, maintainable, and sufficient for the current project stage, prefer the simpler solution.
