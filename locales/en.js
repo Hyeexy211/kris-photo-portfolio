@@ -117,7 +117,7 @@ window.siteLocales.en = {
     admin: {
         seo: {
             title: "Content Admin | Kris Photography",
-            description: "Browser-local content administration for the Kris Photography prototype."
+            description: "Owner content administration for Kris Photography."
         },
         nav: {
             label: "Admin navigation",
@@ -131,7 +131,9 @@ window.siteLocales.en = {
             localLink: "Browser-local editor",
             cloudLink: "Cloud Admin",
             cloudLabel: "Authenticated cloud editor",
-            cloudIntro: "Cloud changes update Supabase after owner sign-in. Published photo share previews need regeneration and deployment after edits."
+            cloudIntro: "Cloud changes update Supabase after owner sign-in. Published photo share previews need regeneration and deployment after edits.",
+            fileNotice: "This is a local file, not the published website. Open the online Dashboard to upload images; serve this folder over HTTP to preview local source.",
+            openOnlineDashboard: "Open online Dashboard"
         },
         title: "Content Admin",
         items: "items",

@@ -23,14 +23,16 @@ before running it again.
    authenticated session, sign-out, and a fresh browser before declaring the
    Admin stage complete.
 
-The existing `admin.html` remains the browser-local prototype. Open
-`admin.html?mode=cloud` for the prepared email/password sign-in and cloud
-editor. The cloud editor hides content before sign-in and never offers the
+Open `admin.html` for the prepared email/password sign-in and cloud editor;
+the previous `admin.html?mode=cloud` URL remains supported. Open
+`admin.html?mode=local` explicitly for the browser-local prototype and its
+seed reset. The cloud editor hides content before sign-in and never offers the
 local seed reset. Its browser session persists with Supabase Auth and signs
-out locally. A static HTML URL can still be requested by anyone; RLS is the
-actual protection for data. The frontend path has passed local mock CRUD tests
-and unauthenticated browser checks, but live authenticated CRUD is pending the
-steps above.
+out locally. Use the published HTTPS site or an HTTP local preview, not a
+`file://` copy, for cloud administration. A static HTML URL can still be
+requested by anyone; RLS is the actual protection for data. The frontend path
+has passed local mock CRUD tests and unauthenticated browser checks, but live
+authenticated CRUD is pending the steps above.
 
 Cloud Admin changes the database but cannot rewrite GitHub Pages HTML. After
 editing the title, description, alt text or image of one of the nine seed

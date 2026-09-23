@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-i18n="admin.seo.title">Content Admin | Kris Photography</title>
-    <meta name="description" content="Browser-local content administration for the Kris Photography prototype." data-i18n-content="admin.seo.description">
+    <meta name="description" content="Owner content administration for Kris Photography." data-i18n-content="admin.seo.description">
     <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#000000">
     <link rel="icon" href="images/favicon/favicon.png">
@@ -34,13 +34,13 @@
 
     <main id="main-content" class="admin-main">
         <section class="admin-intro" aria-labelledby="admin-title">
-            <p class="section-label" id="admin-mode-label" data-i18n="admin.mode.localLabel">Lesson 33 prototype</p>
+            <p class="section-label" id="admin-mode-label" data-i18n="admin.mode.cloudLabel">Authenticated cloud editor</p>
             <h1 id="admin-title" data-i18n="admin.title">Content Admin</h1>
-            <p id="admin-intro-copy" data-i18n="admin.mode.localIntro">
-                Changes on this page are saved only in this browser with localStorage.
-                They do not update the Git repository or other devices.
+            <p id="admin-intro-copy" data-i18n="admin.mode.cloudIntro">
+                Cloud changes update Supabase after owner sign-in. Published photo share previews need regeneration and deployment after edits.
             </p>
-            <p class="admin-mode-links"><a href="admin.html" data-i18n="admin.mode.localLink">Browser-local editor</a> · <a href="admin.html?mode=cloud" data-i18n="admin.mode.cloudLink">Cloud Admin</a></p>
+            <p class="admin-mode-links"><a href="admin.html?mode=local" data-i18n="admin.mode.localLink">Browser-local editor</a> · <a href="admin.html" data-i18n="admin.mode.cloudLink">Cloud Admin</a></p>
+            <p class="admin-mode-links" id="admin-file-notice" hidden><span data-i18n="admin.mode.fileNotice">This is a local file, not the published website. Open the online Dashboard to upload images; serve this folder over HTTP to preview local source.</span> <a href="https://hyeexy211.github.io/kris-photo-portfolio/admin/" data-i18n="admin.mode.openOnlineDashboard">Open online Dashboard</a></p>
             <p class="admin-status" id="admin-status" role="status" aria-live="polite"></p>
         </section>
 

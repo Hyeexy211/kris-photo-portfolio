@@ -1,16 +1,16 @@
 # Kris Photography 使用说明
 
-> 根据 2026-09-23 已并入本地 `main` 的 `feature/roadmap-completion` 代码整理。本说明区分仓库当前代码与已发布的 GitHub Pages：新功能需要发布并检查后，才能视为线上可用。
+> 根据 2026-09-23 已并入 `main` 的功能整理。此前合并版本的 GitHub Pages 首页与主要静态资源已核对；本次默认后台入口调整发布后需复查，真实 Supabase 登录、写入与 Storage 上传仍须单独验证。
 
 ## 1. 这是什么网站
 
-这是一个用 HTML、CSS 和原生 JavaScript 制作的摄影作品集。访客可以浏览作品集和照片；站点所有者可以使用浏览器本地的内容编辑原型。当前仓库的默认内容是 **3 个作品集、9 张照片**，分别属于 Portrait、Documentary、Landscape。
+这是一个用 HTML、CSS 和原生 JavaScript 制作的摄影作品集。访客可以浏览作品集和照片；站点所有者可以进入有登录门槛的云端编辑界面，也可显式打开浏览器本地原型。当前仓库的默认内容是 **3 个作品集、9 张照片**，分别属于 Portrait、Documentary、Landscape。
 
 公开站点首页、Gallery 和通用作品集页优先从 Supabase **只读**获取内容。如果任一组云端内容读取失败，页面会把作品集和照片一起切换到当前浏览器里的本地数据。这个回退只是保证页面还能显示，不代表本地编辑会自动上传到云端。
 
 ## 2. 访客怎样使用
 
-公开地址：<https://hyeexy211.github.io/kris-photo-portfolio/>。这个地址已经有过发布和检查；本次合并新增的功能仍以本地代码为准，发布状态见第 6 节。
+公开地址：<https://hyeexy211.github.io/kris-photo-portfolio/>。此前合并版本的首页与主要静态资源已在线核对；新的默认后台入口是否上线以及云端后台能否完成真实上传仍需分别检查。
 
 | 目的 | 操作 | 当前结果 |
 | --- | --- | --- |
@@ -26,14 +26,14 @@
 
 ## 3. 网站所有者怎样试用本地内容编辑
 
-1. 打开 `admin.html`，或在页面中点 **Browser-local editor**。此模式无需登录。
+1. 显式打开 `admin.html?mode=local`，或在后台页面中点 **Browser-local editor**。此模式无需登录；无参数的 `admin.html` 默认是 Cloud Admin，旧地址 `admin.html?mode=cloud` 仍可使用。
 2. 在 **Manage Works** 中新增作品集，或在已有条目点 **Edit** 修改标题、slug、说明、封面路径、分类及显示顺序。点 **Save Work** 保存。
 3. 在 **Manage Gallery** 中新增或编辑照片记录，可填写标题、图片路径、分类、作品集 ID、顺序，以及已确认的日期、地点、标签和器材信息。标签用英文逗号分隔。点 **Save Gallery Item** 保存。
 4. 每条记录的 **Delete** 会先弹出确认。页面底部的 **Reset Content** 会在确认后把当前浏览器里的 Works 和 Gallery **全部恢复为仓库默认种子**，覆盖本地修改。
 
 本地模式只把记录保存在当前浏览器的 `localStorage`。它不会修改 `data/` 文件、图片文件、Supabase、Git 仓库或其他设备。图片字段在本地模式填写的是**已有图片的相对路径**；表单不会把选中的图片文件上传进项目。路径必须真实存在且大小写一致，否则浏览器会显示坏图。
 
-**当前容易误解的一点：**公开页面的配置优先读 Supabase。云端读取正常时，`admin.html` 的本地修改不会出现在公开首页和作品集页；只有页面使用本地数据源或触发本地回退时才可能看到这些记录。因此，不要把这个本地原型当作正式发布工具，也不要用它判断云端内容是否已经更新。
+**当前容易误解的一点：**公开页面的配置优先读 Supabase。云端读取正常时，`admin.html?mode=local` 的本地修改不会出现在公开首页和作品集页；只有页面使用本地数据源或触发本地回退时才可能看到这些记录。因此，不要把这个本地原型当作正式发布工具，也不要用它判断云端内容是否已经更新。`file://`、`http://127.0.0.1:4173` 与 GitHub Pages 也是不同的浏览器来源，三处的本地存储不会自动互通。
 
 ## 4. 本地预览与项目文件
 
@@ -43,14 +43,14 @@
 python3 -m http.server 4173 --bind 127.0.0.1
 ```
 
-然后在浏览器打开 `http://127.0.0.1:4173/` 看当前源码，或打开 `http://127.0.0.1:4173/admin.html` 试用本地编辑器。运行服务器的终端中按 `Ctrl+C` 停止。请通过 HTTP 地址预览，不要直接双击 HTML 文件；部分浏览器功能和资源加载行为在 `file://` 下不同。
+然后在浏览器打开 `http://127.0.0.1:4173/` 看当前源码，或打开 `http://127.0.0.1:4173/admin.html` 看默认 Cloud Admin；试用本地原型请打开 `http://127.0.0.1:4173/admin.html?mode=local`。运行服务器的终端中按 `Ctrl+C` 停止。直接双击 `admin.html` 得到的 `file://` 地址不是线上网站；页面会提示改用线上或 HTTP 预览地址，不能用它判断云端发布结果。已有的 `file://` 本地记录仍属于原浏览器来源，不会自动转到 HTTP 或 Supabase。
 
 | 位置 | 用途 |
 | --- | --- |
 | `index.html`、`collection.html`、`photo.html`、`photos/`、`projects/` | 首页、通用作品集页、通用照片页、9 张现有照片的独立页和保留的旧作品页。 |
 | `data/collections.js`、`data/photos.js` | 浏览器本地默认内容；不要填写未经确认的拍摄资料。 |
 | `js/content-service.js`、`js/repositories/` | 公开页面的数据读取和本地数据保存。 |
-| `admin.html`、`js/admin.js` | 本地编辑原型及准备中的云端编辑界面。 |
+| `admin.html`、`js/admin.js` | 默认 Cloud Admin；`?mode=local` 保留本地编辑原型。 |
 | `images/`、`css/` | 真实照片、响应式网页图和页面样式。 |
 | `dist/` | Sites 预览和托管所用的静态副本，已被 Git 忽略；它不等于根目录源码。 |
 
@@ -59,12 +59,12 @@ python3 -m http.server 4173 --bind 127.0.0.1
 ## 5. 云端数据与 Cloud Admin 的现状
 
 - **已经可用：**公开页面的 Supabase 只读数据。仓库中的 `collections`、`photos` 结构、默认种子和公开读取策略已有配置与实际读取记录。云端读取异常时会回退到浏览器本地内容。
-- **已有代码，但尚未完成线上启用验证：**`admin.html?mode=cloud` 的邮箱密码登录、管理员身份检查、作品集和照片记录的云端增删改，以及两种内容在新增／编辑时的图片上传。真实所有者账号、管理员 RLS、Storage 桶与策略是否已在实地启用仍须核查，权限／上传／恢复测试尚未完成。现在不要依靠它管理正式照片。
+- **已有代码，但尚未完成线上启用验证：**默认 `admin.html`（旧地址 `?mode=cloud` 兼容）的邮箱密码登录、管理员身份检查、作品集和照片记录的云端增删改，以及两种内容在新增／编辑时的图片上传。真实所有者账号、管理员 RLS、Storage 桶与策略是否已在实地启用仍须核查，权限／上传／恢复测试尚未完成。现在不要依靠它管理正式照片。
 - **图片上传的设计边界：**Cloud Admin 接受符合条件的 JPEG、PNG、WebP 或 AVIF。选择后可看新图预览，编辑时也能看现有图片；不选新文件就保留原图。保存时浏览器会生成 640、1200、1800px 三份 WebP 网页图，上传成功后再把 URL 写入 Supabase。云端模式无需手填图片路径；旧图在替换后暂不自动删除，原始文件也不会由此流程上传。浏览器本地原型仍使用已有图片的相对路径字段。详情见 [`supabase-admin-setup.md`](supabase-admin-setup.md) 与 [`supabase-storage-setup.md`](supabase-storage-setup.md)。
 
 待 Supabase 手动配置和线上权限测试完成后，使用步骤是：
 
-1. 在站点根地址后加 `admin/` 打开 Dashboard，登录所有者账号，进入 **Manage Work** 或 **Manage Gallery**。公开页面不显示 Dashboard 入口；也可在站点根地址后直接打开 `admin.html?mode=cloud`。
+1. 在站点根地址后加 `admin/` 打开 Dashboard，登录所有者账号，进入 **Manage Work** 或 **Manage Gallery**。公开页面不显示 Dashboard 入口；也可在站点根地址后直接打开默认云端模式的 `admin.html`。旧地址 `admin.html?mode=cloud` 仍兼容。
 2. 新建 Collection 时填写标题等内容，点 **Choose image** 从电脑选封面，确认预览后保存。编辑时选择新文件可替换封面；不选择则保留当前封面。
 3. 在 Gallery 新建或编辑照片时同样选择本地图片并确认预览，然后保存。上传过程中保存按钮不可重复点击；失败时先看表单状态和错误信息，不要把未确认的 URL 当作已发布内容。
 
@@ -78,4 +78,4 @@ python3 -m http.server 4173 --bind 127.0.0.1
 | 已准备，仍需真实环境验证 | 有权限控制的 Cloud Admin 增删改、Collection 封面与 Gallery 照片上传／替换、Storage 策略、相应的发布与恢复流程。 |
 | 尚未实现或完成 | 本地 Admin 跨设备同步；对现有原片的访问保护；云端新照片的独立静态分享页和下载按钮；完整的图片、Auth 与数据库备份及恢复；真实访客性能监控；自定义域名、站内搜索、多语言与其他长期功能。 |
 
-截至本说明更新时，`feature/roadmap-completion` 已并入本地 `main`，但公开 GitHub Pages 的最新部署不应被视为已经包含本次合并的所有功能。完成发布与线上复查前，下载、分享页和 Cloud Admin 的状态以本地仓库及相应检查记录为准。项目的后续顺序见 [`roadmap.md`](roadmap.md)；代码学习说明见 [`README.md`](../README.md)。
+截至本说明更新时，`feature/roadmap-completion` 已并入并推送到 `main`；此前 GitHub Pages 构建成功，首页和主要静态资源与当时的合并源码一致。本次默认后台入口调整发布后还需复查；静态文件发布成功也不等于 Cloud Admin 的真实写入与图片上传已通过验证。项目的后续顺序见 [`roadmap.md`](roadmap.md)；代码学习说明见 [`README.md`](../README.md)。

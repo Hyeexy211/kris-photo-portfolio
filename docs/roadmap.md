@@ -22,8 +22,9 @@ Avoid implementing later-stage infrastructure before the current stage is stable
 The first GitHub Pages release belongs to the current static-site stage; the later
 backend and storage phases are optional expansion, not release prerequisites.
 
-Checkboxes describe verified work in this repository. They do not imply that
-the merged `main` source has been deployed and verified on GitHub Pages.
+Checkboxes describe verified work in this repository. The previously merged
+`main` static files were also checked on GitHub Pages; later changes require
+their own deployment check.
 
 ---
 
@@ -466,8 +467,10 @@ or another device.
 `supabase/migrations/20260923_admin_auth.sql` prepares owner-only write policies
 and optional photo metadata columns; live application status must be checked
 in the Supabase project.
-`admin.html?mode=cloud` has an owner sign-in gate and repository-backed CRUD
-code; local mock tests passed, but no real authenticated cloud write was made.
+The default `admin.html` (and compatible `?mode=cloud` URL) has an owner sign-in
+gate and repository-backed CRUD code; `?mode=local` retains the browser-local
+prototype. Local mock tests passed, but no real authenticated cloud write was
+made.
 Creating the owner's Auth user, enrolling its real UUID, and testing the live
 policies are manual actions before cloud Admin can be marked complete.
 The static Admin URL itself cannot be server-protected by GitHub Pages; RLS
@@ -624,8 +627,9 @@ nine Gallery photographs, filters, dynamic/static Lightbox flows, browser-local
 Admin compatibility, real Supabase `200` reads, and simulated cloud fallback.
 The authenticated GitHub Pages API confirmed `main` and repository root as
 the current build source, with HTTPS enforced; see
-`docs/deployment-settings-audit.md`. The newly merged source still needs a
-post-push deployment check.
+`docs/deployment-settings-audit.md`. After the feature merge, the public
+homepage, main CSS/JS files, and `admin/` route were checked against the
+merged source. The later default Admin entry change needs its own live check.
 
 ## Later Production Improvements
 
@@ -723,7 +727,7 @@ These are optional and should not distract from the core portfolio.
 Current development priority:
 
 ```text
-Confirm merged main reaches GitHub Pages
+Confirm the default Cloud Admin entry reaches GitHub Pages
     ↓
 Verify Pages, social previews, downloads, and public reads after deployment
     ↓
@@ -741,7 +745,7 @@ originals in the repository and to publish no unverified photo metadata.
 
 | Status | Roadmap item | Required action |
 | --- | --- | --- |
-| MANUAL ACTION REQUIRED | Verify the merged release | Check the live GitHub Pages build, image downloads, links, Console, and social previews after publishing `main`. |
+| MANUAL ACTION REQUIRED | Verify the next release | Check the live default Admin entry, image downloads, links, Console, and social previews after publishing the next `main` update. |
 | MANUAL ACTION REQUIRED | Cloud Admin and Auth | Verify the real owner Auth user and `20260923_admin_auth.sql` state; create/apply only what is missing, enroll the verified UUID, and test owner, other-user, and anonymous reads/writes. See `docs/supabase-admin-setup.md`. |
 | MANUAL ACTION REQUIRED | Storage and CDN | Review buckets and policies, apply the full `20260923_storage_buckets.sql` migration or just its new Collection policy as appropriate, then test uploads and public reads with expendable files. See `docs/supabase-storage-setup.md`. No live bucket is claimed. |
 | MANUAL ACTION REQUIRED | Complete backup and monitoring | Select an external backup destination and monitoring service, then test restoration and production alerts. The public JSON export is only a partial copy. |

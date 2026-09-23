@@ -1,6 +1,6 @@
 // ================================================================
 // Lesson 34: Supabase browser client
-// This file creates one read-only frontend client from browser-safe configuration.
+// This file creates one browser client from browser-safe configuration.
 // ================================================================
 
 const SUPABASE_BROWSER_LIBRARY_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0";
@@ -62,7 +62,7 @@ function getSupabaseClient() {
     const { url, publishableKey } = CONTENT_DATA_SOURCE.supabase;
     assertBrowserSafeSupabaseKey(publishableKey);
     const persistentAdminSession = (window.location.pathname.endsWith("admin.html")
-        && new URLSearchParams(window.location.search).get("mode") === "cloud")
+        && new URLSearchParams(window.location.search).get("mode") !== "local")
         || window.location.pathname.endsWith("/admin/")
         || window.location.pathname.endsWith("/admin/index.html");
 

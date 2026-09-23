@@ -117,7 +117,7 @@ window.siteLocales["zh-CN"] = {
     admin: {
         seo: {
             title: "内容管理 | Kris Photography",
-            description: "Kris Photography 的浏览器本地内容管理页面。"
+            description: "Kris Photography 的所有者内容管理页面。"
         },
         nav: {
             label: "管理导航",
@@ -131,7 +131,9 @@ window.siteLocales["zh-CN"] = {
             localLink: "浏览器本地编辑器",
             cloudLink: "云端管理",
             cloudLabel: "已认证的云端编辑器",
-            cloudIntro: "所有者登录后，云端修改会更新 Supabase。已发布照片的分享预览需要在编辑后重新生成并部署。"
+            cloudIntro: "所有者登录后，云端修改会更新 Supabase。已发布照片的分享预览需要在编辑后重新生成并部署。",
+            fileNotice: "这是电脑上的本地文件，不是已发布的网站。上传图片请打开线上 Dashboard；预览本地源码请通过 HTTP 服务。",
+            openOnlineDashboard: "打开线上 Dashboard"
         },
         title: "内容管理",
         items: "项",

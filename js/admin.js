@@ -14,7 +14,8 @@ const workIdOptions = document.querySelector("#work-id-options");
 const cancelWorkEdit = document.querySelector("#cancel-work-edit");
 const cancelGalleryEdit = document.querySelector("#cancel-gallery-edit");
 const resetContentButton = document.querySelector("#reset-content");
-const cloudMode = new URLSearchParams(window.location.search).get("mode") === "cloud";
+const cloudMode = new URLSearchParams(window.location.search).get("mode") !== "local";
+const openedAsFile = window.location.protocol === "file:";
 const adminStore = cloudMode ? cloudAdminService : contentService;
 const authSection = document.querySelector("#admin-auth");
 const authHeading = document.querySelector("#admin-auth-title");
@@ -712,20 +713,25 @@ function updateAdminLanguage() {
 
 adminI18n.onChange(updateAdminLanguage);
 updateAdminLanguage();
+document.querySelector("#admin-file-notice").hidden = !openedAsFile;
 
 if (cloudMode) {
     syncImageFields("work");
     syncImageFields("gallery");
     setAdminAccess(false);
-    getSupabaseClient().then((client) => {
-        client.auth.onAuthStateChange((event) => {
-            if (event === "SIGNED_OUT") {
-                cloudAccessGeneration++;
-                setAdminAccess(false);
-            }
-        });
-        initializeCloudAdmin();
-    }).catch((error) => showAdminStatus("admin.auth.cloudUnavailable", true, { message: error.message }));
+    if (openedAsFile) {
+        authSection.hidden = true;
+    } else {
+        getSupabaseClient().then((client) => {
+            client.auth.onAuthStateChange((event) => {
+                if (event === "SIGNED_OUT") {
+                    cloudAccessGeneration++;
+                    setAdminAccess(false);
+                }
+            });
+            initializeCloudAdmin();
+        }).catch((error) => showAdminStatus("admin.auth.cloudUnavailable", true, { message: error.message }));
+    }
 } else {
     syncImageFields("work");
     syncImageFields("gallery");

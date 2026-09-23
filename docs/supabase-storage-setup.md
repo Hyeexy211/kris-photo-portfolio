@@ -33,7 +33,8 @@ or remove any repository photographs.
 ## Cloud Admin image upload
 
 After the owner account and both migrations pass the live permission checks,
-open `admin.html?mode=cloud` and sign in. For a new Collection or Gallery
+open the published HTTPS `admin.html` and sign in (`?mode=cloud` remains
+supported; `?mode=local` does not upload). For a new Collection or Gallery
 item, select a local JPEG, PNG, WebP, or browser-decodable AVIF image and
 check its preview before saving. Editing an item allows a replacement file;
 leaving the file chooser empty retains its current image. The source image
