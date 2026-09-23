@@ -431,6 +431,11 @@ Allow photographs to be uploaded and managed through the website.
 This prototype is intentionally not a secure cloud CMS. It has no login and its
 changes do not update Supabase, Git, or another device.
 
+`supabase/migrations/20260923_admin_auth.sql` prepares owner-only write policies
+and optional photo metadata columns, but the live project has not run it.
+Creating the owner's Auth user, enrolling its real UUID, and testing the live
+policies are manual actions before cloud Admin can be marked complete.
+
 ## Authentication
 
 - [ ] Admin login

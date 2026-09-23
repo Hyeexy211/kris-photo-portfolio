@@ -12,6 +12,7 @@
   this alone does not prove an embedded sRGB profile.
 - Original photographs were retained. Their archive destination and integrity
   have not been established, so deleting them from Git would risk user content.
+  The owner chose on 2026-09-23 to keep them in the repository for now.
 
 ## Browser measurement
 

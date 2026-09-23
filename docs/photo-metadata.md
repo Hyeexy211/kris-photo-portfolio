@@ -33,3 +33,5 @@ All 10 JPEGs currently tracked under `images/` were inspected on 2026-09-23.
 None contained `DateTimeOriginal`, Make/Model, LensModel, FNumber,
 ExposureTime, ISO, FocalLength or GPS coordinates. No capture information can
 be populated from these files, and file timestamps are not substitutes.
+The owner also confirmed that no trusted date, location or gear notes are
+currently available; these fields stay empty.
