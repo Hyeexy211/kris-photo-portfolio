@@ -605,10 +605,11 @@ system for its first release.
 - [x] Give those nine pages individual social preview metadata
 
 The sitemap lists the nine static photo pages. `node scripts/generate-photo-pages.js`
-regenerates those pages from the existing seed; when photographs are added or
-removed, update the sitemap and publish the regenerated pages together. A
-cloud-only photograph continues to use `photo.html?id=...` with generic initial
-metadata until it is published as a static page. Social crawlers still need a
+regenerates them from the seed; `--source=supabase` reads those same nine IDs
+from the public cloud table after a Cloud Admin edit. Review and deploy the
+generated files to update their preview metadata. New cloud-only photos still
+use `photo.html?id=...` with generic initial metadata, and a removed seed photo
+needs a deliberate static-page/sitemap review. Social crawlers still need a
 live check after this branch is deployed. On a GitHub Pages project site,
 this repository's `robots.txt` is served beneath `/kris-photo-portfolio/`;
 it cannot set the domain-root robots policy.

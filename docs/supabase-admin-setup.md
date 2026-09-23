@@ -29,6 +29,16 @@ actual protection for data. The frontend path has passed local mock CRUD tests
 and unauthenticated browser checks, but live authenticated CRUD is pending the
 steps above.
 
+Cloud Admin changes the database but cannot rewrite GitHub Pages HTML. After
+editing the title, description, alt text or image of one of the nine seed
+photos, run `node scripts/generate-photo-pages.js --source=supabase` in the
+repository, inspect `git diff -- photos/`, synchronize `dist/photos/`, and
+release those generated pages through the normal Git branch review. The script
+uses only the configured public Supabase URL and publishable key. New cloud-only
+photos still use the generic `photo.html?id=...` URL; publishing them as static
+share pages requires a separate sitemap and link update. Do not claim social
+previews are current before the generated pages are deployed and checked live.
+
 Do not enroll an unverified UUID. The membership table is not exposed to
 browser roles, and the `is_portfolio_admin()` function uses a fixed search
 path and checks the caller's Supabase Auth UID. Client-side hiding of Admin

@@ -359,7 +359,7 @@ signOutButton.addEventListener("click", async () => {
 if (cloudMode) {
     document.querySelector("#admin-mode-label").textContent = "Authenticated cloud editor";
     document.querySelector("#admin-intro-copy").textContent =
-        "Cloud changes update Supabase after owner sign-in. Database policies enforce write access.";
+        "Cloud changes update Supabase after owner sign-in. Published photo share previews need regeneration and deployment after edits.";
     setAdminAccess(false);
     getSupabaseClient().then((client) => {
         client.auth.onAuthStateChange((event) => {
