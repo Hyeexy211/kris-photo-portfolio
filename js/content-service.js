@@ -4,8 +4,7 @@
 // Browser-local Admin writes still use the local repository.
 // ================================================================
 
-let collectionsReadPromise = null;
-let photosReadPromise = null;
+let contentReadPromise = null;
 
 function createContentId(prefix) {
     if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -19,39 +18,46 @@ function useSupabaseDataSource() {
     return CONTENT_DATA_SOURCE.source === "supabase";
 }
 
-async function readContent(repositoryMethod) {
+async function readPublicContent() {
     if (!useSupabaseDataSource()) {
-        return localRepository[repositoryMethod]();
+        return {
+            collections: localRepository.getCollections(),
+            photos: localRepository.getPhotos()
+        };
     }
 
     try {
-        return await supabaseRepository[repositoryMethod]();
+        const [collections, photos] = await Promise.all([
+            supabaseRepository.getCollections(),
+            supabaseRepository.getPhotos()
+        ]);
+        return { collections, photos };
     } catch (error) {
         if (!CONTENT_DATA_SOURCE.fallbackToLocal) throw error;
 
         console.warn(
-            `Supabase ${repositoryMethod} failed; using the browser-local repository instead.`,
+            "Supabase content read failed; using both browser-local tables instead.",
             error
         );
 
-        return localRepository[repositoryMethod]();
+        return {
+            collections: localRepository.getCollections(),
+            photos: localRepository.getPhotos()
+        };
     }
+}
+
+function getPublicContent() {
+    if (!contentReadPromise) contentReadPromise = readPublicContent();
+    return contentReadPromise;
 }
 
 function getCollections() {
-    if (!collectionsReadPromise) {
-        collectionsReadPromise = readContent("getCollections");
-    }
-
-    return collectionsReadPromise;
+    return getPublicContent().then((content) => content.collections);
 }
 
 function getPhotos() {
-    if (!photosReadPromise) {
-        photosReadPromise = readContent("getPhotos");
-    }
-
-    return photosReadPromise;
+    return getPublicContent().then((content) => content.photos);
 }
 
 async function getCollectionById(id) {

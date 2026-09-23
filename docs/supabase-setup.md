@@ -17,7 +17,9 @@ Supabase Data API / PostgreSQL
 
 The current production configuration selects Supabase. If a cloud read fails,
 `fallbackToLocal: true` lets the Content Service return the existing
-localStorage/seed content instead. A new or offline checkout can explicitly set
+localStorage/seed content instead. Collections and Photos are read as one pair;
+if either cloud query fails, both public lists use local content so their
+relationships stay consistent. A new or offline checkout can explicitly set
 `source: "local"` until its browser-safe Supabase configuration is ready.
 
 ## 1. Create the database tables and read policies

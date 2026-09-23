@@ -5,7 +5,7 @@
 ## 当前项目状态（2026-09-23）
 
 - 当前稳定检查点是第 34 课：公开页面已经通过 Content Service 和 Repository 从 Supabase 只读加载 3 个作品集与 9 张照片。
-- Supabase 读取失败时会回退到浏览器本地种子；页面不直接依赖数据库 SDK。
+- Supabase 的 Collections 或 Photos 任一读取失败时，两组资料会一起回退到浏览器本地种子，避免一页混用不同来源；页面不直接依赖数据库 SDK。
 - `admin.html` 是第 33 课的浏览器本地原型，可以用 localStorage 新增、编辑、删除和恢复内容，但没有登录、云端写入或跨设备同步。
 - 工作分支另提供 `admin.html?mode=cloud` 的认证界面及云端 CRUD 代码，并准备了数据库 RLS 迁移；迁移尚未在线上执行，尚不能宣称云端 Admin 可用。原本的 `admin.html` 本地模式保持可用。
 - GitHub Pages 已发布在 <https://hyeexy211.github.io/kris-photo-portfolio/>，桌面端、390px 移动端、筛选、动态 Collection、Lightbox 与云端失败回退已经过部署后验证。
