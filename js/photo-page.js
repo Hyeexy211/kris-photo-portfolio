@@ -61,6 +61,15 @@ async function renderPhotoPage() {
         if (collection) details.push(createPhotoInfo("Collection", collection.title));
         if (photo.location) details.push(createPhotoInfo("Location", photo.location));
         if (photo.date) details.push(createPhotoInfo("Capture date", photo.date));
+        if (photo.camera) details.push(createPhotoInfo("Camera", photo.camera));
+        if (photo.lens) details.push(createPhotoInfo("Lens", photo.lens));
+        if (photo.focalLength) details.push(createPhotoInfo("Focal length", photo.focalLength));
+        if (photo.aperture) details.push(createPhotoInfo("Aperture", photo.aperture));
+        if (photo.shutterSpeed) details.push(createPhotoInfo("Shutter speed", photo.shutterSpeed));
+        if (photo.iso) details.push(createPhotoInfo("ISO", photo.iso));
+        if (Array.isArray(photo.tags) && photo.tags.length) {
+            details.push(createPhotoInfo("Tags", photo.tags.join(", ")));
+        }
         photoInfo.replaceChildren(...details);
 
         const canonicalUrl = new URL("photo.html", window.location.href);

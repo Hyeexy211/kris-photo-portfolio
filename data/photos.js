@@ -4,6 +4,7 @@
 // ================================================================
 
 // defaultPhotos 是首次打开网站时写入浏览器存储的默认照片资料。
+// 可选的 tags 数组、location、description 与器材字段只在有真实资料时填写；GPS 不放进公开数据。
 const defaultPhotos = [
     {
         id: "portrait-001",

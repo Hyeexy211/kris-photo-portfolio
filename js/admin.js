@@ -36,7 +36,8 @@ function getFormValues(form, numberFields) {
 function fillForm(form, item) {
     [...form.elements].forEach((field) => {
         if (!field.name) return;
-        field.value = item[field.name] ?? "";
+        const value = item[field.name];
+        field.value = Array.isArray(value) ? value.join(", ") : value ?? "";
     });
 }
 
@@ -174,6 +175,7 @@ galleryForm.addEventListener("submit", (event) => {
     event.preventDefault();
 
     const { id, values } = getFormValues(galleryForm, ["width", "height"]);
+    values.tags = values.tags.split(",").map((tag) => tag.trim()).filter(Boolean);
     const savedItem = id
         ? contentService.updateGalleryItem(id, values)
         : contentService.createGalleryItem(values);

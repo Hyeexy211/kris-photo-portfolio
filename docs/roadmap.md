@@ -312,8 +312,8 @@ Tasks:
 - [x] Separate photo data from page markup
 - [x] Load gallery dynamically
 - [x] Define category system
-- [ ] Define tag system
-- [ ] Define metadata system
+- [x] Define tag system for browser-local records
+- [x] Define optional public metadata fields for browser-local records
 
 This phase may initially use JSON before introducing a database.
 
