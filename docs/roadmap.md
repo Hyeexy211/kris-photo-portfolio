@@ -192,8 +192,8 @@ Future possibility:
 /photos/tokyo-night-001
 ```
 
-- [ ] Individual photograph URL
-- [ ] Shareable photograph links
+- [x] Individual photograph URL
+- [x] Shareable photograph links
 
 ---
 

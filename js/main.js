@@ -277,7 +277,19 @@ function showLightboxImage(index) {
 
     // 把照片说明同步给灯箱大图。
     lightboxImage.alt = photo.alt || photo.title || "Photography work";
-    if (lightboxCaption) lightboxCaption.textContent = photo.title || photo.alt || "";
+    if (lightboxCaption) {
+        lightboxCaption.textContent = photo.title || photo.alt || "";
+
+        if (photo.id) {
+            const link = document.createElement("a");
+            const script = document.querySelector('script[src$="main.js"]');
+            const photoUrl = new URL("../photo.html", script.src);
+            photoUrl.searchParams.set("id", photo.id);
+            link.href = photoUrl.href;
+            link.textContent = "View photo";
+            lightboxCaption.append(" · ", link);
+        }
+    }
 }
 
 // 同一个 openLightbox 同时接收首页 Content Service 数据与项目页整理出的照片数据。
@@ -342,6 +354,7 @@ function setupStaticLightbox() {
         const image = trigger.querySelector("img");
 
         return {
+            id: trigger.dataset.id || "",
             src: image.currentSrc || image.src,
             fullSrc: trigger.dataset.fullSrc || image.currentSrc || image.src,
             title: image.alt

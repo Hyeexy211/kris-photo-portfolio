@@ -16,6 +16,7 @@ function createCollectionPhoto(photo, index) {
     button.className = "gallery-item lightbox-trigger";
     button.type = "button";
     button.dataset.fullSrc = photo.fullSrc || photo.src;
+    button.dataset.id = photo.id;
     button.setAttribute("aria-label", `Open ${photo.alt || photo.title || "photography work"}`);
 
     const image = document.createElement("img");
