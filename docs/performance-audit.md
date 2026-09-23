@@ -35,6 +35,46 @@ measurements are still needed before making performance claims about the
 published site. The current measurements do not justify changing image
 priority or replacing the existing exports.
 
+## Lighthouse and larger Gallery check
+
+Lighthouse 13.5.0 ran against the local source HTTP server on 2026-09-23 in
+Headless Chrome 153. The mobile run used Lighthouse's default mobile settings;
+the desktop run used `--preset=desktop`. These are single lab runs, not scores
+for the published GitHub Pages site or real visitors.
+
+| Local mode | Performance | Accessibility | Best Practices | SEO | FCP | LCP | TBT | CLS |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Mobile | 98 | 100 | 100 | 100 | 0.9 s | 2.4 s | 0 ms | 0 |
+| Desktop | 100 | 100 | 100 | 100 | 0.2 s | 0.6 s | 0 ms | 0 |
+
+The first Lighthouse pass found the site's muted `#777777` text barely below
+the WCAG contrast threshold on white. Changing the existing muted color token
+to `#767676` made the contrast audit pass in both final runs. Lighthouse also
+suggested minifying or removing some CSS/JavaScript, with estimated savings of
+roughly 150 ms on mobile for CSS; the current static site has no build step, so
+those suggestions do not justify adding one for nine photos.
+
+A separate browser stress check made 200 synthetic cards from the nine real
+photo records without changing project data. At 1440px and 390px, the initial
+render took 6.8 ms and 5.1 ms respectively in those individual runs. Both
+widths retained exactly 200 distinct cards after an All → Portrait → All
+filter cycle, kept Lightbox next order correct, and showed no page errors or
+horizontal overflow. These observations support the current nine-photo UI;
+they are not a limit test for thousands of unique files or concurrent image
+downloads. Progressive loading and pagination can wait until the collection
+actually grows.
+
+Reproduce the Lighthouse checks from a running local HTTP server with:
+
+```sh
+npx --yes lighthouse@13.5.0 http://127.0.0.1:4173/ --output=json --output-path=/tmp/kris-lighthouse-mobile.json --chrome-flags='--headless --no-sandbox' --quiet
+npx --yes lighthouse@13.5.0 http://127.0.0.1:4173/ --preset=desktop --output=json --output-path=/tmp/kris-lighthouse-desktop.json --chrome-flags='--headless --no-sandbox' --quiet
+```
+
+The CLI was used only for the audit; it was not added to the project. Repeat
+against the deployed branch after release, because hosting headers, remote
+requests and real network conditions may change the result.
+
 ## Reproduction
 
 1. Serve the project root over HTTP.

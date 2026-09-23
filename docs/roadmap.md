@@ -279,9 +279,9 @@ Original
 
 - [x] Check Network panel image sizes and loading order; hero loads first, offscreen gallery images wait
 - [x] Measure LCP and CLS on desktop and mobile after the image export is finished
-- [ ] Lighthouse testing
+- [x] Lighthouse testing on the local source site, mobile and desktop
 - [x] Mobile network testing
-- [ ] Large gallery testing
+- [x] Test 200 synthetic cards at desktop and mobile widths
 
 ---
 
