@@ -15,10 +15,10 @@ Supabase Client
 Supabase Data API / PostgreSQL
 ```
 
-The site remains usable before Supabase is configured because
-`js/config/data-source.js` defaults to `local`. If Supabase is selected and a
-cloud read fails, `fallbackToLocal: true` lets the Content Service return the
-existing localStorage/seed content instead.
+The current production configuration selects Supabase. If a cloud read fails,
+`fallbackToLocal: true` lets the Content Service return the existing
+localStorage/seed content instead. A new or offline checkout can explicitly set
+`source: "local"` until its browser-safe Supabase configuration is ready.
 
 ## 1. Create the database tables and read policies
 

@@ -27,6 +27,37 @@ working tree stays open until it has been checked and is ready to publish.
 
 ---
 
+# Current Project Status (2026-09-23)
+
+## Completed
+
+- Native HTML/CSS/JavaScript responsive portfolio foundation
+- Three real Collection pages plus the reusable `collection.html?slug=...` page
+- Data-driven Work and Gallery rendering, category filters, Reveal, and Lightbox
+- Responsive 640px, 1200px, and 1800px WebP delivery for current photographs
+- Browser-local Content Admin prototype with localStorage persistence
+- Content Service plus local and Supabase Repository boundaries
+- Real Supabase `collections` / `photos` tables, seed data, public-read RLS, and verified cloud reads
+- Public GitHub Pages release at `https://hyeexy211.github.io/kris-photo-portfolio/`
+
+## In Progress
+
+- Phase 5 source-image/archive cleanup and measured performance checks
+- Keeping the editable course document aligned with implemented lessons; `Weblesson.docx` currently ends at Lesson 18 and previews Lesson 19
+
+## Next
+
+- Complete the remaining Phase 5 image and Network/Lighthouse checks
+- Select the next bounded lesson only after the current release remains stable
+
+## Deferred
+
+- Authenticated cloud Admin writes and protected routes
+- Object Storage upload, processing, and original-photo protection
+- Rich metadata, tags, individual photo URLs, downloads, analytics, and optional platform features
+
+---
+
 # Phase 1: Foundation
 
 Goal:
@@ -359,10 +390,10 @@ Object Storage
 Tasks:
 
 - [x] Select Supabase as the Lesson 34 database/Data API architecture
-- [ ] Create API
-- [ ] Create database
+- [x] Use the Supabase Data API for public read requests
+- [x] Create the `collections` and `photos` database tables
 - [ ] Connect object storage
-- [ ] Create photograph records
+- [x] Create the initial collection and photograph records
 - [ ] Category management
 - [ ] Tag management
 
@@ -389,6 +420,16 @@ Do not begin this phase until the frontend and photography data model are stable
 Goal:
 
 Allow photographs to be uploaded and managed through the website.
+
+## Current Browser-local Prototype (Lesson 33)
+
+- [x] Create, edit, and delete Work and Gallery records in the current browser
+- [x] Persist browser-local changes with localStorage
+- [x] Restore the repository seed data
+- [ ] Connect Admin writes to authenticated cloud data
+
+This prototype is intentionally not a secure cloud CMS. It has no login and its
+changes do not update Supabase, Git, or another device.
 
 ## Authentication
 
@@ -497,17 +538,19 @@ Make the website publicly accessible.
 ## First Static Release (Lessons 14-15)
 
 - [x] Create a GitHub remote for this repository (`origin`)
-- [ ] Finish and review the current image changes, then commit and push a clean `main`
-- [ ] Configure GitHub Pages to deploy from `main` / root, if GitHub Pages is the chosen host
-- [ ] Confirm the live URL from the host's settings or deployment status
-- [ ] Test the live hero, all three galleries, navigation, lightbox, and mobile menu
-- [ ] Check that every image, CSS file, and script loads at the published URL
+- [x] Review completed work, commit it, and push a clean `main`
+- [ ] Confirm the exact GitHub Pages build-source setting in repository settings
+- [x] Confirm the public URL returns `200`
+- [x] Test the live hero, Collections, Gallery filters, navigation, Lightbox, and mobile menu
+- [x] Confirm the deployed page loads its CSS, scripts, photographs, and Supabase reads without console errors
 
-The local `origin` configuration and `origin/main` tracking show that this
-checkout is connected to GitHub, but do not confirm that GitHub Pages is
-configured or that the site is live.
-The current working tree has uncommitted image work, so the release checklist
-remains open.
+The public site is available at
+`https://hyeexy211.github.io/kris-photo-portfolio/`. Deployment verification on
+September 23, 2026 covered desktop, 390px mobile, the three Collections, all
+nine Gallery photographs, filters, dynamic/static Lightbox flows, browser-local
+Admin compatibility, real Supabase `200` reads, and simulated cloud fallback.
+The exact Pages build-source setting was not read from GitHub repository
+settings, so that administrative check remains open.
 
 ## Later Production Improvements
 
@@ -535,9 +578,9 @@ system for its first release.
 
 # Phase 13: SEO and Sharing
 
-- [ ] Page titles
-- [ ] Meta descriptions
-- [ ] Open Graph images
+- [x] Page titles
+- [x] Meta descriptions
+- [x] Open Graph images
 - [ ] Sitemap
 - [ ] robots.txt
 - [ ] Structured photo pages
@@ -589,22 +632,22 @@ Current development priority:
 
 ```text
 Phase 5
-Finish the web image export and verify loading behavior
+Finish source-image cleanup and measured performance checks
     ↓
 Phase 12
-Publish and test the first static release
+Keep the verified static release healthy
     ↓
-Phases 2-4 and later
-Add optional portfolio and viewing features as needed
+Next bounded lesson
+Choose explicitly; cloud Admin and Storage remain deferred
 ```
 
-Do not rush into backend development yet.
+Lesson 34's read-only Supabase integration is complete. Do not expand it into
+authentication, cloud CRUD, or upload infrastructure without a separate lesson.
 
 The immediate objective is:
 
-> Complete the image export: correct dimensions, reasonable file sizes,
-> meaningful descriptions, and verified lazy loading. Then review and push
-> the site and confirm its public release.
+> Finish the remaining image/archive and performance measurements while keeping
+> the current public release stable. Then choose one clearly bounded next lesson.
 
 ---
 

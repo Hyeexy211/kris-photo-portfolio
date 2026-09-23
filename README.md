@@ -2,13 +2,22 @@
 
 这是一个不依赖框架的摄影作品集。首页通过 Content Service 读取作品集与照片，并在下方生成可筛选 Gallery；点击作品卡片后会进入通用的 `collection.html?slug=...` 页面。HTML 负责内容结构，CSS 负责外观与响应式布局，JavaScript 负责数据读取、动态渲染、灯箱、手机菜单和滚动动画。图片保存在 `images/` 下，`dist/` 是给 Sites 预览和托管使用的同内容副本。
 
+## 当前项目状态（2026-09-23）
+
+- 当前稳定检查点是第 34 课：公开页面已经通过 Content Service 和 Repository 从 Supabase 只读加载 3 个作品集与 9 张照片。
+- Supabase 读取失败时会回退到浏览器本地种子；页面不直接依赖数据库 SDK。
+- `admin.html` 是第 33 课的浏览器本地原型，可以用 localStorage 新增、编辑、删除和恢复内容，但没有登录、云端写入或跨设备同步。
+- GitHub Pages 已发布在 <https://hyeexy211.github.io/kris-photo-portfolio/>，桌面端、390px 移动端、筛选、动态 Collection、Lightbox 与云端失败回退已经过部署后验证。
+- 图片归档清理、Lighthouse/LCP/CLS 测量、云端 Admin 认证与对象存储仍未完成；它们不是当前实现的一部分。
+- `Weblesson.docx` 目前完整写到第 18 课并预告第 19 课，尚未同步第 19～34 课的教学内容。
+
 ## 建议阅读顺序
 
 1. 从 `index.html` 开始：先看 `<head>`，再依次看页头、Hero、Selected Work 容器、动态 Gallery、About、页脚和末尾的脚本加载顺序。
 2. 打开 `data/collections.js` 与 `data/photos.js`：先认识本地种子数组，再看真实作品如何用 `id`、关联字段、图片路径与现有元数据描述。
 3. 打开 `js/content-service.js`：观察页面如何用同一组异步方法读取本地仓库或 Supabase 仓库，而不把数据库查询写进 UI。
 4. 再看 `css/style.css`：从 `:root` 设计变量开始，依次看全局规则、页头、Hero、灯箱、手机布局、动画、作品卡片和项目页。
-5. 最后看 `js/main.js`：先看如何取得元素，再看 `openLightbox` / `closeLightbox`、`setMenuOpen`、键盘事件和滚动观察器。首页没有灯箱元素，因此代码会先检查它是否存在。
+5. 最后看 `js/main.js`：先看如何取得元素，再看 `openLightbox` / `closeLightbox`、`setMenuOpen`、键盘事件和滚动观察器。这个脚本被首页和静态作品页共用，所以读取可选元素时会先确认它是否存在。
 
 源码里的中文注释紧挨着对应的标签、样式规则或 JavaScript 语句。阅读时可以先看注释，再看下面一行代码，最后在浏览器里观察它的效果。空行和闭合符号属于代码结构，不需要单独的功能说明。
 
@@ -53,7 +62,7 @@
 
 - Work、Gallery 与通用 Collection 页面继续只调用 `contentService`，不会直接调用 Supabase。
 - `js/repositories/supabase-repository.js` 是唯一包含数据库 `.from(...)` 查询的文件，并把数据库的 snake_case 字段转换回页面现有的 camelCase 数据结构。
-- `js/repositories/local-repository.js` 保留 localStorage 与默认种子；默认配置仍使用 `local`，云端配置缺失或读取失败时也可以安全回退。
+- `js/repositories/local-repository.js` 保留 localStorage 与默认种子；当前正式配置优先使用 `supabase`，云端配置缺失或读取失败时会安全回退到本地仓库。
 - 本课只开放 `SELECT`。Admin 的新增、编辑、删除继续保存在当前浏览器，不会写入 Supabase。
 - 数据库表、外键、RLS、公开只读策略、真实种子和手动配置步骤见 `docs/supabase-setup.md`。
 
