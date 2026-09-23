@@ -273,14 +273,14 @@ Original
 - [ ] Pagination or infinite loading
 - [ ] Browser caching
 - [ ] CDN support
-- [ ] Evaluate hero image priority after measuring the first load
+- [x] Evaluate hero image priority after measuring the first load
 
 ## Performance Testing
 
-- [ ] Check Network panel image sizes and loading order; hero loads first, offscreen gallery images wait
-- [ ] Measure LCP and CLS on desktop and mobile after the image export is finished
+- [x] Check Network panel image sizes and loading order; hero loads first, offscreen gallery images wait
+- [x] Measure LCP and CLS on desktop and mobile after the image export is finished
 - [ ] Lighthouse testing
-- [ ] Mobile network testing
+- [x] Mobile network testing
 - [ ] Large gallery testing
 
 ---
