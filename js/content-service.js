@@ -1,7 +1,7 @@
 // ================================================================
 // Lesson 34: Content Service
 // Public pages read through this service without knowing which repository is active.
-// Lesson 33 Admin writes remain browser-local until authenticated cloud CRUD is added.
+// Browser-local Admin writes still use the local repository.
 // ================================================================
 
 let collectionsReadPromise = null;

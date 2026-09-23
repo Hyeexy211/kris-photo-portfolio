@@ -20,6 +20,15 @@ live Supabase project in this branch.
    authenticated session, sign-out, and a fresh browser before declaring the
    Admin stage complete.
 
+The existing `admin.html` remains the browser-local prototype. Open
+`admin.html?mode=cloud` for the prepared email/password sign-in and cloud
+editor. The cloud editor hides content before sign-in and never offers the
+local seed reset. Its browser session persists with Supabase Auth and signs
+out locally. A static HTML URL can still be requested by anyone; RLS is the
+actual protection for data. The frontend path has passed local mock CRUD tests
+and unauthenticated browser checks, but live authenticated CRUD is pending the
+steps above.
+
 Do not enroll an unverified UUID. The membership table is not exposed to
 browser roles, and the `is_portfolio_admin()` function uses a fixed search
 path and checks the caller's Supabase Auth UID. Client-side hiding of Admin

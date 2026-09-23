@@ -2,6 +2,10 @@
     background: rgba(0, 0, 0, 0.9);
 }
 
+.admin-site [hidden] {
+    display: none !important;
+}
+
 .admin-nav {
     display: flex;
     gap: 24px;
@@ -44,6 +48,11 @@
 
 .admin-status.is-error {
     color: #a32020;
+}
+
+.admin-mode-links a {
+    color: inherit;
+    text-underline-offset: 3px;
 }
 
 .admin-section {

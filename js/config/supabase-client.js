@@ -61,12 +61,14 @@ function getSupabaseClient() {
 
     const { url, publishableKey } = CONTENT_DATA_SOURCE.supabase;
     assertBrowserSafeSupabaseKey(publishableKey);
+    const cloudAdminMode = window.location.pathname.endsWith("admin.html")
+        && new URLSearchParams(window.location.search).get("mode") === "cloud";
 
     supabaseClientPromise = loadSupabaseBrowserLibrary().then((supabaseLibrary) => (
         supabaseLibrary.createClient(url.trim(), publishableKey.trim(), {
             auth: {
-                autoRefreshToken: false,
-                persistSession: false,
+                autoRefreshToken: cloudAdminMode,
+                persistSession: cloudAdminMode,
                 detectSessionInUrl: false
             }
         })

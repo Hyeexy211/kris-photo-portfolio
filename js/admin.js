@@ -1,6 +1,6 @@
 // ================================================================
-// Browser-local Admin prototype
-// 表单只调用 Content Service；这里不直接读写 localStorage。
+// Browser-local and authenticated cloud Admin share the same forms.
+// Form handlers use the selected content adapter; they do not access storage directly.
 // ================================================================
 
 const adminStatus = document.querySelector("#admin-status");
@@ -14,6 +14,13 @@ const workIdOptions = document.querySelector("#work-id-options");
 const cancelWorkEdit = document.querySelector("#cancel-work-edit");
 const cancelGalleryEdit = document.querySelector("#cancel-gallery-edit");
 const resetContentButton = document.querySelector("#reset-content");
+const cloudMode = new URLSearchParams(window.location.search).get("mode") === "cloud";
+const adminStore = cloudMode ? cloudAdminService : contentService;
+const authSection = document.querySelector("#admin-auth");
+const loginForm = document.querySelector("#admin-login-form");
+const signOutButton = document.querySelector("#admin-sign-out");
+const resetSection = document.querySelector("#admin-reset");
+let cloudAccessGeneration = 0;
 
 function showAdminStatus(message, isError = false) {
     adminStatus.textContent = message;
@@ -96,8 +103,8 @@ function createEmptyMessage(message) {
     return emptyMessage;
 }
 
-function renderWorksAdmin() {
-    const works = contentService.getWorks();
+async function renderWorksAdmin() {
+    const works = await adminStore.getWorks();
     const fragment = document.createDocumentFragment();
 
     works.forEach((work) => {
@@ -119,8 +126,8 @@ function renderWorksAdmin() {
     workIdOptions.replaceChildren(optionFragment);
 }
 
-function renderGalleryAdmin() {
-    const galleryItems = contentService.getGalleryItems();
+async function renderGalleryAdmin() {
+    const galleryItems = await adminStore.getGalleryItems();
     const fragment = document.createDocumentFragment();
 
     galleryItems.forEach((item) => {
@@ -139,117 +146,119 @@ function renderGalleryAdmin() {
     galleryCount.textContent = String(galleryItems.length);
 }
 
-function renderAdmin() {
-    renderWorksAdmin();
-    renderGalleryAdmin();
+async function renderAdmin() {
+    await Promise.all([renderWorksAdmin(), renderGalleryAdmin()]);
 }
 
-workForm.addEventListener("submit", (event) => {
+workForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const { id, values } = getFormValues(workForm, ["order", "coverWidth", "coverHeight"]);
-    const duplicateSlug = contentService
-        .getWorks()
-        .some((work) => work.slug === values.slug && work.id !== id);
+    try {
+        const { id, values } = getFormValues(workForm, ["order", "coverWidth", "coverHeight"]);
+        const duplicateSlug = (await adminStore.getWorks())
+            .some((work) => work.slug === values.slug && work.id !== id);
 
-    if (duplicateSlug) {
-        showAdminStatus("That Work slug is already in use.", true);
-        return;
+        if (duplicateSlug) {
+            showAdminStatus("That Work slug is already in use.", true);
+            return;
+        }
+
+        const savedWork = id
+            ? await adminStore.updateWork(id, values)
+            : await adminStore.createWork(values);
+
+        if (!savedWork) throw new Error("The Work could not be saved.");
+
+        resetWorkForm();
+        await renderAdmin();
+        showAdminStatus(id ? "Work updated." : "Work created.");
+    } catch (error) {
+        showAdminStatus(error.message, true);
     }
-
-    const savedWork = id
-        ? contentService.updateWork(id, values)
-        : contentService.createWork(values);
-
-    if (!savedWork) {
-        showAdminStatus("The Work could not be saved. Check the browser console for details.", true);
-        return;
-    }
-
-    resetWorkForm();
-    renderAdmin();
-    showAdminStatus(id ? "Work updated and saved in this browser." : "Work created and saved in this browser.");
 });
 
-galleryForm.addEventListener("submit", (event) => {
+galleryForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const { id, values } = getFormValues(galleryForm, ["width", "height"]);
-    values.tags = values.tags.split(",").map((tag) => tag.trim()).filter(Boolean);
-    const savedItem = id
-        ? contentService.updateGalleryItem(id, values)
-        : contentService.createGalleryItem(values);
+    try {
+        const { id, values } = getFormValues(galleryForm, ["order", "width", "height"]);
+        values.tags = values.tags.split(",").map((tag) => tag.trim()).filter(Boolean);
+        const savedItem = id
+            ? await adminStore.updateGalleryItem(id, values)
+            : await adminStore.createGalleryItem(values);
 
-    if (!savedItem) {
-        showAdminStatus("The Gallery item could not be saved. Check the browser console for details.", true);
-        return;
+        if (!savedItem) throw new Error("The Gallery item could not be saved.");
+
+        resetGalleryForm();
+        await renderGalleryAdmin();
+        showAdminStatus(id ? "Gallery item updated." : "Gallery item created.");
+    } catch (error) {
+        showAdminStatus(error.message, true);
     }
-
-    resetGalleryForm();
-    renderGalleryAdmin();
-    showAdminStatus(id
-        ? "Gallery item updated and saved in this browser."
-        : "Gallery item created and saved in this browser.");
 });
 
-workList.addEventListener("click", (event) => {
+workList.addEventListener("click", async (event) => {
     const button = event.target.closest("button[data-action]");
     if (!button || !workList.contains(button)) return;
 
-    const work = contentService.getWorkById(button.dataset.id);
-    if (!work) return;
+    try {
+        const work = await adminStore.getWorkById(button.dataset.id);
+        if (!work) return;
 
-    if (button.dataset.action === "edit") {
-        fillForm(workForm, work);
-        document.querySelector("#work-form-title").textContent = "Edit Work";
-        cancelWorkEdit.hidden = false;
-        workForm.scrollIntoView({ behavior: "smooth", block: "start" });
-        workForm.elements.title.focus({ preventScroll: true });
-        return;
-    }
+        if (button.dataset.action === "edit") {
+            fillForm(workForm, work);
+            document.querySelector("#work-form-title").textContent = "Edit Work";
+            cancelWorkEdit.hidden = false;
+            workForm.scrollIntoView({ behavior: "smooth", block: "start" });
+            workForm.elements.title.focus({ preventScroll: true });
+            return;
+        }
 
-    if (!window.confirm(`Delete the Work "${work.title || work.id}"?`)) return;
+        const warning = cloudMode ? " Photographs in it must be moved or deleted first." : "";
+        if (!window.confirm(`Delete the Work "${work.title || work.id}"?${warning}`)) return;
 
-    if (contentService.deleteWork(work.id)) {
+        if (!await adminStore.deleteWork(work.id)) throw new Error("The Work could not be deleted.");
         resetWorkForm();
-        renderAdmin();
-        showAdminStatus("Work deleted from this browser.");
-    } else {
-        showAdminStatus("The Work could not be deleted.", true);
+        await renderAdmin();
+        showAdminStatus("Work deleted.");
+    } catch (error) {
+        showAdminStatus(error.message, true);
     }
 });
 
-galleryList.addEventListener("click", (event) => {
+galleryList.addEventListener("click", async (event) => {
     const button = event.target.closest("button[data-action]");
     if (!button || !galleryList.contains(button)) return;
 
-    const item = contentService.getGalleryItemById(button.dataset.id);
-    if (!item) return;
+    try {
+        const item = await adminStore.getGalleryItemById(button.dataset.id);
+        if (!item) return;
 
-    if (button.dataset.action === "edit") {
-        fillForm(galleryForm, item);
-        document.querySelector("#gallery-form-title").textContent = "Edit Gallery Item";
-        cancelGalleryEdit.hidden = false;
-        galleryForm.scrollIntoView({ behavior: "smooth", block: "start" });
-        galleryForm.elements.title.focus({ preventScroll: true });
-        return;
-    }
+        if (button.dataset.action === "edit") {
+            fillForm(galleryForm, item);
+            document.querySelector("#gallery-form-title").textContent = "Edit Gallery Item";
+            cancelGalleryEdit.hidden = false;
+            galleryForm.scrollIntoView({ behavior: "smooth", block: "start" });
+            galleryForm.elements.title.focus({ preventScroll: true });
+            return;
+        }
 
-    if (!window.confirm(`Delete the Gallery item "${item.title || item.id}"?`)) return;
+        if (!window.confirm(`Delete the Gallery item "${item.title || item.id}"?`)) return;
 
-    if (contentService.deleteGalleryItem(item.id)) {
+        if (!await adminStore.deleteGalleryItem(item.id)) throw new Error("The Gallery item could not be deleted.");
         resetGalleryForm();
-        renderGalleryAdmin();
-        showAdminStatus("Gallery item deleted from this browser.");
-    } else {
-        showAdminStatus("The Gallery item could not be deleted.", true);
+        await renderGalleryAdmin();
+        showAdminStatus("Gallery item deleted.");
+    } catch (error) {
+        showAdminStatus(error.message, true);
     }
 });
 
 cancelWorkEdit.addEventListener("click", resetWorkForm);
 cancelGalleryEdit.addEventListener("click", resetGalleryForm);
 
-resetContentButton.addEventListener("click", () => {
+resetContentButton.addEventListener("click", async () => {
+    if (cloudMode) return;
     const confirmed = window.confirm(
         "Reset all Work and Gallery content? This overwrites every browser-local change with the default seed data."
     );
@@ -259,11 +268,109 @@ resetContentButton.addEventListener("click", () => {
     if (contentService.resetAllContent()) {
         resetWorkForm();
         resetGalleryForm();
-        renderAdmin();
+        await renderAdmin();
         showAdminStatus("Default Work and Gallery content restored.");
     } else {
         showAdminStatus("Content could not be reset. Check the browser console for details.", true);
     }
 });
 
-renderAdmin();
+function setAdminAccess(allowed) {
+    document.querySelector("#works-admin").hidden = !allowed;
+    document.querySelector("#gallery-admin").hidden = !allowed;
+    resetSection.hidden = cloudMode || !allowed;
+    document.querySelectorAll(".admin-nav li").forEach((item, index) => {
+        if (index < 2) item.hidden = !allowed;
+    });
+
+    if (cloudMode) {
+        authSection.hidden = false;
+        loginForm.hidden = allowed;
+        signOutButton.hidden = !allowed;
+    }
+}
+
+async function initializeCloudAdmin() {
+    const generation = ++cloudAccessGeneration;
+    setAdminAccess(false);
+
+    try {
+        const client = await getSupabaseClient();
+        const { data: userData } = await client.auth.getUser();
+        if (generation !== cloudAccessGeneration) return;
+
+        if (!userData?.user) {
+            showAdminStatus("Sign in with the enrolled owner account to manage cloud content.");
+            return;
+        }
+
+        const { data: allowed, error } = await client.rpc("is_portfolio_admin");
+        if (generation !== cloudAccessGeneration) return;
+        if (error) throw error;
+        if (allowed !== true) {
+            showAdminStatus("This account is not enrolled as a portfolio admin.", true);
+            return;
+        }
+
+        setAdminAccess(true);
+        await renderAdmin();
+        showAdminStatus("Cloud content loaded. Changes here update Supabase.");
+    } catch (error) {
+        if (generation !== cloudAccessGeneration) return;
+        setAdminAccess(false);
+        showAdminStatus(`Cloud Admin unavailable: ${error.message}`, true);
+    }
+}
+
+loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!cloudMode) return;
+
+    try {
+        const client = await getSupabaseClient();
+        const { error } = await client.auth.signInWithPassword({
+            email: loginForm.elements.email.value,
+            password: loginForm.elements.password.value
+        });
+        loginForm.elements.password.value = "";
+        if (error) throw error;
+        await initializeCloudAdmin();
+    } catch (error) {
+        loginForm.elements.password.value = "";
+        showAdminStatus(`Sign in failed: ${error.message}`, true);
+    }
+});
+
+signOutButton.addEventListener("click", async () => {
+    if (!cloudMode) return;
+
+    try {
+        const client = await getSupabaseClient();
+        const { error } = await client.auth.signOut({ scope: "local" });
+        if (error) throw error;
+        cloudAccessGeneration++;
+        setAdminAccess(false);
+        showAdminStatus("Signed out of Cloud Admin.");
+    } catch (error) {
+        showAdminStatus(`Sign out failed: ${error.message}`, true);
+    }
+});
+
+if (cloudMode) {
+    document.querySelector("#admin-mode-label").textContent = "Authenticated cloud editor";
+    document.querySelector("#admin-intro-copy").textContent =
+        "Cloud changes update Supabase after owner sign-in. Database policies enforce write access.";
+    setAdminAccess(false);
+    getSupabaseClient().then((client) => {
+        client.auth.onAuthStateChange((event) => {
+            if (event === "SIGNED_OUT") {
+                cloudAccessGeneration++;
+                setAdminAccess(false);
+            }
+        });
+        initializeCloudAdmin();
+    }).catch((error) => showAdminStatus(`Cloud Admin unavailable: ${error.message}`, true));
+} else {
+    setAdminAccess(true);
+    renderAdmin().catch((error) => showAdminStatus(error.message, true));
+}

@@ -433,8 +433,12 @@ changes do not update Supabase, Git, or another device.
 
 `supabase/migrations/20260923_admin_auth.sql` prepares owner-only write policies
 and optional photo metadata columns, but the live project has not run it.
+`admin.html?mode=cloud` has an owner sign-in gate and repository-backed CRUD
+code; local mock tests passed, but no real authenticated cloud write was made.
 Creating the owner's Auth user, enrolling its real UUID, and testing the live
 policies are manual actions before cloud Admin can be marked complete.
+The static Admin URL itself cannot be server-protected by GitHub Pages; RLS
+provides the data boundary.
 
 ## Authentication
 
@@ -459,7 +463,7 @@ policies are manual actions before cloud Admin can be marked complete.
 - [ ] Edit location
 - [ ] Edit description
 - [ ] Delete photograph
-- [ ] Reorder photographs
+- [x] Reorder photographs by an optional numeric display order in Admin
 
 Possible future workflow:
 

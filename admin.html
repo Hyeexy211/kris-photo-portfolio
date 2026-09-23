@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Content Admin | Kris Photography</title>
     <meta name="description" content="Browser-local content administration for the Kris Photography prototype.">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#000000">
     <link rel="icon" href="images/favicon/favicon.png">
     <link rel="stylesheet" href="css/style.css">
@@ -26,16 +27,29 @@
 
     <main id="main-content" class="admin-main">
         <section class="admin-intro" aria-labelledby="admin-title">
-            <p class="section-label">Lesson 33 prototype</p>
+            <p class="section-label" id="admin-mode-label">Lesson 33 prototype</p>
             <h1 id="admin-title">Content Admin</h1>
-            <p>
+            <p id="admin-intro-copy">
                 Changes on this page are saved only in this browser with localStorage.
                 They do not update the Git repository or other devices.
             </p>
+            <p class="admin-mode-links"><a href="admin.html">Browser-local editor</a> · <a href="admin.html?mode=cloud">Cloud Admin</a></p>
             <p class="admin-status" id="admin-status" role="status" aria-live="polite"></p>
         </section>
 
-        <section class="admin-section" id="works-admin" aria-labelledby="works-admin-title">
+        <section class="admin-section" id="admin-auth" aria-labelledby="admin-auth-title" hidden>
+            <h2 id="admin-auth-title">Owner sign in</h2>
+            <form class="admin-form" id="admin-login-form">
+                <label>Email <input name="email" type="email" autocomplete="username" required></label>
+                <label>Password <input name="password" type="password" autocomplete="current-password" required></label>
+                <div class="admin-form-actions admin-field-wide">
+                    <button class="admin-button admin-button-primary" type="submit">Sign in</button>
+                </div>
+            </form>
+            <button class="admin-button" id="admin-sign-out" type="button" hidden>Sign out</button>
+        </section>
+
+        <section class="admin-section" id="works-admin" aria-labelledby="works-admin-title" hidden>
             <div class="admin-section-heading">
                 <div>
                     <p class="section-label">Work / Collection</p>
@@ -99,7 +113,7 @@
             <div class="admin-list" id="work-list" aria-live="polite"></div>
         </section>
 
-        <section class="admin-section" id="gallery-admin" aria-labelledby="gallery-admin-title">
+        <section class="admin-section" id="gallery-admin" aria-labelledby="gallery-admin-title" hidden>
             <div class="admin-section-heading">
                 <div>
                     <p class="section-label">Gallery / Photo</p>
@@ -136,6 +150,10 @@
                     Collection ID
                     <input name="collectionId" type="text" list="work-id-options">
                     <datalist id="work-id-options"></datalist>
+                </label>
+                <label>
+                    Display order
+                    <input name="order" type="number" min="0" step="1">
                 </label>
                 <label>
                     Shooting date
@@ -195,7 +213,7 @@
             <div class="admin-list" id="gallery-list" aria-live="polite"></div>
         </section>
 
-        <section class="admin-reset" aria-labelledby="reset-title">
+        <section class="admin-reset" id="admin-reset" aria-labelledby="reset-title" hidden>
             <div>
                 <p class="section-label">Recovery</p>
                 <h2 id="reset-title">Restore default content</h2>
@@ -215,6 +233,7 @@
     <script src="js/config/supabase-client.js"></script>
     <script src="js/repositories/supabase-repository.js"></script>
     <script src="js/content-service.js"></script>
+    <script src="js/cloud-admin-service.js"></script>
     <script src="js/admin.js"></script>
 </body>
 </html>

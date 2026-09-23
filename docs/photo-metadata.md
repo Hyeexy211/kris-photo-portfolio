@@ -15,11 +15,11 @@ names or timestamps. The website must never automatically publish GPS. A later
 EXIF importer must put any GPS coordinates in private review data, outside the
 public `photos` row, and require explicit location approval before publication.
 
-This is currently a local metadata form only. Public pages prefer the existing
-Supabase read repository, whose schema still contains only the Lesson 34
-fields. Applying a database migration and authenticated writes are separate
-roadmap tasks; local Admin edits do not yet appear on the cloud-backed public
-site or on another device.
+The local form works now. The public Supabase repository maps optional columns
+when they exist, while the live database still has only the Lesson 34 fields.
+Applying the Admin migration and testing authenticated writes are separate
+roadmap tasks; local Admin edits do not appear on the cloud-backed public site
+or on another device.
 
 ## Read-only EXIF review
 

@@ -33,6 +33,14 @@ function sortLocalCollections(collections) {
     });
 }
 
+function sortLocalPhotos(photos) {
+    return [...photos].sort((photoA, photoB) => {
+        const orderA = Number.isFinite(photoA.order) ? photoA.order : Number.MAX_SAFE_INTEGER;
+        const orderB = Number.isFinite(photoB.order) ? photoB.order : Number.MAX_SAFE_INTEGER;
+        return orderA - orderB;
+    });
+}
+
 const localRepository = Object.freeze({
     initialize() {
         initializeLocalContentArray(STORAGE_KEYS.WORKS, defaultCollections);
@@ -44,7 +52,7 @@ const localRepository = Object.freeze({
     },
 
     getPhotos() {
-        return loadLocalContentArray(STORAGE_KEYS.GALLERY, defaultPhotos);
+        return sortLocalPhotos(loadLocalContentArray(STORAGE_KEYS.GALLERY, defaultPhotos));
     },
 
     saveCollections(collections) {
