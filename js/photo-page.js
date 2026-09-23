@@ -10,6 +10,20 @@ function resolvePhotoAsset(assetPath) {
     return new URL(assetPath, photoSiteRoot).href;
 }
 
+function createWebDownload(photo) {
+    if (!/^[a-z0-9-]+$/.test(photo.id)
+        || !/^images\/[a-z0-9-]+\/[a-z0-9-]+-1200\.webp$/.test(photo.src)) {
+        return null;
+    }
+
+    const link = document.createElement("a");
+    link.className = "photo-download";
+    link.href = resolvePhotoAsset(photo.src);
+    link.download = `kris-${photo.id}-web.webp`;
+    link.textContent = "Download web-size photo";
+    return link;
+}
+
 function createPhotoInfo(labelText, valueText) {
     const item = document.createElement("div");
     const label = document.createElement("p");
@@ -64,7 +78,8 @@ async function renderPhotoPage() {
         const figure = document.createElement("figure");
         figure.className = "project-image";
         figure.appendChild(image);
-        photoContent.replaceChildren(figure);
+        const downloadLink = createWebDownload(photo);
+        photoContent.replaceChildren(...(downloadLink ? [figure, downloadLink] : [figure]));
 
         const details = [createPhotoInfo("Photograph", title)];
         const collection = collections.find((item) => item.id === photo.collectionId);

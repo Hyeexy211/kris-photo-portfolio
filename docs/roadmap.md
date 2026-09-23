@@ -539,11 +539,15 @@ Original download
 
 Tasks:
 
-- [ ] Download button
-- [ ] Download permissions
-- [ ] Download file naming
+- [x] Offer 1200px WebP downloads for the nine published photos
+- [x] Limit the website download link to verified same-site web exports
+- [x] Use stable `kris-<photo-id>-web.webp` filenames
 - [ ] Original image protection
 - [ ] Optional watermark strategy
+
+The owner chose web-size downloads only. Browser checks verified all nine
+downloaded files and filenames at desktop and mobile widths. See
+`docs/download-policy.md` for the scope and the current original-file limit.
 
 ---
 

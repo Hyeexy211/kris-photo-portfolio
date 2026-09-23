@@ -1580,6 +1580,28 @@ footer {
     object-fit: contain;
 }
 
+.photo-download {
+    display: inline-block;
+    min-height: 44px;
+    padding: 11px 18px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    color: var(--color-text);
+    font-size: 14px;
+    text-decoration: none;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.photo-download:hover {
+    background: var(--color-text);
+    color: var(--color-on-dark);
+}
+
+.photo-download:focus-visible {
+    outline: 2px solid var(--color-text);
+    outline-offset: 3px;
+}
+
 .project-info .project-info-label {
     margin-bottom: 8px;
     color: var(--color-muted);

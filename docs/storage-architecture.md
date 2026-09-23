@@ -31,6 +31,8 @@ or delivery requirements change.
   chooses to upload them. Public pages must never receive its object keys,
   direct URLs, signed URLs, or credentials. Existing repository originals stay
   where they are until the owner selects and verifies an external archive.
+  Because this GitHub repository is public, a future private bucket would not
+  make the already committed JPEG and full-size WebP copies private.
 - The authenticated browser may upload web exports only after the owner's
   membership is verified, and Storage policies must repeat that check. An
   `anon` request must fail for upload, overwrite, and delete. Browser code must
