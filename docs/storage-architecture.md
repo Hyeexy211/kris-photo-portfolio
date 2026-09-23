@@ -5,6 +5,10 @@ The owner chose to keep the JPEG originals and full-size WebPs in this
 repository for now. Do not delete or move them as part of a storage migration.
 No storage bucket, billing account, or image CDN has been configured for this
 branch.
+`supabase/migrations/20260923_storage_buckets.sql` and
+`docs/supabase-storage-setup.md` now prepare empty buckets, owner-only web
+export writes, and live acceptance checks. They have not been applied to the
+Supabase project, and the website still serves the checked-in image paths.
 
 ## Services considered
 
