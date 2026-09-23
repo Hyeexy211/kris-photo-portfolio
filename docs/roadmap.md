@@ -583,6 +583,13 @@ settings, so that administrative check remains open.
 - [ ] Error monitoring
 - [ ] Backup strategy
 
+`scripts/export-public-content.js` now makes a read-only, external JSON copy
+of the public Collections and Photos rows; it was checked against the live
+3-Collection/9-Photo data. This is a recovery aid, not a database or image
+backup. Dashboard backup configuration, a separate copy, and a restore test
+remain manual. Release checks and the monitoring gap are recorded in
+`docs/backup-and-monitoring.md`.
+
 Deployment should become repeatable.
 
 Future target:

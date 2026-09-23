@@ -11,6 +11,7 @@
 - GitHub Pages 已发布在 <https://hyeexy211.github.io/kris-photo-portfolio/>，桌面端、390px 移动端、筛选、动态 Collection、Lightbox 与云端失败回退已经过部署后验证。
 - 原片按目前决定继续留在仓库；LCP/CLS、Lighthouse 和 200 张模拟卡片已在本地测试，真实访客性能数据仍未完成。云端 Admin 尚待真实账号和迁移验证；对象存储只完成了方案比较，尚未连接。
 - 现有 9 张照片页按你的选择提供 1200px WebP 网页尺寸下载；按钮不指向 1800px 展示图或原片。仓库公开且保留原片，所以这不等于原片受保护。
+- `scripts/export-public-content.js` 可把 Supabase 的公开作品集和照片资料导出到仓库外的 JSON，供人工留存；它不包含图片、Auth 用户或数据库策略，完整备份和恢复仍需在服务端验证。
 - `Weblesson.docx` 目前完整写到第 18 课并预告第 19 课，尚未同步第 19～34 课的教学内容。
 
 ## 建议阅读顺序
