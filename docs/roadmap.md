@@ -601,14 +601,17 @@ system for its first release.
 - [x] Open Graph images
 - [x] Sitemap
 - [x] robots.txt
-- [ ] Structured photo pages
-- [ ] Social sharing previews
+- [x] Generate structured static pages for the nine published photographs
+- [x] Give those nine pages individual social preview metadata
 
-The sitemap currently lists the nine real photo IDs and must be updated when
-photos are added or removed. On a GitHub Pages project site, this repository's
-`robots.txt` is served beneath `/kris-photo-portfolio/`; it cannot set the
-domain-root robots policy. Individual photo pages also need static or server
-rendered metadata before unique social preview cards can be claimed.
+The sitemap lists the nine static photo pages. `node scripts/generate-photo-pages.js`
+regenerates those pages from the existing seed; when photographs are added or
+removed, update the sitemap and publish the regenerated pages together. A
+cloud-only photograph continues to use `photo.html?id=...` with generic initial
+metadata until it is published as a static page. Social crawlers still need a
+live check after this branch is deployed. On a GitHub Pages project site,
+this repository's `robots.txt` is served beneath `/kris-photo-portfolio/`;
+it cannot set the domain-root robots policy.
 
 ---
 

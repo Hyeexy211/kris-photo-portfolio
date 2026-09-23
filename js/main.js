@@ -283,8 +283,12 @@ function showLightboxImage(index) {
         if (photo.id) {
             const link = document.createElement("a");
             const script = document.querySelector('script[src$="main.js"]');
-            const photoUrl = new URL("../photo.html", script.src);
-            photoUrl.searchParams.set("id", photo.id);
+            const hasStaticPage = typeof defaultPhotos !== "undefined"
+                && defaultPhotos.some((item) => item.id === photo.id);
+            const photoUrl = hasStaticPage
+                ? new URL(`../photos/${encodeURIComponent(photo.id)}.html`, script.src)
+                : new URL("../photo.html", script.src);
+            if (!hasStaticPage) photoUrl.searchParams.set("id", photo.id);
             link.href = photoUrl.href;
             link.textContent = "View photo";
             lightboxCaption.append(" · ", link);

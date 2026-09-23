@@ -3,6 +3,12 @@ const photoCategory = document.querySelector("#photo-category");
 const photoDescription = document.querySelector("#photo-description");
 const photoContent = document.querySelector("#photo-content");
 const photoInfo = document.querySelector("#photo-info");
+const photoPageScript = document.querySelector('script[src$="photo-page.js"]');
+const photoSiteRoot = new URL("../", photoPageScript.src);
+
+function resolvePhotoAsset(assetPath) {
+    return new URL(assetPath, photoSiteRoot).href;
+}
 
 function createPhotoInfo(labelText, valueText) {
     const item = document.createElement("div");
@@ -16,7 +22,8 @@ function createPhotoInfo(labelText, valueText) {
 }
 
 async function renderPhotoPage() {
-    const id = new URLSearchParams(window.location.search).get("id");
+    const id = document.body.dataset.photoId
+        || new URLSearchParams(window.location.search).get("id");
 
     try {
         const [photos, collections] = await Promise.all([
@@ -40,11 +47,14 @@ async function renderPhotoPage() {
         photoDescription.hidden = !photo.description;
 
         const image = document.createElement("img");
-        image.src = photo.fullSrc || photo.src;
+        image.src = resolvePhotoAsset(photo.fullSrc || photo.src);
         image.alt = photo.alt || title;
         image.decoding = "async";
         if (photo.srcset) {
-            image.srcset = photo.srcset;
+            image.srcset = photo.srcset.split(",").map((candidate) => {
+                const [assetPath, descriptor] = candidate.trim().split(/\s+/, 2);
+                return `${resolvePhotoAsset(assetPath)} ${descriptor}`;
+            }).join(", ");
             image.sizes = "(max-width: 768px) calc(100vw - 40px), calc(100vw - 96px)";
         }
         if (photo.width && photo.height) {
@@ -72,8 +82,9 @@ async function renderPhotoPage() {
         }
         photoInfo.replaceChildren(...details);
 
-        const canonicalUrl = new URL("photo.html", window.location.href);
-        canonicalUrl.search = new URLSearchParams({ id: photo.id }).toString();
+        const canonicalUrl = document.body.dataset.photoId
+            ? new URL(window.location.pathname, window.location.origin)
+            : new URL(`photo.html?id=${encodeURIComponent(photo.id)}`, window.location.href);
         const canonical = document.querySelector('link[rel="canonical"]');
         if (canonical) canonical.href = canonicalUrl.href;
         const description = document.querySelector('meta[name="description"]');
