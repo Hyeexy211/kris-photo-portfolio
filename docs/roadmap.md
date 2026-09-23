@@ -373,8 +373,8 @@ Tasks:
 - [x] Preserve localStorage as the local repository and cloud-read fallback
 - [x] Convert Work, Gallery, and Collection reads to async loading/error/empty flows
 - [x] Document the `collections` / `photos` schema, relationship, seed, and public-read RLS
-- [ ] Create the real Supabase project/tables and add its URL plus publishable key
-- [ ] Verify live cloud reads after the dashboard configuration is available
+- [x] Create the real Supabase project/tables and add its URL plus publishable key
+- [x] Verify live cloud reads after the dashboard configuration is available
 
 Lesson 34 intentionally provides public `SELECT` only. Cloud authentication,
 Admin writes, image uploads, and unrestricted public CRUD are not part of this

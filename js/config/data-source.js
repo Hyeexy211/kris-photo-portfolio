@@ -4,9 +4,8 @@
 // ================================================================
 
 const CONTENT_DATA_SOURCE = Object.freeze({
-    // Keep "local" until the Supabase tables, RLS policies and public key are ready.
-    // Change this value to "supabase" to read public content from Supabase.
-    source: "local",
+    // Supabase is now configured; public pages read cloud content first.
+    source: "supabase",
 
     // A failed cloud read falls back to the existing browser-local repository.
     fallbackToLocal: true,

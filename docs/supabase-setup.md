@@ -90,5 +90,8 @@ Serve `dist/` or the project root over HTTP, then verify:
 7. Temporarily using an invalid project URL causes the public pages to use the
    local fallback without crashing.
 
-The repository cannot complete the dashboard steps or a live read test until a
-Supabase project URL and publishable key are provided.
+The current project completed these dashboard steps and passed live verification
+on September 23, 2026: anonymous reads returned three collections and nine photos,
+every photo referenced a returned collection, and anonymous insert, update, and
+delete requests were denied. Repeat this checklist if the Supabase project or its
+browser configuration changes.
