@@ -740,6 +740,7 @@ originals in the repository and to publish no unverified photo metadata.
 | MANUAL ACTION REQUIRED | Complete backup and monitoring | Select an external backup destination and monitoring service, then test restoration and production alerts. The public JSON export is only a partial copy. |
 | OWNER CONTENT REQUIRED | Real date, location, gear, GPS | Leave the optional fields blank until trustworthy source information and a privacy decision are supplied. |
 | OWNER DECISION | Archive and original protection | Keep all originals in the public repository for now, as requested. This means already published originals are publicly accessible even if a private Storage bucket is configured later. |
+| OWNER REVIEW | Hero and portrait longest-edge exports | Current `-1800.webp` files use 1800px width and reach 2700px in height. Local mobile Lighthouse scored 98. Re-exporting to the earlier longest-edge targets would change photo detail; review full-size appearance before replacing them. |
 | OPTIONAL | Custom domain, analytics, Street/Cafe, and long-term ideas | Define actual content, service, and privacy requirements before implementation. These are not prerequisites for the current portfolio release. |
 
 ---
