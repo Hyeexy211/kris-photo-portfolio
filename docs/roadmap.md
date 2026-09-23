@@ -358,13 +358,27 @@ Object Storage
 
 Tasks:
 
-- [ ] Select backend architecture
+- [x] Select Supabase as the Lesson 34 database/Data API architecture
 - [ ] Create API
 - [ ] Create database
 - [ ] Connect object storage
 - [ ] Create photograph records
 - [ ] Category management
 - [ ] Tag management
+
+## Lesson 34: Supabase Database + API Integration
+
+- [x] Add a browser-safe Supabase client and dedicated read repository
+- [x] Keep UI reads behind the existing Content Service
+- [x] Preserve localStorage as the local repository and cloud-read fallback
+- [x] Convert Work, Gallery, and Collection reads to async loading/error/empty flows
+- [x] Document the `collections` / `photos` schema, relationship, seed, and public-read RLS
+- [ ] Create the real Supabase project/tables and add its URL plus publishable key
+- [ ] Verify live cloud reads after the dashboard configuration is available
+
+Lesson 34 intentionally provides public `SELECT` only. Cloud authentication,
+Admin writes, image uploads, and unrestricted public CRUD are not part of this
+lesson.
 
 Do not begin this phase until the frontend and photography data model are stable.
 

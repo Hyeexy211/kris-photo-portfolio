@@ -169,83 +169,14 @@
             </div>
         </section>
 
-        <!-- 第 20 课：每张 article 卡片指向一个独立作品页，整张卡片都是链接。 -->
+        <!-- Collection 卡片由 collections.js 生成；这里只保留稳定的页面容器。 -->
         <section id="work" class="projects-section" aria-labelledby="work-title">
             <div class="section-header reveal">
                 <p class="section-label">Selected Work</p>
                 <h2 id="work-title">Collections</h2>
             </div>
-            <div class="project-grid">
-                <article class="project-card reveal">
-                    <a class="project-card-link" href="projects/portrait.html">
-                        <div class="project-card-image">
-                            <img
-                                src="images/portrait/portrait-01-1200.webp"
-                                srcset="images/portrait/portrait-01-640.webp 640w, images/portrait/portrait-01-1200.webp 1200w, images/portrait/portrait-01-1800.webp 1800w"
-                                sizes="(max-width: 768px) calc(100vw - 40px), calc((100vw - 120px) / 2)"
-                                width="1200"
-                                height="1800"
-                                alt="A rain-darkened window frames trees and a passing car"
-                                loading="lazy"
-                            >
-                            <span class="project-card-overlay" aria-hidden="true">View Project</span>
-                        </div>
-                        <div class="project-card-info">
-                            <h3>Portrait</h3>
-                            <div class="project-card-meta">
-                                <span>Collection</span>
-                                <span>3 photographs</span>
-                            </div>
-                        </div>
-                    </a>
-                </article>
-                <article class="project-card reveal">
-                    <a class="project-card-link" href="projects/documentary.html">
-                        <div class="project-card-image">
-                            <img
-                                src="images/documentary/documentary-01-1200.webp"
-                                srcset="images/documentary/documentary-01-640.webp 640w, images/documentary/documentary-01-1200.webp 1200w, images/documentary/documentary-01-1800.webp 1800w"
-                                sizes="(max-width: 768px) calc(100vw - 40px), calc((100vw - 120px) / 2)"
-                                width="1200"
-                                height="1800"
-                                alt="White flowers and a veiled mannequin beside an old window"
-                                loading="lazy"
-                            >
-                            <span class="project-card-overlay" aria-hidden="true">View Project</span>
-                        </div>
-                        <div class="project-card-info">
-                            <h3>Documentary</h3>
-                            <div class="project-card-meta">
-                                <span>Collection</span>
-                                <span>3 photographs</span>
-                            </div>
-                        </div>
-                    </a>
-                </article>
-                <article class="project-card reveal">
-                    <a class="project-card-link" href="projects/landscape.html">
-                        <div class="project-card-image">
-                            <img
-                                src="images/landscape/landscape-01-1200.webp"
-                                srcset="images/landscape/landscape-01-640.webp 640w, images/landscape/landscape-01-1200.webp 1200w, images/landscape/landscape-01-1800.webp 1800w"
-                                sizes="(max-width: 768px) calc(100vw - 40px), calc((100vw - 120px) / 2)"
-                                width="1200"
-                                height="511"
-                                alt="City lights beneath a pink dusk sky and silhouetted branches"
-                                loading="lazy"
-                            >
-                            <span class="project-card-overlay" aria-hidden="true">View Project</span>
-                        </div>
-                        <div class="project-card-info">
-                            <h3>Landscape</h3>
-                            <div class="project-card-meta">
-                                <span>Collection</span>
-                                <span>3 photographs</span>
-                            </div>
-                        </div>
-                    </a>
-                </article>
-            </div>
+            <div class="project-grid" id="collection-grid"></div>
+            <noscript><p class="gallery-empty">JavaScript is required to load collections.</p></noscript>
         </section>
 
         <!-- 第 25 课：只保留正式 Gallery 的结构，照片卡片全部由 photos.js 生成。 -->
@@ -318,8 +249,18 @@
         <p>© 2026 Kris Photography</p>
     </footer>
 
-    <!-- 第 22 课：先加载照片资料，再加载负责页面交互的主脚本。 -->
+    <!-- 配置与种子数据先加载，Repository 再由 Content Service 统一调度。 -->
+    <script src="js/config/data-source.js"></script>
+    <script src="data/collections.js"></script>
     <script src="data/photos.js"></script>
+    <script src="js/storage-service.js"></script>
+    <script src="js/repositories/local-repository.js"></script>
+    <script src="js/config/supabase-client.js"></script>
+    <script src="js/repositories/supabase-repository.js"></script>
+    <script src="js/content-service.js"></script>
+
+    <!-- Work 先生成 .reveal 卡片，main.js 随后统一接入动画与交互。 -->
+    <script src="js/work.js"></script>
 
     <!-- 放在 body 末尾，确保 HTML 元素创建后 JavaScript 再查找它们。 -->
     <script src="js/main.js"></script>

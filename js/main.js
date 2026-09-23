@@ -1,5 +1,5 @@
 // ================================================================
-// 第 25 课：让 photos.js 正式接管首页 Gallery
+// Lesson 34: Content Service 异步提供首页 Gallery 数据
 // 数据、渲染、筛选、动态灯箱入口分别由小函数负责。
 // ================================================================
 
@@ -15,6 +15,9 @@ let activeCategory = "all";
 // 保存当前真正显示在 Gallery 中的照片，供灯箱上一张 / 下一张使用。
 let renderedPhotos = [];
 
+// Content Service 首次读取后保存在页面内，筛选按钮不重复发送网络请求。
+let allGalleryPhotos = [];
+
 // 根据一条照片数据创建与原静态 Gallery 完全相同的可点击按钮。
 function createPhotoCard(photo) {
     const card = document.createElement("button");
@@ -23,11 +26,11 @@ function createPhotoCard(photo) {
     card.dataset.id = photo.id;
     card.dataset.category = photo.category;
     card.dataset.fullSrc = photo.fullSrc || photo.src;
-    card.setAttribute("aria-label", `Open ${photo.title || "photography work"}`);
+    card.setAttribute("aria-label", `Open ${photo.alt || photo.title || "photography work"}`);
 
     const image = document.createElement("img");
     image.src = photo.src;
-    image.alt = photo.title || "Photography work";
+    image.alt = photo.alt || photo.title || "Photography work";
     image.loading = "lazy";
     image.decoding = "async";
 
@@ -49,9 +52,9 @@ function createPhotoCard(photo) {
 
 // 根据 activeCategory 返回唯一一份应该显示的数据，不在 DOM 中另外保存照片资料。
 function getFilteredPhotos() {
-    if (activeCategory === "all") return photos;
+    if (activeCategory === "all") return allGalleryPhotos;
 
-    return photos.filter((photo) => photo.category === activeCategory);
+    return allGalleryPhotos.filter((photo) => photo.category === activeCategory);
 }
 
 // ================================================================
@@ -92,7 +95,7 @@ function renderGallery(photoList) {
     // main.js 也被独立作品页复用；那些页面没有动态 Gallery 容器。
     if (!galleryContainer) return;
 
-    // 每次渲染都使用排序副本；photos 与筛选结果本身不会被 sort() 修改。
+    // 每次渲染都使用排序副本；Content Service 返回的数据不会被 sort() 修改。
     const sortedPhotos = sortPhotosByDate(photoList);
 
     // 替换 DOM 前停止观察旧卡片，避免筛选多次后留下已经移除的观察目标。
@@ -124,7 +127,7 @@ function renderGallery(photoList) {
     observeRevealElements(galleryContainer);
 }
 
-// 分类按钮只绑定一次；每次点击先更新状态，再从 photos 重新筛选并渲染。
+// 分类按钮只绑定一次；每次点击先更新状态，再从 Content Service 查询并渲染。
 function setupGalleryFilters() {
     filterButtons.forEach((button) => {
         button.addEventListener("click", () => {
@@ -148,7 +151,9 @@ function setupGalleryLightbox() {
 
         if (!trigger || !galleryContainer.contains(trigger)) return;
 
-        const photo = photos.find((item) => item.id === trigger.dataset.id);
+        // 直接从当前显示列表取回同一个对象，避免重新读取 localStorage 后对象引用不同，
+        // 导致 openLightbox() 无法找到被点击照片的正确索引。
+        const photo = renderedPhotos.find((item) => item.id === trigger.dataset.id);
 
         if (!photo) return;
 
@@ -157,8 +162,27 @@ function setupGalleryLightbox() {
 }
 
 // 首页存在 Gallery 时才初始化；独立作品页继续使用自己的静态照片结构。
-function initGallery() {
+async function initGallery() {
     if (!galleryContainer) return;
+
+    galleryContainer.setAttribute("aria-busy", "true");
+    const loadingMessage = document.createElement("p");
+    loadingMessage.className = "gallery-empty";
+    loadingMessage.textContent = "Loading photographs…";
+    galleryContainer.replaceChildren(loadingMessage);
+
+    try {
+        allGalleryPhotos = await contentService.getPhotos();
+    } catch (error) {
+        console.error("Unable to load Gallery photographs.", error);
+        const errorMessage = document.createElement("p");
+        errorMessage.className = "gallery-empty";
+        errorMessage.textContent = "Unable to load photographs.";
+        galleryContainer.replaceChildren(errorMessage);
+        return;
+    } finally {
+        galleryContainer.removeAttribute("aria-busy");
+    }
 
     // 以 HTML 当前的 active 按钮为准，避免初始视觉与 JavaScript 状态不同步。
     const activeButton = [...filterButtons].find((button) => button.classList.contains("active"));
@@ -181,7 +205,7 @@ function initGallery() {
 // ================================================================
 
 // 独立作品页的静态照片按钮仍保留；首页动态 Gallery 会使用事件委托。
-const lightboxTriggers = document.querySelectorAll(".lightbox-trigger");
+let lightboxTriggers = [];
 
 // 找到共用的大图灯箱容器。
 const lightbox = document.querySelector("#lightbox");
@@ -208,22 +232,14 @@ const navItems = document.querySelectorAll(".nav-links a");
 // 保存打开灯箱之前获得焦点的元素，关闭时把焦点还给它。
 let lightboxTrigger = null;
 
-// 灯箱当前浏览的数据列表：项目页来自 DOM，首页来自 photos.js 的筛选结果。
+// 灯箱当前浏览的数据列表：项目页来自 DOM，首页来自 Content Service 的筛选结果。
 let activeLightboxPhotos = [];
 
 // 记录灯箱当前显示的是 activeLightboxPhotos 中的第几张照片。
 let currentImageIndex = 0;
 
-// 把独立项目页现有 DOM 转成与 photos.js 相同的最小照片数据格式。
-const staticLightboxPhotos = [...lightboxTriggers].map((trigger) => {
-    const image = trigger.querySelector("img");
-
-    return {
-        src: image.currentSrc || image.src,
-        fullSrc: trigger.dataset.fullSrc || image.currentSrc || image.src,
-        title: image.alt
-    };
-});
+// 把独立项目页现有 DOM 转成与 Content Service 相同的最小照片数据格式。
+let staticLightboxPhotos = [];
 
 // ================================================================
 // 2. 共用的覆盖层状态
@@ -252,17 +268,17 @@ function showLightboxImage(index) {
     // 取余运算让最后一张的下一张回到开头，第一张的上一张回到末尾。
     currentImageIndex = (index + activeLightboxPhotos.length) % activeLightboxPhotos.length;
 
-    // 首页直接读取 photos.js；独立作品页读取上面从 DOM 整理出的同形数据。
+    // 首页读取 Content Service；独立作品页读取上面从 DOM 整理出的同形数据。
     const photo = activeLightboxPhotos[currentImageIndex];
 
     // 优先显示数据中的大图路径；没有提供时才回退到卡片图片。
     lightboxImage.src = photo.fullSrc || photo.src;
 
     // 把照片说明同步给灯箱大图。
-    lightboxImage.alt = photo.title || "Photography work";
+    lightboxImage.alt = photo.alt || photo.title || "Photography work";
 }
 
-// 同一个 openLightbox 同时接收首页 photos.js 数据与项目页整理出的照片数据。
+// 同一个 openLightbox 同时接收首页 Content Service 数据与项目页整理出的照片数据。
 function openLightbox(photo, trigger, photoList) {
     if (!lightbox || !lightboxClose || photoList.length === 0) return;
 
@@ -315,12 +331,28 @@ function closeLightbox() {
 }
 
 // 只给不会重新渲染的项目页照片直接绑定；首页动态照片由 Gallery 容器委托。
-lightboxTriggers.forEach((trigger, index) => {
-    // button 原生支持鼠标点击，以及键盘 Enter 和 Space 激活。
-    trigger.addEventListener("click", () => {
-        openLightbox(staticLightboxPhotos[index], trigger, staticLightboxPhotos);
+function setupStaticLightbox() {
+    lightboxTriggers = [...document.querySelectorAll(".lightbox-trigger")].filter((trigger) => (
+        !galleryContainer || !galleryContainer.contains(trigger)
+    ));
+
+    staticLightboxPhotos = lightboxTriggers.map((trigger) => {
+        const image = trigger.querySelector("img");
+
+        return {
+            src: image.currentSrc || image.src,
+            fullSrc: trigger.dataset.fullSrc || image.currentSrc || image.src,
+            title: image.alt
+        };
     });
-});
+
+    lightboxTriggers.forEach((trigger, index) => {
+        // button 原生支持鼠标点击，以及键盘 Enter 和 Space 激活。
+        trigger.addEventListener("click", () => {
+            openLightbox(staticLightboxPhotos[index], trigger, staticLightboxPhotos);
+        });
+    });
+}
 
 // 点击上一张时显示当前索引前一项；showLightboxImage 会处理首尾循环。
 lightboxPrev?.addEventListener("click", () => showLightboxImage(currentImageIndex - 1));
@@ -524,5 +556,12 @@ if ("IntersectionObserver" in window && !prefersReducedMotion) {
     observeRevealElements();
 }
 
-// Reveal 与 Lightbox 函数都准备好后，最后初始化并首次渲染首页 Gallery。
-initGallery();
+// Collection 页面先异步生成照片按钮；完成后再绑定共用 Lightbox。
+async function initPageContent() {
+    if (window.collectionPageReady) await window.collectionPageReady;
+
+    setupStaticLightbox();
+    await initGallery();
+}
+
+initPageContent();

@@ -1,12 +1,12 @@
 # Kris Photography：初学者代码阅读指南
 
-这是一个不依赖框架的摄影作品集。首页保留三个作品入口卡片，并在下方由照片数据生成可筛选 Gallery；点击作品卡片后可进入 `projects/` 中的独立页面浏览完整照片组。HTML 负责内容结构，CSS 负责外观与响应式布局，JavaScript 负责动态 Gallery、灯箱、手机菜单和滚动动画。图片保存在 `images/` 下，`dist/` 是给 Sites 预览和托管使用的同内容副本。
+这是一个不依赖框架的摄影作品集。首页通过 Content Service 读取作品集与照片，并在下方生成可筛选 Gallery；点击作品卡片后会进入通用的 `collection.html?slug=...` 页面。HTML 负责内容结构，CSS 负责外观与响应式布局，JavaScript 负责数据读取、动态渲染、灯箱、手机菜单和滚动动画。图片保存在 `images/` 下，`dist/` 是给 Sites 预览和托管使用的同内容副本。
 
 ## 建议阅读顺序
 
-1. 从 `index.html` 开始：先看 `<head>`，再依次看页头、Hero、Selected Work 卡片、动态 Gallery、About 和页脚。每张作品入口卡片的 `href` 指向 `projects/` 中的一页。
-2. 打开 `data/photos.js`：先认识 `photos` 数组，再看九张真实照片如何用 `id`、`src`、`title`、`date` 和 `category` 等字段描述。
-3. 打开 `projects/portrait.html`，沿着页头、项目介绍、照片 `<figure>`、项目资料、灯箱和页脚阅读。子页面的 `../` 表示返回项目根目录。
+1. 从 `index.html` 开始：先看 `<head>`，再依次看页头、Hero、Selected Work 容器、动态 Gallery、About、页脚和末尾的脚本加载顺序。
+2. 打开 `data/collections.js` 与 `data/photos.js`：先认识本地种子数组，再看真实作品如何用 `id`、关联字段、图片路径与现有元数据描述。
+3. 打开 `js/content-service.js`：观察页面如何用同一组异步方法读取本地仓库或 Supabase 仓库，而不把数据库查询写进 UI。
 4. 再看 `css/style.css`：从 `:root` 设计变量开始，依次看全局规则、页头、Hero、灯箱、手机布局、动画、作品卡片和项目页。
 5. 最后看 `js/main.js`：先看如何取得元素，再看 `openLightbox` / `closeLightbox`、`setMenuOpen`、键盘事件和滚动观察器。首页没有灯箱元素，因此代码会先检查它是否存在。
 
@@ -17,8 +17,10 @@
 | 文件或目录 | 作用 | 初学者重点 |
 | --- | --- | --- |
 | `index.html` | 定义首页与作品入口 | `article`、整张卡片链接、`srcset`、`aria-*` |
-| `data/photos.js` | 保存照片资料，与页面结构分开 | 数组、对象、`id`、`src`、`date`、`category` |
-| `projects/*.html` | 每个分类一页，展示完整照片组 | `../` 相对路径、`figure`、灯箱按钮 |
+| `data/*.js` | 保存浏览器本地种子资料 | 数组、对象、`id`、`collectionId`、真实图片路径 |
+| `js/content-service.js` | 为 UI 提供统一内容读取接口 | `async/await`、数据源切换、失败回退 |
+| `js/repositories/*.js` | 分别读取 localStorage 与 Supabase | Repository 边界、字段映射、只读查询 |
+| `collection.html` | 按 `slug` 展示一个作品集 | URL 参数、异步状态、动态 Lightbox 按钮 |
 | `css/style.css` | 布局、颜色、动画和响应式 | 选择器、Grid、Flexbox、媒体查询 |
 | `js/main.js` | 动态渲染与用户交互 | DOM 创建、筛选、事件监听、函数、状态 class |
 | `images/` | 网站使用的摄影图片 | 路径和文件名大小写必须一致 |
@@ -46,6 +48,14 @@
 - 首页的动态 Gallery 是浏览全部照片的入口；`photos.js` 是首页作品的唯一数据源，`index.html` 只保留容器、筛选按钮和 Lightbox 结构。
 - 首页 Lightbox 在持久存在的 Gallery 容器上使用事件委托，通过 `data-id` 回到 `photos` 查找数据；重新筛选后不需要重复绑定监听器。
 - 动态创建的 `.reveal` 会在每次 render 后交给页面共用的同一个 `IntersectionObserver`，不会为每次筛选重复创建观察器。
+
+## 第 34 课：Supabase 只读数据接入
+
+- Work、Gallery 与通用 Collection 页面继续只调用 `contentService`，不会直接调用 Supabase。
+- `js/repositories/supabase-repository.js` 是唯一包含数据库 `.from(...)` 查询的文件，并把数据库的 snake_case 字段转换回页面现有的 camelCase 数据结构。
+- `js/repositories/local-repository.js` 保留 localStorage 与默认种子；默认配置仍使用 `local`，云端配置缺失或读取失败时也可以安全回退。
+- 本课只开放 `SELECT`。Admin 的新增、编辑、删除继续保存在当前浏览器，不会写入 Supabase。
+- 数据库表、外键、RLS、公开只读策略、真实种子和手动配置步骤见 `docs/supabase-setup.md`。
 
 ## 现有交互与可访问性
 

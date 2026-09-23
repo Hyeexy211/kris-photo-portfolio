@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Admin | Kris Photography</title>
+    <meta name="description" content="Browser-local content administration for the Kris Photography prototype.">
+    <meta name="theme-color" content="#000000">
+    <link rel="icon" href="images/favicon/favicon.png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="project-site admin-site">
+    <a class="skip-link" href="#main-content">Skip to content</a>
+
+    <header>
+        <nav>
+            <a class="site-brand" href="index.html">Kris Photography</a>
+            <ul class="admin-nav" aria-label="Admin navigation">
+                <li><a href="#works-admin">Works</a></li>
+                <li><a href="#gallery-admin">Gallery</a></li>
+                <li><a href="index.html">View site</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main id="main-content" class="admin-main">
+        <section class="admin-intro" aria-labelledby="admin-title">
+            <p class="section-label">Lesson 33 prototype</p>
+            <h1 id="admin-title">Content Admin</h1>
+            <p>
+                Changes on this page are saved only in this browser with localStorage.
+                They do not update the Git repository or other devices.
+            </p>
+            <p class="admin-status" id="admin-status" role="status" aria-live="polite"></p>
+        </section>
+
+        <section class="admin-section" id="works-admin" aria-labelledby="works-admin-title">
+            <div class="admin-section-heading">
+                <div>
+                    <p class="section-label">Work / Collection</p>
+                    <h2 id="works-admin-title">Manage Works</h2>
+                </div>
+                <p><span id="work-count">0</span> items</p>
+            </div>
+
+            <form class="admin-form" id="work-form">
+                <h3 id="work-form-title">Create Work</h3>
+                <input id="work-id" name="id" type="hidden">
+
+                <label>
+                    Title
+                    <input name="title" type="text" required>
+                </label>
+                <label>
+                    Slug
+                    <input name="slug" type="text" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required>
+                    <span>Lowercase letters, numbers and hyphens.</span>
+                </label>
+                <label class="admin-field-wide">
+                    Description
+                    <textarea name="description" rows="3" required></textarea>
+                </label>
+                <label class="admin-field-wide">
+                    Cover path
+                    <input name="cover" type="text" placeholder="images/category/photo-1200.webp" required>
+                </label>
+                <label class="admin-field-wide">
+                    Cover srcset
+                    <input name="coverSrcset" type="text">
+                </label>
+                <label class="admin-field-wide">
+                    Cover alt text
+                    <input name="coverAlt" type="text" required>
+                </label>
+                <label>
+                    Category
+                    <input name="category" type="text" required>
+                </label>
+                <label>
+                    Display order
+                    <input name="order" type="number" min="0" step="1" required>
+                </label>
+                <label>
+                    Cover width
+                    <input name="coverWidth" type="number" min="1" step="1">
+                </label>
+                <label>
+                    Cover height
+                    <input name="coverHeight" type="number" min="1" step="1">
+                </label>
+
+                <div class="admin-form-actions admin-field-wide">
+                    <button class="admin-button admin-button-primary" type="submit">Save Work</button>
+                    <button class="admin-button" id="cancel-work-edit" type="button" hidden>Cancel edit</button>
+                </div>
+            </form>
+
+            <div class="admin-list" id="work-list" aria-live="polite"></div>
+        </section>
+
+        <section class="admin-section" id="gallery-admin" aria-labelledby="gallery-admin-title">
+            <div class="admin-section-heading">
+                <div>
+                    <p class="section-label">Gallery / Photo</p>
+                    <h2 id="gallery-admin-title">Manage Gallery</h2>
+                </div>
+                <p><span id="gallery-count">0</span> items</p>
+            </div>
+
+            <form class="admin-form" id="gallery-form">
+                <h3 id="gallery-form-title">Create Gallery Item</h3>
+                <input id="gallery-item-id" name="id" type="hidden">
+
+                <label class="admin-field-wide">
+                    Title / alt text
+                    <input name="title" type="text" required>
+                </label>
+                <label class="admin-field-wide">
+                    Display image path
+                    <input name="src" type="text" placeholder="images/category/photo-1200.webp" required>
+                </label>
+                <label class="admin-field-wide">
+                    Full image path
+                    <input name="fullSrc" type="text" placeholder="images/category/photo-1800.webp" required>
+                </label>
+                <label class="admin-field-wide">
+                    Image srcset
+                    <input name="srcset" type="text">
+                </label>
+                <label>
+                    Category
+                    <input name="category" type="text" required>
+                </label>
+                <label>
+                    Collection ID
+                    <input name="collectionId" type="text" list="work-id-options">
+                    <datalist id="work-id-options"></datalist>
+                </label>
+                <label>
+                    Shooting date
+                    <input name="date" type="date">
+                </label>
+                <label>
+                    Image width
+                    <input name="width" type="number" min="1" step="1">
+                </label>
+                <label>
+                    Image height
+                    <input name="height" type="number" min="1" step="1">
+                </label>
+
+                <div class="admin-form-actions admin-field-wide">
+                    <button class="admin-button admin-button-primary" type="submit">Save Gallery Item</button>
+                    <button class="admin-button" id="cancel-gallery-edit" type="button" hidden>Cancel edit</button>
+                </div>
+            </form>
+
+            <div class="admin-list" id="gallery-list" aria-live="polite"></div>
+        </section>
+
+        <section class="admin-reset" aria-labelledby="reset-title">
+            <div>
+                <p class="section-label">Recovery</p>
+                <h2 id="reset-title">Restore default content</h2>
+                <p>This overwrites all browser-local Work and Gallery changes with the repository seed data.</p>
+            </div>
+            <button class="admin-button admin-button-danger" id="reset-content" type="button">Reset Content</button>
+        </section>
+    </main>
+
+    <footer><p>© 2026 Kris Photography</p></footer>
+
+    <script src="js/config/data-source.js"></script>
+    <script src="data/collections.js"></script>
+    <script src="data/photos.js"></script>
+    <script src="js/storage-service.js"></script>
+    <script src="js/repositories/local-repository.js"></script>
+    <script src="js/config/supabase-client.js"></script>
+    <script src="js/repositories/supabase-repository.js"></script>
+    <script src="js/content-service.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
