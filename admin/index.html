@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Kris Photography</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#000000">
+    <link rel="icon" href="../images/favicon/favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="project-site admin-site">
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header>
+        <nav>
+            <a class="site-brand" href="../">Kris Photography</a>
+            <ul class="admin-nav" aria-label="Dashboard navigation">
+                <li><a href="../">Back to Website</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main id="main-content" class="admin-main">
+        <section class="admin-intro" aria-labelledby="dashboard-title">
+            <p class="section-label">Content Management</p>
+            <h1 id="dashboard-title">Dashboard</h1>
+            <p>Manage your photography collections and gallery photos.</p>
+            <p class="admin-status" id="dashboard-status" role="status" aria-live="polite">Checking owner access…</p>
+            <a class="dashboard-back" href="../">Back to Website</a>
+        </section>
+
+        <section class="admin-section" id="dashboard-auth" aria-labelledby="dashboard-auth-title" hidden>
+            <h2 id="dashboard-auth-title">Owner sign in</h2>
+            <form class="admin-form" id="dashboard-login-form">
+                <label>Email <input name="email" type="email" autocomplete="username" required></label>
+                <label>Password <input name="password" type="password" autocomplete="current-password" required></label>
+                <div class="admin-form-actions admin-field-wide">
+                    <button class="admin-button admin-button-primary" type="submit">Sign in</button>
+                </div>
+            </form>
+        </section>
+
+        <div class="dashboard-grid" id="dashboard-links" hidden>
+            <article class="dashboard-card">
+                <h2>Work / Collections</h2>
+                <p>Manage photography collections.</p>
+                <a href="../admin.html?mode=cloud#works-admin">Manage Work →</a>
+            </article>
+            <article class="dashboard-card">
+                <h2>Gallery / Photos</h2>
+                <p>Manage gallery photos.</p>
+                <a href="../admin.html?mode=cloud#gallery-admin">Manage Gallery →</a>
+            </article>
+        </div>
+    </main>
+
+    <footer><p>© 2026 Kris Photography</p></footer>
+
+    <script src="../js/config/data-source.js"></script>
+    <script src="../js/config/supabase-client.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>

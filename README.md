@@ -1,5 +1,7 @@
 # Kris Photography：初学者代码阅读指南
 
+面向访客和网站所有者的中文版功能与操作说明见 [`docs/user-guide.zh-CN.md`](docs/user-guide.zh-CN.md)。
+
 这是一个不依赖框架的摄影作品集。首页通过 Content Service 读取作品集与照片，并在下方生成可筛选 Gallery；点击作品卡片后会进入通用的 `collection.html?slug=...` 页面。HTML 负责内容结构，CSS 负责外观与响应式布局，JavaScript 负责数据读取、动态渲染、灯箱、手机菜单和滚动动画。图片保存在 `images/` 下，`dist/` 是给 Sites 预览和托管使用的同内容副本。
 
 ## 当前项目状态（2026-09-23）

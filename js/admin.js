@@ -434,6 +434,10 @@ async function initializeCloudAdmin() {
 
         setAdminAccess(true);
         await renderAdmin();
+        const requestedSection = document.getElementById(window.location.hash.slice(1));
+        if (requestedSection?.id === "works-admin" || requestedSection?.id === "gallery-admin") {
+            requestedSection.scrollIntoView();
+        }
         showAdminStatus("Cloud content loaded. Changes here update Supabase.");
     } catch (error) {
         if (generation !== cloudAccessGeneration) return;
