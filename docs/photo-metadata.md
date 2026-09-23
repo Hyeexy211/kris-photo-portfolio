@@ -20,3 +20,16 @@ Supabase read repository, whose schema still contains only the Lesson 34
 fields. Applying a database migration and authenticated writes are separate
 roadmap tasks; local Admin edits do not yet appear on the cloud-backed public
 site or on another device.
+
+## Read-only EXIF review
+
+If ExifTool is installed, `python3 scripts/exif-review.py image.jpg` prints a
+JSON review record. It reads capture date, camera, lens, aperture, shutter,
+ISO and focal length. It reports only whether GPS exists; the coordinates are
+never printed, saved or published by this script. The output still requires
+human review before any value is entered in Admin.
+
+All 10 JPEGs currently tracked under `images/` were inspected on 2026-09-23.
+None contained `DateTimeOriginal`, Make/Model, LensModel, FNumber,
+ExposureTime, ISO, FocalLength or GPS coordinates. No capture information can
+be populated from these files, and file timestamps are not substitutes.

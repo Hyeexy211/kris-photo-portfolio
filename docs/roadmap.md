@@ -484,18 +484,22 @@ Automatically extract photography information.
 
 Possible fields:
 
-- [ ] Capture date
-- [ ] Camera
-- [ ] Lens
-- [ ] Aperture
-- [ ] Shutter speed
-- [ ] ISO
-- [ ] Focal length
+- [x] Capture date EXIF review extraction
+- [x] Camera EXIF review extraction
+- [x] Lens EXIF review extraction
+- [x] Aperture EXIF review extraction
+- [x] Shutter speed EXIF review extraction
+- [x] ISO EXIF review extraction
+- [x] Focal length EXIF review extraction
 - [ ] GPS
 
 Privacy rule:
 
 GPS information should never automatically become public.
+
+The review script extracts only non-GPS values and a GPS-presence flag. The
+10 current website JPEGs contain none of these EXIF values; automatic
+publication and private GPS handling remain open.
 
 Location publishing must remain optional.
 
