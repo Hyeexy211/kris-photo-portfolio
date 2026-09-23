@@ -43,8 +43,9 @@ the work branch has been merged to the public GitHub Pages `main` branch.
   previews, captions and mobile Lightbox swipe, optional local tags/metadata,
   1200px web-size downloads, sitemap, and local performance checks
 - On that branch: authenticated cloud Admin code, owner-only RLS migration,
-  Storage bucket migration, and a public-content export script are prepared;
-  their live account and Storage flows have **not** been verified
+  Storage bucket migration, a new-photo web-export upload path, and a
+  public-content export script are prepared; their live account and Storage
+  flows have **not** been verified
 
 ## In Progress
 
@@ -63,8 +64,8 @@ the work branch has been merged to the public GitHub Pages `main` branch.
 
 - Original-file removal, verified but unavailable photo metadata, and a decision
   about Street/Cafe work
-- Full upload/processing pipeline, production CDN, monitoring, custom domain,
-  and full database/image backup until service and account setup is available
+- Live upload release, source-file archive, production CDN, monitoring, custom
+  domain, and full database/image backup until service and account setup is available
 - Analytics and long-term platform ideas until the owner chooses their scope
 
 `Weblesson.docx` is outside this roadmap execution at the owner's request.
@@ -478,12 +479,31 @@ provides the data boundary.
 
 ## Upload
 
-- [ ] Select photographs
-- [ ] Upload photographs
-- [ ] Upload progress
-- [ ] Automatic optimization
-- [ ] Generate thumbnails
+- [x] Select a new photograph in the prepared Cloud Admin form
+- [ ] Upload photographs to the live owner-controlled Storage bucket
+- [x] Show completed-file progress for the three prepared web exports
+- [x] Generate 640px, 1200px, and 1800px WebP exports in the browser
+- [x] Generate the 640px Gallery thumbnail export
 - [ ] Store originals
+
+The prepared upload path is limited to **new** cloud photographs. It accepts
+JPEG, WebP, or browser-decodable AVIF at least 1800 pixels wide, no larger than
+25 MiB or 40 megapixels. The browser renders three WebP exports, rejects
+EXIF/XMP chunks in each output, and never sends the selected source file to
+Storage. Progress counts completed files, not bytes. A photo database row is
+created only after all three uploads succeed. On an upload or confirmed
+database failure, the editor attempts to remove only the new keys from that
+attempt and reports any cleanup failure. A network-ambiguous database result
+requires manual review before deleting those objects.
+
+The desktop and mobile upload flow, partial failure, database rejection, and
+cleanup failure passed local browser tests with a mocked Storage service. A
+temporary JPEG containing GPS EXIF was exported in Chromium; ExifTool found
+no GPS/EXIF/XMP fields in its 1200px WebP. This does not establish a universal
+color-profile guarantee or replace live Auth, bucket, RLS, upload, and public
+page checks. New cloud photos currently use generic `photo.html?id=...` pages;
+they have no static social preview or download button until those separate
+publishing paths are extended.
 
 ## Management
 

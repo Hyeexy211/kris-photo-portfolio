@@ -141,6 +141,19 @@ const supabaseRepository = Object.freeze({
         return rows.map(mapSupabasePhoto);
     },
 
+    async photoRowExists(id) {
+        const client = await getSupabaseClient();
+        const { data, error } = await client.from("photos")
+            .select("id")
+            .eq("id", id)
+            .maybeSingle();
+        if (error) throw new Error(`Could not check photo ${id}: ${error.message}`);
+        if (data !== null && data?.id !== id) {
+            throw new Error(`Photo ${id} returned an unexpected lookup result.`);
+        }
+        return data !== null;
+    },
+
     async createCollection(collection) {
         return mapSupabaseCollection(await writeSupabaseRow("collections", "insert", toSupabaseCollection(collection)));
     },

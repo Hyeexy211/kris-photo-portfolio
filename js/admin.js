@@ -17,10 +17,17 @@ const resetContentButton = document.querySelector("#reset-content");
 const cloudMode = new URLSearchParams(window.location.search).get("mode") === "cloud";
 const adminStore = cloudMode ? cloudAdminService : contentService;
 const authSection = document.querySelector("#admin-auth");
+const authHeading = document.querySelector("#admin-auth-title");
 const loginForm = document.querySelector("#admin-login-form");
 const signOutButton = document.querySelector("#admin-sign-out");
 const resetSection = document.querySelector("#admin-reset");
+const galleryUploadField = document.querySelector("#gallery-upload-field");
+const galleryUploadFile = document.querySelector("#gallery-upload-file");
+const galleryUploadProgress = document.querySelector("#gallery-upload-progress");
+const galleryUploadMessage = document.querySelector("#gallery-upload-message");
+const galleryUploadCount = document.querySelector("#gallery-upload-count");
 let cloudAccessGeneration = 0;
+let gallerySaving = false;
 
 function showAdminStatus(message, isError = false) {
     adminStatus.textContent = message;
@@ -60,6 +67,27 @@ function resetGalleryForm() {
     galleryForm.elements.id.value = "";
     document.querySelector("#gallery-form-title").textContent = "Create Gallery Item";
     cancelGalleryEdit.hidden = true;
+    galleryUploadProgress.hidden = true;
+    syncGalleryUploadFields();
+}
+
+function syncGalleryUploadFields() {
+    const useUpload = cloudMode && !galleryForm.elements.id.value && galleryUploadFile.files.length > 0;
+    galleryUploadField.hidden = !cloudMode || Boolean(galleryForm.elements.id.value);
+    galleryUploadFile.disabled = gallerySaving || Boolean(galleryForm.elements.id.value);
+    ["src", "fullSrc"].forEach((fieldName) => {
+        galleryForm.elements[fieldName].required = !useUpload;
+        galleryForm.elements[fieldName].readOnly = useUpload;
+    });
+    ["srcset", "width", "height"].forEach((fieldName) => {
+        galleryForm.elements[fieldName].readOnly = useUpload;
+    });
+}
+
+function showGalleryUploadProgress(message, completed) {
+    galleryUploadProgress.hidden = false;
+    galleryUploadMessage.textContent = message;
+    galleryUploadCount.value = completed;
 }
 
 function createAdminItem(item, metaText, itemType) {
@@ -179,21 +207,99 @@ workForm.addEventListener("submit", async (event) => {
 
 galleryForm.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (gallerySaving) return;
+
+    const { id, values } = getFormValues(galleryForm, ["order", "width", "height"]);
+    const selectedFile = cloudMode ? galleryUploadFile.files[0] : null;
+    const disabledControls = [...galleryForm.elements].map((field) => [field, field.disabled]);
+    gallerySaving = true;
+    disabledControls.forEach(([field]) => { field.disabled = true; });
+    if (cloudMode) signOutButton.disabled = true;
+    syncGalleryUploadFields();
+    const uploadedPaths = [];
+    let uploadPhotoId = "";
+    let databaseInsertAttempted = false;
+    let rowPublished = false;
 
     try {
-        const { id, values } = getFormValues(galleryForm, ["order", "width", "height"]);
         values.tags = values.tags.split(",").map((tag) => tag.trim()).filter(Boolean);
+
+        if (selectedFile && id) {
+            throw new Error("File upload is available only when creating a new Gallery item.");
+        }
+        if (selectedFile) {
+            uploadPhotoId = createContentId("photo");
+            showGalleryUploadProgress("Preparing three web-size WebP files on this device…", 0);
+            const exports = await prepareCloudWebExports(selectedFile);
+            const accessGeneration = cloudAccessGeneration;
+            const images = await uploadCloudWebExports(uploadPhotoId, exports, (path) => {
+                uploadedPaths.push(path);
+                showGalleryUploadProgress(`${uploadedPaths.length} of 3 web files uploaded.`, uploadedPaths.length);
+            });
+            if (accessGeneration !== cloudAccessGeneration) {
+                throw new Error("The owner session changed during upload. No photo row was published.");
+            }
+            Object.assign(values, {
+                id: uploadPhotoId,
+                src: images.src,
+                fullSrc: images.fullSrc,
+                srcset: images.srcset,
+                width: images.width,
+                height: images.height
+            });
+            showGalleryUploadProgress("Three web files uploaded. Saving the photo record…", 3);
+            databaseInsertAttempted = true;
+        }
+
         const savedItem = id
             ? await adminStore.updateGalleryItem(id, values)
             : await adminStore.createGalleryItem(values);
 
         if (!savedItem) throw new Error("The Gallery item could not be saved.");
+        rowPublished = true;
 
         resetGalleryForm();
         await renderGalleryAdmin();
-        showAdminStatus(id ? "Gallery item updated." : "Gallery item created.");
+        showAdminStatus(id ? "Gallery item updated." : selectedFile
+            ? "Gallery item created with three web-size photos. Review its public page before sharing."
+            : "Gallery item created.");
     } catch (error) {
-        showAdminStatus(error.message, true);
+        let message = error.message;
+        if (rowPublished && uploadPhotoId) {
+            message += " The photo row was saved, but the Admin list did not refresh. Reload before retrying.";
+        }
+        if (uploadedPaths.length > 0 && !rowPublished) {
+            let cleanupIsSafe = true;
+            if (databaseInsertAttempted) {
+                try {
+                    const existing = await cloudAdminService.photoRowExists(uploadPhotoId);
+                    if (existing) {
+                        cleanupIsSafe = false;
+                        message += " A photo row with this ID exists; the new web files were kept for review.";
+                    }
+                } catch {
+                    cleanupIsSafe = false;
+                    message += " The photo row could not be checked; new web files were kept for review.";
+                }
+            }
+            if (cleanupIsSafe) {
+                try {
+                    await removeCloudWebExports(uploadedPaths);
+                    message += " Confirmed uploads from this attempt were removed.";
+                } catch (cleanupError) {
+                    message += ` Cleanup failed: ${cleanupError.message} Check these paths in ${CLOUD_WEB_BUCKET}: ${uploadedPaths.join(", ")}.`;
+                }
+            }
+        }
+        showAdminStatus(message, true);
+        if (uploadedPaths.length > 0) {
+            showGalleryUploadProgress("Upload stopped; see the status above.", uploadedPaths.length);
+        }
+    } finally {
+        gallerySaving = false;
+        disabledControls.forEach(([field, wasDisabled]) => { field.disabled = wasDisabled; });
+        if (cloudMode) signOutButton.disabled = false;
+        syncGalleryUploadFields();
     }
 });
 
@@ -229,26 +335,38 @@ workList.addEventListener("click", async (event) => {
 galleryList.addEventListener("click", async (event) => {
     const button = event.target.closest("button[data-action]");
     if (!button || !galleryList.contains(button)) return;
+    if (gallerySaving) {
+        showAdminStatus("Wait for the current Gallery save to finish before editing another item.");
+        return;
+    }
 
     try {
         const item = await adminStore.getGalleryItemById(button.dataset.id);
         if (!item) return;
 
         if (button.dataset.action === "edit") {
+            galleryUploadFile.value = "";
             fillForm(galleryForm, item);
             document.querySelector("#gallery-form-title").textContent = "Edit Gallery Item";
             cancelGalleryEdit.hidden = false;
+            galleryUploadProgress.hidden = true;
+            syncGalleryUploadFields();
             galleryForm.scrollIntoView({ behavior: "smooth", block: "start" });
             galleryForm.elements.title.focus({ preventScroll: true });
             return;
         }
 
-        if (!window.confirm(`Delete the Gallery item "${item.title || item.id}"?`)) return;
+        const warning = cloudMode
+            ? " This removes the database row only. Any uploaded web files remain publicly accessible until reviewed and removed separately from Storage."
+            : "";
+        if (!window.confirm(`Delete the Gallery item "${item.title || item.id}"?${warning}`)) return;
 
         if (!await adminStore.deleteGalleryItem(item.id)) throw new Error("The Gallery item could not be deleted.");
         resetGalleryForm();
         await renderGalleryAdmin();
-        showAdminStatus("Gallery item deleted.");
+        showAdminStatus(cloudMode
+            ? "Cloud photo record deleted. Any uploaded web files remain in Storage for manual review."
+            : "Gallery item deleted.");
     } catch (error) {
         showAdminStatus(error.message, true);
     }
@@ -256,6 +374,7 @@ galleryList.addEventListener("click", async (event) => {
 
 cancelWorkEdit.addEventListener("click", resetWorkForm);
 cancelGalleryEdit.addEventListener("click", resetGalleryForm);
+galleryUploadFile.addEventListener("change", syncGalleryUploadFields);
 
 resetContentButton.addEventListener("click", async () => {
     if (cloudMode) return;
@@ -285,6 +404,7 @@ function setAdminAccess(allowed) {
 
     if (cloudMode) {
         authSection.hidden = false;
+        authHeading.textContent = allowed ? "Owner session" : "Owner sign in";
         loginForm.hidden = allowed;
         signOutButton.hidden = !allowed;
     }
@@ -357,6 +477,7 @@ signOutButton.addEventListener("click", async () => {
 });
 
 if (cloudMode) {
+    syncGalleryUploadFields();
     document.querySelector("#admin-mode-label").textContent = "Authenticated cloud editor";
     document.querySelector("#admin-intro-copy").textContent =
         "Cloud changes update Supabase after owner sign-in. Published photo share previews need regeneration and deployment after edits.";

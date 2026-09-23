@@ -9,7 +9,7 @@
 - `admin.html` 是第 33 课的浏览器本地原型，可以用 localStorage 新增、编辑、删除和恢复内容，但没有登录、云端写入或跨设备同步。
 - 工作分支另提供 `admin.html?mode=cloud` 的认证界面及云端 CRUD 代码，并准备了数据库 RLS 迁移；迁移尚未在线上执行，尚不能宣称云端 Admin 可用。原本的 `admin.html` 本地模式保持可用。
 - GitHub Pages 已发布在 <https://hyeexy211.github.io/kris-photo-portfolio/>，桌面端、390px 移动端、筛选、动态 Collection、Lightbox 与云端失败回退已经过部署后验证。
-- 原片按目前决定继续留在仓库；LCP/CLS、Lighthouse 和 200 张模拟卡片已在本地测试，真实访客性能数据仍未完成。云端 Admin 尚待真实账号和迁移验证；对象存储只完成了方案比较，尚未连接。
+- 原片按目前决定继续留在仓库；LCP/CLS、Lighthouse 和 200 张模拟卡片已在本地测试，真实访客性能数据仍未完成。云端 Admin 尚待真实账号和迁移验证；对象存储已准备空桶策略与浏览器网页图上传代码，尚未在线上连接和测试。
 - 现有 9 张照片页按你的选择提供 1200px WebP 网页尺寸下载；按钮不指向 1800px 展示图或原片。仓库公开且保留原片，所以这不等于原片受保护。
 - `scripts/export-public-content.js` 可把 Supabase 的公开作品集和照片资料导出到仓库外的 JSON，供人工留存；它不包含图片、Auth 用户或数据库策略，完整备份和恢复仍需在服务端验证。
 - `Weblesson.docx` 目前完整写到第 18 课并预告第 19 课，尚未同步第 19～34 课的教学内容。
@@ -32,6 +32,7 @@
 | `data/*.js` | 保存浏览器本地种子资料 | 数组、对象、`id`、`collectionId`、真实图片路径 |
 | `js/content-service.js` | 为 UI 提供统一内容读取接口 | `async/await`、数据源切换、失败回退 |
 | `js/repositories/*.js` | 分别读取 localStorage 与 Supabase | Repository 边界、字段映射、只读查询 |
+| `js/cloud-photo-upload.js` | 在 Cloud Admin 中生成并上传新照片的 3 张 WebP 网页图 | 文件验证、Canvas 导出、Storage 路径与失败清理；需真实账号和桶测试 |
 | `collection.html` | 按 `slug` 展示一个作品集 | URL 参数、异步状态、动态 Lightbox 按钮 |
 | `css/style.css` | 布局、颜色、动画和响应式 | 选择器、Grid、Flexbox、媒体查询 |
 | `js/main.js` | 动态渲染与用户交互 | DOM 创建、筛选、事件监听、函数、状态 class |

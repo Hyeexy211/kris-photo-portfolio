@@ -8,6 +8,7 @@ const cloudAdminService = Object.freeze({
     async getGalleryItemById(id) {
         return (await this.getGalleryItems()).find((photo) => photo.id === id) || null;
     },
+    photoRowExists: (id) => supabaseRepository.photoRowExists(id),
     createWork(values) {
         return supabaseRepository.createCollection({ ...values, id: createContentId("work") });
     },
@@ -16,7 +17,7 @@ const cloudAdminService = Object.freeze({
     },
     deleteWork: (id) => supabaseRepository.deleteCollection(id),
     createGalleryItem(values) {
-        return supabaseRepository.createPhoto({ ...values, id: createContentId("photo") });
+        return supabaseRepository.createPhoto({ ...values, id: values.id || createContentId("photo") });
     },
     updateGalleryItem(id, values) {
         return supabaseRepository.updatePhoto(id, values);

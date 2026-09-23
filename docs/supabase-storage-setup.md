@@ -21,6 +21,50 @@ it does not upload, move, or remove any repository photographs.
    changing photo rows. Leave all existing originals in the repository as the
    owner requested.
 
+## Prepared Cloud Admin upload
+
+After the owner account and both migrations pass the live permission checks,
+open `admin.html?mode=cloud` and sign in. The **New photo file** control appears
+only for a new Gallery item. Choose a JPEG, WebP, or browser-decodable AVIF
+that is at least 1800 pixels wide, at most 25 MiB, and at most 40 megapixels.
+Fill the real title, visible-image alt text, and category. Leave unknown date,
+location, tags, and camera fields empty. Selecting a file makes the manual
+image path and dimension fields read-only; the created web URLs and measured
+1200px dimensions are stored in the new photo row on save.
+
+The browser renders 640px, 1200px, and 1800px WebP exports and refuses an
+export larger than 6 MiB. It checks each WebP RIFF file for EXIF and XMP chunks
+before upload. The JPEG/WebP/AVIF source file is never uploaded. The code
+uses immutable `photos/<new-id>/<revision>/<width>.webp` keys, `upsert: false`,
+and a one-year cache duration. The progress bar counts completed uploaded web
+files; the Supabase standard upload API used here does not provide byte progress or an
+in-flight cancel button. The selected source stays on the owner's device and
+must be archived separately if the owner wants a recoverable original.
+
+The photo row is inserted after all three Storage uploads succeed. If one
+upload fails, or a database insert is confirmed absent, the editor attempts
+to remove only this attempt's confirmed uploads. It checks the new photo ID
+directly in the database before cleanup, rather than relying on a potentially
+paginated Gallery list. If cleanup fails, the error names the keys for manual
+review. If a database response is ambiguous and the row cannot be checked,
+the editor retains the exports to avoid breaking a possibly published row.
+Do not blindly delete those keys; check the `photos` row and public URLs first.
+
+Deleting a Gallery item in Cloud Admin currently deletes only its database
+row. It does not automatically remove public Storage objects. The confirmation
+and success message make this visible. Review the bucket paths and backups
+before removing uploaded web files manually; never delete a photographed
+source file as part of this workflow.
+
+This code has passed local mocked browser tests only. Before using it for real
+work, verify an owner upload and public image load, anonymous/non-admin denial,
+duplicate-key rejection, and failure cleanup in the live project. The existing
+nine photo pages remain on checked-in images. A new cloud photo uses
+`photo.html?id=...` and does not yet receive a static social card or a download
+button. The current explicit download link accepts only checked-in 1200px
+WebPs. A canvas export requests sRGB drawing, but embedded color profile and
+appearance need a real browser/image review for each source type.
+
 ## Live checks with expendable test files
 
 Use an owner account, a second signed-in account that is **not** in

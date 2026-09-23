@@ -134,6 +134,15 @@
                     Image alt text
                     <input name="alt" type="text" placeholder="Describe what is visible; blank uses the title">
                 </label>
+                <label class="admin-field-wide" id="gallery-upload-field" hidden>
+                    New photo file
+                    <input id="gallery-upload-file" type="file" accept="image/jpeg,image/webp,image/avif">
+                    <span>Cloud Admin only. Select a JPEG, WebP, or AVIF at least 1800 pixels wide. The browser uploads three web-size WebP exports; your source file stays on this device.</span>
+                </label>
+                <div class="admin-field-wide admin-upload-progress" id="gallery-upload-progress" role="status" aria-live="polite" hidden>
+                    <p id="gallery-upload-message"></p>
+                    <progress id="gallery-upload-count" max="3" value="0" aria-label="Web files uploaded"></progress>
+                </div>
                 <label class="admin-field-wide">
                     Display image path
                     <input name="src" type="text" placeholder="images/category/photo-1200.webp" required>
@@ -238,6 +247,7 @@
     <script src="js/repositories/supabase-repository.js"></script>
     <script src="js/content-service.js"></script>
     <script src="js/cloud-admin-service.js"></script>
+    <script src="js/cloud-photo-upload.js"></script>
     <script src="js/admin.js"></script>
 </body>
 </html>
