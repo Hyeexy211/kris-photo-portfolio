@@ -1,7 +1,9 @@
 # Photo metadata model
 
 The current `Photo` keeps its stable `id`, `collectionId`, category, image paths,
-dimensions and title. Optional public fields are `date` (`YYYY-MM-DD`),
+dimensions and title. `alt` may describe the visible image separately from
+its title; when left blank, the title is used. Optional public fields are
+`date` (`YYYY-MM-DD`),
 `location`, `description`, `camera`, `lens`, `focalLength`, `aperture`,
 `shutterSpeed`, `iso`, and `tags` (an array of short strings).
 

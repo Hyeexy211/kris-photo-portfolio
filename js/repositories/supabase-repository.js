@@ -89,7 +89,7 @@ function toSupabasePhoto(photo) {
         id: photo.id,
         collection_id: photo.collectionId || null,
         title: photo.title || "",
-        alt: photo.title || "Photography work",
+        alt: photo.alt || photo.title || "Photography work",
         src: photo.src,
         full_src: photo.fullSrc || photo.src,
         srcset: photo.srcset || "",
