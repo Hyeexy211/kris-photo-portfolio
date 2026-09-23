@@ -2,17 +2,25 @@ const dashboardStatus = document.querySelector("#dashboard-status");
 const dashboardAuth = document.querySelector("#dashboard-auth");
 const dashboardLoginForm = document.querySelector("#dashboard-login-form");
 const dashboardLinks = document.querySelector("#dashboard-links");
+const dashboardI18n = window.siteI18n;
 let dashboardAccessGeneration = 0;
+let dashboardStatusState = null;
 
-function showDashboardAccess(allowed, message) {
+function renderDashboardStatus() {
+    if (!dashboardStatusState) return;
+    dashboardStatus.textContent = dashboardI18n.t(dashboardStatusState.key, dashboardStatusState.values);
+}
+
+function showDashboardAccess(allowed, key, values = {}) {
     dashboardAuth.hidden = allowed;
     dashboardLinks.hidden = !allowed;
-    dashboardStatus.textContent = message;
+    dashboardStatusState = { key, values };
+    renderDashboardStatus();
 }
 
 async function checkDashboardAccess() {
     const generation = ++dashboardAccessGeneration;
-    showDashboardAccess(false, "Checking owner access…");
+    showDashboardAccess(false, "dashboard.status.checking");
 
     try {
         const client = await getSupabaseClient();
@@ -20,7 +28,7 @@ async function checkDashboardAccess() {
         if (generation !== dashboardAccessGeneration) return;
 
         if (!userData?.user) {
-            showDashboardAccess(false, "Sign in with the enrolled owner account to open the Dashboard.");
+            showDashboardAccess(false, "dashboard.status.signInRequired");
             return;
         }
 
@@ -29,11 +37,11 @@ async function checkDashboardAccess() {
         if (error) throw error;
         showDashboardAccess(
             allowed === true,
-            allowed === true ? "Owner access confirmed." : "This account is not enrolled as a portfolio admin."
+            allowed === true ? "dashboard.status.confirmed" : "admin.auth.notOwner"
         );
     } catch (error) {
         if (generation !== dashboardAccessGeneration) return;
-        showDashboardAccess(false, `Dashboard unavailable: ${error.message}`);
+        showDashboardAccess(false, "dashboard.status.unavailable", { message: error.message });
     }
 }
 
@@ -51,7 +59,7 @@ dashboardLoginForm.addEventListener("submit", async (event) => {
         await checkDashboardAccess();
     } catch (error) {
         dashboardLoginForm.elements.password.value = "";
-        showDashboardAccess(false, `Sign in failed: ${error.message}`);
+        showDashboardAccess(false, "admin.auth.signInFailed", { message: error.message });
     }
 });
 
@@ -59,8 +67,14 @@ getSupabaseClient().then((client) => {
     client.auth.onAuthStateChange((event) => {
         if (event === "SIGNED_OUT") {
             dashboardAccessGeneration++;
-            showDashboardAccess(false, "Sign in to open the Dashboard.");
+            showDashboardAccess(false, "dashboard.status.signedOut");
         }
     });
     checkDashboardAccess();
-}).catch((error) => showDashboardAccess(false, `Dashboard unavailable: ${error.message}`));
+}).catch((error) => showDashboardAccess(false, "dashboard.status.unavailable", { message: error.message }));
+
+dashboardI18n.onChange(() => {
+    document.title = dashboardI18n.t("dashboard.seo.title");
+    renderDashboardStatus();
+});
+document.title = dashboardI18n.t("dashboard.seo.title");

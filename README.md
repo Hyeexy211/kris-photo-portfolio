@@ -38,6 +38,7 @@
 | `collection.html` | 按 `slug` 展示一个作品集 | URL 参数、异步状态、动态 Lightbox 按钮 |
 | `css/style.css` | 布局、颜色、动画和响应式 | 选择器、Grid、Flexbox、媒体查询 |
 | `js/main.js` | 动态渲染与用户交互 | DOM 创建、筛选、事件监听、函数、状态 class |
+| `locales/*.js`、`js/i18n.js` | 全站固定界面文案与语言状态 | 语义 key、`data-i18n`、`siteI18n.t()` 与语言切换事件 |
 | `images/` | 网站使用的摄影图片 | 路径和文件名大小写必须一致 |
 | `.openai/hosting.json` | Sites 静态托管配置 | `project_id` 绑定现有 Site，`dist` 是托管目录 |
 | `dist/` | 可预览的静态副本 | 不要只改这里，先改根目录源码再同步 |
@@ -103,6 +104,14 @@ python3 -m http.server 4173 --bind 127.0.0.1 --directory dist
 然后打开 `http://127.0.0.1:4173/`，检查三个作品卡片是否分别打开 Portrait、Documentary、Landscape 页面；在每页点开照片检查灯箱，并检查手机菜单与返回首页链接。第二条命令会持续运行；要停止它，在对应终端按 `Ctrl+C`。
 
 `dist/` 是静态托管副本。修改根目录中的首页、项目页、样式或脚本后，预览前要将对应文件同步到 `dist/`，否则你可能看到旧版本。
+
+## 中英文界面
+
+公开页、本地与云端 Admin 界面使用同一份原生 JavaScript 国际化结构。`locales/en.js` 和 `locales/zh-CN.js` 保存语义化翻译键；HTML 固定文案使用 `data-i18n` 等属性，动态文案通过 `siteI18n.t(key, values)` 读取。页面脚本先加载两份语言资源和 `js/i18n.js`，再加载需要翻译的渲染脚本。新增固定界面文字时，应在两份资源中添加相同的 key，并检查两个语言状态。
+
+首次访问按浏览器语言选择：`zh` 开头使用简体中文，其余使用英文；英文也是无法读取浏览器语言时的回退语言。用户手动选择会保存在 `localStorage.preferredLanguage`，刷新和跨页面后继续生效。切换只更新前端界面，不改变 URL 或重新请求公开内容。
+
+数据库现有的 `title`、`description`、`alt` 等是单语言内容，作品名称和已保存描述会按原文显示。`siteI18n.content(record, field)` 已为未来的 `title_zh`、`title_en` 等字段预留读取入口；真正启用多语言内容时，还须协调 Supabase schema、Repository 字段映射、Admin 表单和静态照片页生成流程。当前没有修改数据库结构。
 
 `640`、`1200`、`1800` 三组 WebP 已按文件名生成真实宽度。浏览器会结合 `srcset` 和 `sizes` 选择合适版本，手机无需再下载原尺寸照片；30 个响应式文件的总大小由约 128 MiB 降至约 6.4 MiB。
 

@@ -26,11 +26,13 @@ function createPhotoCard(photo) {
     card.dataset.id = photo.id;
     card.dataset.category = photo.category;
     card.dataset.fullSrc = photo.fullSrc || photo.src;
-    card.setAttribute("aria-label", `Open ${photo.alt || photo.title || "photography work"}`);
+    card.setAttribute("aria-label", siteI18n.t("gallery.openPhoto", {
+        title: siteI18n.content(photo, "alt") || siteI18n.content(photo, "title") || siteI18n.t("gallery.photographyWork")
+    }));
 
     const image = document.createElement("img");
     image.src = photo.src;
-    image.alt = photo.alt || photo.title || "Photography work";
+    image.alt = siteI18n.content(photo, "alt") || siteI18n.content(photo, "title") || siteI18n.t("gallery.photographyWork");
     image.loading = "lazy";
     image.decoding = "async";
 
@@ -110,7 +112,8 @@ function renderGallery(photoList) {
     if (sortedPhotos.length === 0) {
         const emptyMessage = document.createElement("p");
         emptyMessage.className = "gallery-empty";
-        emptyMessage.textContent = "No photos found.";
+        emptyMessage.dataset.i18n = "gallery.empty";
+        emptyMessage.textContent = siteI18n.t("gallery.empty");
         galleryContainer.replaceChildren(emptyMessage);
         return;
     }
@@ -168,7 +171,8 @@ async function initGallery() {
     galleryContainer.setAttribute("aria-busy", "true");
     const loadingMessage = document.createElement("p");
     loadingMessage.className = "gallery-empty";
-    loadingMessage.textContent = "Loading photographs…";
+    loadingMessage.dataset.i18n = "gallery.loading";
+    loadingMessage.textContent = siteI18n.t("gallery.loading");
     galleryContainer.replaceChildren(loadingMessage);
 
     try {
@@ -177,7 +181,8 @@ async function initGallery() {
         console.error("Unable to load Gallery photographs.", error);
         const errorMessage = document.createElement("p");
         errorMessage.className = "gallery-empty";
-        errorMessage.textContent = "Unable to load photographs.";
+        errorMessage.dataset.i18n = "gallery.error";
+        errorMessage.textContent = siteI18n.t("gallery.error");
         galleryContainer.replaceChildren(errorMessage);
         return;
     } finally {
@@ -276,9 +281,9 @@ function showLightboxImage(index) {
     lightboxImage.src = photo.fullSrc || photo.src;
 
     // 把照片说明同步给灯箱大图。
-    lightboxImage.alt = photo.alt || photo.title || "Photography work";
+    lightboxImage.alt = siteI18n.content(photo, "alt") || siteI18n.content(photo, "title") || siteI18n.t("gallery.photographyWork");
     if (lightboxCaption) {
-        lightboxCaption.textContent = photo.title || photo.alt || "";
+        lightboxCaption.textContent = siteI18n.content(photo, "title") || siteI18n.content(photo, "alt") || "";
 
         if (photo.id) {
             const link = document.createElement("a");
@@ -290,7 +295,7 @@ function showLightboxImage(index) {
                 : new URL("../photo.html", script.src);
             if (!hasStaticPage) photoUrl.searchParams.set("id", photo.id);
             link.href = photoUrl.href;
-            link.textContent = "View photo";
+            link.textContent = siteI18n.t("lightbox.viewPhoto");
             lightboxCaption.append(" · ", link);
         }
     }
@@ -423,7 +428,7 @@ function setMenuOpen(open) {
     menuToggle.setAttribute("aria-expanded", String(open));
 
     // aria-label 随状态切换，使图标按钮始终有准确的读屏名称。
-    menuToggle.setAttribute("aria-label", open ? "Close navigation menu" : "Open navigation menu");
+    menuToggle.setAttribute("aria-label", siteI18n.t(open ? "nav.closeMenu" : "nav.openMenu"));
 
     // 打开时显示 ×，关闭时显示 ☰。
     menuToggle.textContent = open ? "×" : "☰";
@@ -520,7 +525,7 @@ document.addEventListener("keydown", (event) => {
     // 全屏菜单打开时，让 Tab 在菜单按钮与链接之间循环，不进入背后内容。
     if (event.key === "Tab" && navLinks.classList.contains("active")) {
         // 第一项是菜单按钮，之后按页面顺序排列全部导航链接。
-        const menuFocusItems = [menuToggle, ...navItems];
+        const menuFocusItems = [menuToggle, ...navLinks.querySelectorAll("a, button")];
 
         // 保存循环列表中的第一个元素。
         const firstItem = menuFocusItems[0];
@@ -605,3 +610,21 @@ async function initPageContent() {
 }
 
 initPageContent();
+
+siteI18n.onChange(() => {
+    menuToggle.setAttribute("aria-label", siteI18n.t(
+        navLinks.classList.contains("active") ? "nav.closeMenu" : "nav.openMenu"
+    ));
+
+    if (galleryContainer) {
+        galleryContainer.querySelectorAll(".gallery-item").forEach((card) => {
+            const photo = renderedPhotos.find((item) => item.id === card.dataset.id);
+            if (!photo) return;
+            const title = siteI18n.content(photo, "alt") || siteI18n.content(photo, "title") || siteI18n.t("gallery.photographyWork");
+            card.setAttribute("aria-label", siteI18n.t("gallery.openPhoto", { title }));
+            card.querySelector("img").alt = title;
+        });
+    }
+
+    if (lightbox?.classList.contains("active")) showLightboxImage(currentImageIndex);
+});

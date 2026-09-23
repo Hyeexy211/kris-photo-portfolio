@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Content Admin | Kris Photography</title>
-    <meta name="description" content="Browser-local content administration for the Kris Photography prototype.">
+    <title data-i18n="admin.seo.title">Content Admin | Kris Photography</title>
+    <meta name="description" content="Browser-local content administration for the Kris Photography prototype." data-i18n-content="admin.seo.description">
     <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#000000">
     <link rel="icon" href="images/favicon/favicon.png">
@@ -12,101 +12,108 @@
     <link rel="stylesheet" href="css/admin.css">
 </head>
 <body class="project-site admin-site">
-    <a class="skip-link" href="#main-content">Skip to content</a>
+    <a class="skip-link" href="#main-content" data-i18n="common.skipToContent">Skip to content</a>
 
     <header>
         <nav>
             <a class="site-brand" href="index.html">Kris Photography</a>
-            <ul class="admin-nav" aria-label="Admin navigation">
-                <li><a href="#works-admin">Works</a></li>
-                <li><a href="#gallery-admin">Gallery</a></li>
-                <li><a href="index.html">View site</a></li>
+            <ul class="admin-nav" aria-label="Admin navigation" data-i18n-aria-label="admin.nav.label">
+                <li><a href="#works-admin" data-i18n="admin.nav.works">Works</a></li>
+                <li><a href="#gallery-admin" data-i18n="admin.nav.gallery">Gallery</a></li>
+                <li><a href="index.html" data-i18n="admin.nav.viewSite">View site</a></li>
+                <li class="admin-language-item">
+                    <div class="admin-language-switcher" role="group" aria-label="Language" data-i18n-aria-label="language.group">
+                        <button type="button" data-language="zh-CN" aria-label="Switch to Chinese" data-i18n-aria-label="language.chooseChinese" aria-pressed="false">中文</button>
+                        <span aria-hidden="true">/</span>
+                        <button type="button" data-language="en" aria-label="Switch to English" data-i18n-aria-label="language.chooseEnglish" aria-pressed="false">EN</button>
+                    </div>
+                </li>
             </ul>
         </nav>
     </header>
 
     <main id="main-content" class="admin-main">
         <section class="admin-intro" aria-labelledby="admin-title">
-            <p class="section-label" id="admin-mode-label">Lesson 33 prototype</p>
-            <h1 id="admin-title">Content Admin</h1>
-            <p id="admin-intro-copy">
+            <p class="section-label" id="admin-mode-label" data-i18n="admin.mode.localLabel">Lesson 33 prototype</p>
+            <h1 id="admin-title" data-i18n="admin.title">Content Admin</h1>
+            <p id="admin-intro-copy" data-i18n="admin.mode.localIntro">
                 Changes on this page are saved only in this browser with localStorage.
                 They do not update the Git repository or other devices.
             </p>
-            <p class="admin-mode-links"><a href="admin.html">Browser-local editor</a> · <a href="admin.html?mode=cloud">Cloud Admin</a></p>
+            <p class="admin-mode-links"><a href="admin.html" data-i18n="admin.mode.localLink">Browser-local editor</a> · <a href="admin.html?mode=cloud" data-i18n="admin.mode.cloudLink">Cloud Admin</a></p>
             <p class="admin-status" id="admin-status" role="status" aria-live="polite"></p>
         </section>
 
         <section class="admin-section" id="admin-auth" aria-labelledby="admin-auth-title" hidden>
-            <h2 id="admin-auth-title">Owner sign in</h2>
+            <h2 id="admin-auth-title" data-i18n="admin.auth.signInTitle">Owner sign in</h2>
             <form class="admin-form" id="admin-login-form">
-                <label>Email <input name="email" type="email" autocomplete="username" required></label>
-                <label>Password <input name="password" type="password" autocomplete="current-password" required></label>
+                <label><span class="admin-label" data-i18n="admin.auth.email">Email</span><input name="email" type="email" autocomplete="username" required></label>
+                <label><span class="admin-label" data-i18n="admin.auth.password">Password</span><input name="password" type="password" autocomplete="current-password" required></label>
                 <div class="admin-form-actions admin-field-wide">
-                    <button class="admin-button admin-button-primary" type="submit">Sign in</button>
+                    <button class="admin-button admin-button-primary" type="submit" data-i18n="admin.auth.signIn">Sign in</button>
                 </div>
             </form>
-            <button class="admin-button" id="admin-sign-out" type="button" hidden>Sign out</button>
+            <button class="admin-button" id="admin-sign-out" type="button" data-i18n="admin.auth.signOut" hidden>Sign out</button>
         </section>
 
         <section class="admin-section" id="works-admin" aria-labelledby="works-admin-title" hidden>
             <div class="admin-section-heading">
                 <div>
-                    <p class="section-label">Work / Collection</p>
-                    <h2 id="works-admin-title">Manage Works</h2>
+                    <p class="section-label" data-i18n="admin.works.sectionLabel">Work / Collection</p>
+                    <h2 id="works-admin-title" data-i18n="admin.works.title">Manage Works</h2>
                 </div>
-                <p><span id="work-count">0</span> items</p>
+                <p><span id="work-count">0</span> <span data-i18n="admin.items">items</span></p>
             </div>
 
             <form class="admin-form" id="work-form">
-                <h3 id="work-form-title">Create Work</h3>
+                <h3 id="work-form-title" data-i18n="admin.works.createTitle">Create Work</h3>
                 <input id="work-id" name="id" type="hidden">
 
                 <label>
-                    Title
+                    <span class="admin-label" data-i18n="admin.fields.title">Title</span>
                     <input name="title" type="text" required>
                 </label>
                 <label>
-                    Slug
+                    <span class="admin-label" data-i18n="admin.fields.slug">Slug</span>
                     <input name="slug" type="text" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required>
-                    <span>Lowercase letters, numbers and hyphens.</span>
+                    <span data-i18n="admin.fields.slugHint">Lowercase letters, numbers and hyphens.</span>
                 </label>
                 <label class="admin-field-wide">
-                    Description
+                    <span class="admin-label" data-i18n="admin.fields.description">Description</span>
                     <textarea name="description" rows="3" required></textarea>
                 </label>
                 <label class="admin-field-wide">
-                    Cover path
+                    <span class="admin-label" data-i18n="admin.fields.coverPath">Cover path</span>
                     <input name="cover" type="text" placeholder="images/category/photo-1200.webp" required>
                 </label>
                 <label class="admin-field-wide">
-                    Cover srcset
+                    <span class="admin-label" data-i18n="admin.fields.coverSrcset">Cover srcset</span>
                     <input name="coverSrcset" type="text">
                 </label>
                 <label class="admin-field-wide">
-                    Cover alt text
+                    <span class="admin-label" data-i18n="admin.fields.coverAlt">Cover alt text</span>
                     <input name="coverAlt" type="text" required>
                 </label>
                 <label>
-                    Category
+                    <span class="admin-label" data-i18n="admin.fields.category">Category</span>
                     <input name="category" type="text" required>
                 </label>
                 <label>
-                    Display order
+                    <span class="admin-label" data-i18n="admin.fields.displayOrder">Display order</span>
                     <input name="order" type="number" min="0" step="1" required>
                 </label>
                 <label>
-                    Cover width
+                    <span class="admin-label" data-i18n="admin.fields.coverWidth">Cover width</span>
                     <input name="coverWidth" type="number" min="1" step="1">
                 </label>
                 <label>
-                    Cover height
+                    <span class="admin-label" data-i18n="admin.fields.coverHeight">Cover height</span>
                     <input name="coverHeight" type="number" min="1" step="1">
                 </label>
 
                 <div class="admin-form-actions admin-field-wide">
-                    <button class="admin-button admin-button-primary" type="submit">Save Work</button>
-                    <button class="admin-button" id="cancel-work-edit" type="button" hidden>Cancel edit</button>
+                    <button class="admin-button admin-button-primary" type="submit" data-i18n="admin.works.save">Save Work</button>
+                    <button class="admin-button" id="cancel-work-edit" type="button" data-i18n="admin.cancelEdit" hidden>Cancel edit</button>
                 </div>
             </form>
 
@@ -116,110 +123,110 @@
         <section class="admin-section" id="gallery-admin" aria-labelledby="gallery-admin-title" hidden>
             <div class="admin-section-heading">
                 <div>
-                    <p class="section-label">Gallery / Photo</p>
-                    <h2 id="gallery-admin-title">Manage Gallery</h2>
+                    <p class="section-label" data-i18n="admin.gallery.sectionLabel">Gallery / Photo</p>
+                    <h2 id="gallery-admin-title" data-i18n="admin.gallery.title">Manage Gallery</h2>
                 </div>
-                <p><span id="gallery-count">0</span> items</p>
+                <p><span id="gallery-count">0</span> <span data-i18n="admin.items">items</span></p>
             </div>
 
             <form class="admin-form" id="gallery-form">
-                <h3 id="gallery-form-title">Create Gallery Item</h3>
+                <h3 id="gallery-form-title" data-i18n="admin.gallery.createTitle">Create Gallery Item</h3>
                 <input id="gallery-item-id" name="id" type="hidden">
 
                 <label class="admin-field-wide">
-                    Title
+                    <span class="admin-label" data-i18n="admin.fields.title">Title</span>
                     <input name="title" type="text" required>
                 </label>
                 <label class="admin-field-wide">
-                    Image alt text
-                    <input name="alt" type="text" placeholder="Describe what is visible; blank uses the title">
+                    <span class="admin-label" data-i18n="admin.fields.imageAlt">Image alt text</span>
+                    <input name="alt" type="text" placeholder="Describe what is visible; blank uses the title" data-i18n-placeholder="admin.fields.imageAltPlaceholder">
                 </label>
                 <label class="admin-field-wide" id="gallery-upload-field" hidden>
-                    New photo file
+                    <span class="admin-label" data-i18n="admin.fields.newPhoto">New photo file</span>
                     <input id="gallery-upload-file" type="file" accept="image/jpeg,image/webp,image/avif">
-                    <span>Cloud Admin only. Select a JPEG, WebP, or AVIF at least 1800 pixels wide. The browser uploads three web-size WebP exports; your source file stays on this device.</span>
+                    <span data-i18n="admin.fields.uploadHint">Cloud Admin only. Select a JPEG, WebP, or AVIF at least 1800 pixels wide. The browser uploads three web-size WebP exports; your source file stays on this device.</span>
                 </label>
                 <div class="admin-field-wide admin-upload-progress" id="gallery-upload-progress" role="status" aria-live="polite" hidden>
                     <p id="gallery-upload-message"></p>
-                    <progress id="gallery-upload-count" max="3" value="0" aria-label="Web files uploaded"></progress>
+                    <progress id="gallery-upload-count" max="3" value="0" aria-label="Web files uploaded" data-i18n-aria-label="admin.upload.progressLabel"></progress>
                 </div>
                 <label class="admin-field-wide">
-                    Display image path
+                    <span class="admin-label" data-i18n="admin.fields.displayImagePath">Display image path</span>
                     <input name="src" type="text" placeholder="images/category/photo-1200.webp" required>
                 </label>
                 <label class="admin-field-wide">
-                    Full image path
+                    <span class="admin-label" data-i18n="admin.fields.fullImagePath">Full image path</span>
                     <input name="fullSrc" type="text" placeholder="images/category/photo-1800.webp" required>
                 </label>
                 <label class="admin-field-wide">
-                    Image srcset
+                    <span class="admin-label" data-i18n="admin.fields.imageSrcset">Image srcset</span>
                     <input name="srcset" type="text">
                 </label>
                 <label>
-                    Category
+                    <span class="admin-label" data-i18n="admin.fields.category">Category</span>
                     <input name="category" type="text" required>
                 </label>
                 <label>
-                    Collection ID
+                    <span class="admin-label" data-i18n="admin.fields.collectionId">Collection ID</span>
                     <input name="collectionId" type="text" list="work-id-options">
                     <datalist id="work-id-options"></datalist>
                 </label>
                 <label>
-                    Display order
+                    <span class="admin-label" data-i18n="admin.fields.displayOrder">Display order</span>
                     <input name="order" type="number" min="0" step="1">
                 </label>
                 <label>
-                    Shooting date
+                    <span class="admin-label" data-i18n="admin.fields.shootingDate">Shooting date</span>
                     <input name="date" type="date">
                 </label>
                 <label>
-                    Location (only if approved for publication)
+                    <span class="admin-label" data-i18n="admin.fields.location">Location (only if approved for publication)</span>
                     <input name="location" type="text">
                 </label>
                 <label class="admin-field-wide">
-                    Tags (comma separated)
-                    <input name="tags" type="text" placeholder="Only confirmed descriptive tags">
+                    <span class="admin-label" data-i18n="admin.fields.tags">Tags (comma separated)</span>
+                    <input name="tags" type="text" placeholder="Only confirmed descriptive tags" data-i18n-placeholder="admin.fields.tagsPlaceholder">
                 </label>
                 <label class="admin-field-wide">
-                    Description
+                    <span class="admin-label" data-i18n="admin.fields.description">Description</span>
                     <textarea name="description" rows="3"></textarea>
                 </label>
                 <label>
-                    Camera
+                    <span class="admin-label" data-i18n="admin.fields.camera">Camera</span>
                     <input name="camera" type="text">
                 </label>
                 <label>
-                    Lens
+                    <span class="admin-label" data-i18n="admin.fields.lens">Lens</span>
                     <input name="lens" type="text">
                 </label>
                 <label>
-                    Focal length
+                    <span class="admin-label" data-i18n="admin.fields.focalLength">Focal length</span>
                     <input name="focalLength" type="text">
                 </label>
                 <label>
-                    Aperture
+                    <span class="admin-label" data-i18n="admin.fields.aperture">Aperture</span>
                     <input name="aperture" type="text">
                 </label>
                 <label>
-                    Shutter speed
+                    <span class="admin-label" data-i18n="admin.fields.shutterSpeed">Shutter speed</span>
                     <input name="shutterSpeed" type="text">
                 </label>
                 <label>
-                    ISO
+                    <span class="admin-label" data-i18n="admin.fields.iso">ISO</span>
                     <input name="iso" type="text">
                 </label>
                 <label>
-                    Image width
+                    <span class="admin-label" data-i18n="admin.fields.imageWidth">Image width</span>
                     <input name="width" type="number" min="1" step="1">
                 </label>
                 <label>
-                    Image height
+                    <span class="admin-label" data-i18n="admin.fields.imageHeight">Image height</span>
                     <input name="height" type="number" min="1" step="1">
                 </label>
 
                 <div class="admin-form-actions admin-field-wide">
-                    <button class="admin-button admin-button-primary" type="submit">Save Gallery Item</button>
-                    <button class="admin-button" id="cancel-gallery-edit" type="button" hidden>Cancel edit</button>
+                    <button class="admin-button admin-button-primary" type="submit" data-i18n="admin.gallery.save">Save Gallery Item</button>
+                    <button class="admin-button" id="cancel-gallery-edit" type="button" data-i18n="admin.cancelEdit" hidden>Cancel edit</button>
                 </div>
             </form>
 
@@ -228,16 +235,19 @@
 
         <section class="admin-reset" id="admin-reset" aria-labelledby="reset-title" hidden>
             <div>
-                <p class="section-label">Recovery</p>
-                <h2 id="reset-title">Restore default content</h2>
-                <p>This overwrites all browser-local Work and Gallery changes with the repository seed data.</p>
+                <p class="section-label" data-i18n="admin.reset.sectionLabel">Recovery</p>
+                <h2 id="reset-title" data-i18n="admin.reset.title">Restore default content</h2>
+                <p data-i18n="admin.reset.description">This overwrites all browser-local Work and Gallery changes with the repository seed data.</p>
             </div>
-            <button class="admin-button admin-button-danger" id="reset-content" type="button">Reset Content</button>
+            <button class="admin-button admin-button-danger" id="reset-content" type="button" data-i18n="admin.reset.button">Reset Content</button>
         </section>
     </main>
 
-    <footer><p>© 2026 Kris Photography</p></footer>
+    <footer><p data-i18n="footer.copyright">© 2026 Kris Photography</p></footer>
 
+    <script src="locales/en.js"></script>
+    <script src="locales/zh-CN.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="js/config/data-source.js"></script>
     <script src="data/collections.js"></script>
     <script src="data/photos.js"></script>

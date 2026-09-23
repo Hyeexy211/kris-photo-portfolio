@@ -97,17 +97,17 @@ function renderPhoto(photo) {
         && photo.width > 0 && photo.height > 0
         ? ` width="${photo.width}" height="${photo.height}"`
         : "";
-    let html = template.replace(/\b(href|src)="(images\/|css\/|js\/|data\/|index\.html)/g, '$1="../$2');
-    html = replaceOnce(html, "<title>Photograph | Kris Photography</title>",
+    let html = template.replace(/\b(href|src)="(images\/|css\/|js\/|data\/|locales\/|index\.html)/g, '$1="../$2');
+    html = replaceOnce(html, '<title data-i18n="seo.photoTitle">Photograph | Kris Photography</title>',
         `<title>${escapeHtml(title)} | Kris Photography</title>`);
-    html = replaceOnce(html, '<meta name="description" content="A photograph by Kris Huang.">',
+    html = replaceOnce(html, '<meta name="description" content="A photograph by Kris Huang." data-i18n-content="seo.photoDescription">',
         `<meta name="description" content="${escapeHtml(description)}">`);
     html = replaceOnce(html,
         '<link rel="canonical" href="https://hyeexy211.github.io/kris-photo-portfolio/photo.html">',
         `<link rel="canonical" href="${pageUrl}">`);
-    html = replaceOnce(html, '<meta property="og:title" content="Photograph | Kris Photography">',
+    html = replaceOnce(html, '<meta property="og:title" content="Photograph | Kris Photography" data-i18n-content="seo.photoTitle">',
         `<meta property="og:title" content="${escapeHtml(title)} | Kris Photography">`);
-    html = replaceOnce(html, '<meta property="og:description" content="A photograph by Kris Huang.">',
+    html = replaceOnce(html, '<meta property="og:description" content="A photograph by Kris Huang." data-i18n-content="seo.photoDescription">',
         `<meta property="og:description" content="${escapeHtml(description)}">`);
     html = replaceOnce(html, '<meta property="og:type" content="website">',
         '<meta property="og:type" content="article">');
@@ -119,8 +119,8 @@ function renderPhoto(photo) {
     html = replaceOnce(html, '<h1 id="photo-title">Loading photograph…</h1>',
         `<h1 id="photo-title">${escapeHtml(title)}</h1>`);
     html = replaceOnce(html,
-        '<section class="project-gallery" id="photo-content" aria-label="Photograph" aria-busy="true"></section>',
-        `<section class="project-gallery" id="photo-content" aria-label="Photograph" aria-busy="true"><figure class="project-image"><img src="${escapeHtml(displaySrc)}" alt="${escapeHtml(alt)}"${dimensions}></figure></section>`);
+        '<section class="project-gallery" id="photo-content" aria-label="Photograph" data-i18n-aria-label="photo.galleryLabel" aria-busy="true"></section>',
+        `<section class="project-gallery" id="photo-content" aria-label="Photograph" data-i18n-aria-label="photo.galleryLabel" aria-busy="true"><figure class="project-image"><img src="${escapeHtml(displaySrc)}" alt="${escapeHtml(alt)}"${dimensions}></figure></section>`);
 
     return html;
 }

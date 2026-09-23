@@ -14,13 +14,14 @@
     >
     <!-- 连接本项目的样式文件；路径相对于当前 index.html。 -->
 
-    <title>
+    <title data-i18n="seo.homeTitle">
         Kris Photography | Portrait, Documentary & Landscape
     </title>
 
     <meta
         name="description"
         content="Kris Photography is a personal photography portfolio featuring portrait, documentary and landscape work."
+        data-i18n-content="seo.homeDescription"
     >
 
     <meta
@@ -39,11 +40,13 @@
     <meta
         property="og:title"
         content="Kris Photography"
+        data-i18n-content="seo.homeOgTitle"
     >
 
     <meta
         property="og:description"
         content="Portrait, documentary and landscape photography by Kris."
+        data-i18n-content="seo.homeOgDescription"
     >
 
     <meta
@@ -72,11 +75,13 @@
     <meta
         name="twitter:title"
         content="Kris Photography"
+        data-i18n-content="seo.homeOgTitle"
     >
 
     <meta
         name="twitter:description"
         content="Portrait, documentary and landscape photography by Kris."
+        data-i18n-content="seo.homeOgDescription"
     >
 
     <meta
@@ -104,7 +109,7 @@
 
 <body>
 
-    <a class="skip-link" href="#main-content">Skip to content</a>
+    <a class="skip-link" href="#main-content" data-i18n="common.skipToContent">Skip to content</a>
 
     <!-- 固定在页面顶部的站点标题与导航区域。 -->
     <header> 
@@ -124,6 +129,7 @@
                 aria-controls="nav-links"
                 aria-expanded="false"
                 aria-label="Open navigation menu"
+                data-i18n-aria-label="nav.openMenu"
             >
                 ☰
             </button>
@@ -133,11 +139,16 @@
                 JavaScript 会在手机端为这个列表添加或移除 active class。
             -->
             <ul class="nav-links" id="nav-links">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#work">Work</a></li>
-                <li><a href="#gallery">Gallery</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="./admin/">Dashboard</a></li>
+                <li><a href="#home" data-i18n="nav.home">Home</a></li>
+                <li><a href="#work" data-i18n="nav.work">Work</a></li>
+                <li><a href="#gallery" data-i18n="nav.gallery">Gallery</a></li>
+                <li><a href="#about" data-i18n="nav.about">About</a></li>
+                <li><a href="./admin/" data-i18n="nav.dashboard">Dashboard</a></li>
+                <li class="language-switch" role="group" aria-label="Language" data-i18n-aria-label="language.group">
+                    <button type="button" data-language="zh-CN" aria-label="Switch to Chinese" data-i18n-aria-label="language.chooseChinese">中文</button>
+                    <span aria-hidden="true">/</span>
+                    <button type="button" data-language="en" aria-label="Switch to English" data-i18n-aria-label="language.chooseEnglish">EN</button>
+                </li>
             </ul>
 
         </nav>
@@ -163,44 +174,45 @@
             sizes="100vw"
             width="1800" height="2700"
             alt="Warm hanging lamp beside a rain-streaked window overlooking misty trees"
+            data-i18n-alt="hero.imageAlt"
             >
             <div class="hero-text">
-                <h2>Photography by Kris Huang</h2>
-                <p>Portrait · Documentary · Landscape</p>
+                <h2 data-i18n="hero.title">Photography by Kris Huang</h2>
+                <p data-i18n="hero.categories">Portrait · Documentary · Landscape</p>
             </div>
         </section>
 
         <!-- Collection 卡片由 collections.js 生成；这里只保留稳定的页面容器。 -->
         <section id="work" class="projects-section" aria-labelledby="work-title">
             <div class="section-header reveal">
-                <p class="section-label">Selected Work</p>
-                <h2 id="work-title">Collections</h2>
+                <p class="section-label" data-i18n="home.workEyebrow">Selected Work</p>
+                <h2 id="work-title" data-i18n="home.workTitle">Collections</h2>
             </div>
             <div class="project-grid" id="collection-grid"></div>
-            <noscript><p class="gallery-empty">JavaScript is required to load collections.</p></noscript>
+            <noscript><p class="gallery-empty" data-i18n="work.noScript">JavaScript is required to load collections.</p></noscript>
         </section>
 
         <!-- 第 25 课：只保留正式 Gallery 的结构，照片卡片全部由 photos.js 生成。 -->
         <section id="gallery" class="gallery-section" aria-labelledby="gallery-title">
             <div class="section-heading reveal">
-                <p class="section-label">Browse photographs</p>
-                <h2 id="gallery-title">Gallery</h2>
+                <p class="section-label" data-i18n="home.galleryEyebrow">Browse photographs</p>
+                <h2 id="gallery-title" data-i18n="home.galleryTitle">Gallery</h2>
             </div>
 
-            <div class="gallery-filters" aria-label="Filter photographs by category">
-                <button class="filter-button active" type="button" data-category="all" aria-pressed="true">
+            <div class="gallery-filters" aria-label="Filter photographs by category" data-i18n-aria-label="home.filterLabel">
+                <button class="filter-button active" type="button" data-category="all" aria-pressed="true" data-i18n="categories.all">
                     All
                 </button>
-                <button class="filter-button" type="button" data-category="street" aria-pressed="false">
+                <button class="filter-button" type="button" data-category="street" aria-pressed="false" data-i18n="categories.street">
                     Street
                 </button>
-                <button class="filter-button" type="button" data-category="portrait" aria-pressed="false">
+                <button class="filter-button" type="button" data-category="portrait" aria-pressed="false" data-i18n="categories.portrait">
                     Portrait
                 </button>
-                <button class="filter-button" type="button" data-category="documentary" aria-pressed="false">
+                <button class="filter-button" type="button" data-category="documentary" aria-pressed="false" data-i18n="categories.documentary">
                     Documentary
                 </button>
-                <button class="filter-button" type="button" data-category="landscape" aria-pressed="false">
+                <button class="filter-button" type="button" data-category="landscape" aria-pressed="false" data-i18n="categories.landscape">
                     Landscape
                 </button>
             </div>
@@ -216,16 +228,16 @@
         <section id="about" class="about-section">
 
             <div class="about-label">
-                <p>About</p>
+                <p data-i18n="home.aboutLabel">About</p>
             </div>
 
             <div class="about-content">
-                <h2>
+                <h2 data-i18n="home.aboutTitle">
                     I photograph people, places and quiet moments
                     that deserve to be remembered.
                 </h2>
 
-                <p>
+                <p data-i18n="home.aboutDescription">
                     I'm Kris, a photographer focused on portrait,
                     documentary and landscape photography.
                 </p>
@@ -238,17 +250,17 @@
     </main>
 
     <!-- 首页动态 Gallery 与独立作品页复用同一个现有 Lightbox 结构。 -->
-    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" aria-describedby="lightbox-caption" aria-hidden="true">
-        <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Close photo viewer">×</button>
-        <button class="lightbox-nav lightbox-prev" id="lightbox-prev" type="button" aria-label="View previous photograph">‹</button>
+    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" data-i18n-aria-label="lightbox.viewer" aria-describedby="lightbox-caption" aria-hidden="true">
+        <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Close photo viewer" data-i18n-aria-label="lightbox.close">×</button>
+        <button class="lightbox-nav lightbox-prev" id="lightbox-prev" type="button" aria-label="View previous photograph" data-i18n-aria-label="lightbox.previous">‹</button>
         <img class="lightbox-image" id="lightbox-image" alt="">
         <p class="lightbox-caption" id="lightbox-caption" aria-live="polite"></p>
-        <button class="lightbox-nav lightbox-next" id="lightbox-next" type="button" aria-label="View next photograph">›</button>
+        <button class="lightbox-nav lightbox-next" id="lightbox-next" type="button" aria-label="View next photograph" data-i18n-aria-label="lightbox.next">›</button>
     </div>
 
     <!-- 页脚放置版权等收尾信息。 -->
     <footer>
-        <p>© 2026 Kris Photography</p>
+        <p data-i18n="footer.copyright">© 2026 Kris Photography</p>
     </footer>
 
     <!-- 配置与种子数据先加载，Repository 再由 Content Service 统一调度。 -->
@@ -260,6 +272,9 @@
     <script src="js/config/supabase-client.js"></script>
     <script src="js/repositories/supabase-repository.js"></script>
     <script src="js/content-service.js"></script>
+    <script src="locales/en.js"></script>
+    <script src="locales/zh-CN.js"></script>
+    <script src="js/i18n.js"></script>
 
     <!-- Work 先生成 .reveal 卡片，main.js 随后统一接入动画与交互。 -->
     <script src="js/work.js"></script>

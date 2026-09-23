@@ -5,6 +5,9 @@ const photoContent = document.querySelector("#photo-content");
 const photoInfo = document.querySelector("#photo-info");
 const photoPageScript = document.querySelector('script[src$="photo-page.js"]');
 const photoSiteRoot = new URL("../", photoPageScript.src);
+let currentPhoto = null;
+let currentPhotoCollections = [];
+let photoPageState = "loading";
 
 function resolvePhotoAsset(assetPath) {
     return new URL(assetPath, photoSiteRoot).href;
@@ -20,7 +23,7 @@ function createWebDownload(photo) {
     link.className = "photo-download";
     link.href = resolvePhotoAsset(photo.src);
     link.download = `kris-${photo.id}-web.webp`;
-    link.textContent = "Download web-size photo";
+    link.textContent = siteI18n.t("photo.downloadWebSize");
     return link;
 }
 
@@ -35,9 +38,118 @@ function createPhotoInfo(labelText, valueText) {
     return item;
 }
 
+function setPhotoMetadata(title, description, pageTitle = siteI18n.t("seo.photoPageTitle", { title })) {
+    const titleElement = document.querySelector("title");
+    if (titleElement) titleElement.removeAttribute("data-i18n");
+    document.title = pageTitle;
+
+    const metadata = {
+        'meta[name="description"]': description,
+        'meta[property="og:title"]': pageTitle,
+        'meta[property="og:description"]': description,
+        'meta[name="twitter:title"]': pageTitle,
+        'meta[name="twitter:description"]': description
+    };
+
+    Object.entries(metadata).forEach(([selector, value]) => {
+        const meta = document.querySelector(selector);
+        if (meta) {
+            meta.removeAttribute("data-i18n-content");
+            meta.content = value;
+        }
+    });
+}
+
+function refreshPhotoLanguage() {
+    if (photoPageState === "loading") {
+        if (!document.body.dataset.photoId) {
+            photoTitle.removeAttribute("data-i18n");
+            photoTitle.textContent = siteI18n.t("photo.loading");
+        }
+        photoCategory.removeAttribute("data-i18n");
+        photoCategory.textContent = siteI18n.t("photo.photograph");
+        photoContent.removeAttribute("data-i18n-aria-label");
+        photoContent.setAttribute("aria-label", siteI18n.t("photo.photograph"));
+        return;
+    }
+
+    photoTitle.removeAttribute("data-i18n");
+    photoCategory.removeAttribute("data-i18n");
+    photoContent.removeAttribute("data-i18n-aria-label");
+
+    if (photoPageState === "notFound") {
+        const title = siteI18n.t("photo.notFound");
+        const message = siteI18n.t("photo.notFoundHelp");
+        setPhotoMetadata(title, message, siteI18n.t("seo.photoNotFoundTitle"));
+        photoTitle.textContent = title;
+        photoContent.textContent = message;
+        photoContent.setAttribute("aria-label", siteI18n.t("photo.photograph"));
+        return;
+    }
+
+    if (photoPageState === "error") {
+        const title = siteI18n.t("photo.unavailable");
+        const message = siteI18n.t("photo.errorHelp");
+        setPhotoMetadata(title, message, siteI18n.t("seo.photoErrorTitle"));
+        photoTitle.textContent = title;
+        photoContent.textContent = message;
+        photoContent.setAttribute("aria-label", siteI18n.t("photo.photograph"));
+        return;
+    }
+
+    const photo = currentPhoto;
+    const title = siteI18n.content(photo, "title")
+        || siteI18n.content(photo, "alt")
+        || siteI18n.t("photo.untitled");
+    const description = siteI18n.content(photo, "description");
+    setPhotoMetadata(title, description || title);
+    photoTitle.textContent = title;
+    photoCategory.textContent = photo.category
+        ? siteI18n.category(photo.category)
+        : siteI18n.t("photo.photograph");
+    photoDescription.textContent = description;
+    photoDescription.hidden = !description;
+    photoContent.setAttribute("aria-label", siteI18n.t("photo.photograph"));
+
+    const image = photoContent.querySelector("img");
+    const alt = siteI18n.content(photo, "alt") || title;
+    if (image) image.alt = alt;
+    const openGraphImageAlt = document.querySelector('meta[property="og:image:alt"]');
+    if (openGraphImageAlt) openGraphImageAlt.content = alt;
+
+    const downloadLink = photoContent.querySelector(".photo-download");
+    if (downloadLink) downloadLink.textContent = siteI18n.t("photo.downloadWebSize");
+
+    const details = [createPhotoInfo(siteI18n.t("photo.photograph"), title)];
+    const collection = currentPhotoCollections.find((item) => item.id === photo.collectionId);
+    if (collection) {
+        details.push(createPhotoInfo(siteI18n.t("work.collection"), siteI18n.content(collection, "title")));
+    }
+    const optionalFields = [
+        ["location", "photo.location"],
+        ["date", "photo.captureDate"],
+        ["camera", "photo.camera"],
+        ["lens", "photo.lens"],
+        ["focalLength", "photo.focalLength"],
+        ["aperture", "photo.aperture"],
+        ["shutterSpeed", "photo.shutterSpeed"],
+        ["iso", "photo.iso"]
+    ];
+    optionalFields.forEach(([field, key]) => {
+        const value = siteI18n.content(photo, field);
+        if (value) details.push(createPhotoInfo(siteI18n.t(key), value));
+    });
+    const tags = siteI18n.content(photo, "tags");
+    if (Array.isArray(tags) && tags.length) {
+        details.push(createPhotoInfo(siteI18n.t("photo.tags"), tags.join(", ")));
+    }
+    photoInfo.replaceChildren(...details);
+}
+
 async function renderPhotoPage() {
     const id = document.body.dataset.photoId
         || new URLSearchParams(window.location.search).get("id");
+    refreshPhotoLanguage();
 
     try {
         const [photos, collections] = await Promise.all([
@@ -47,22 +159,20 @@ async function renderPhotoPage() {
         const photo = photos.find((item) => item.id === id);
 
         if (!photo) {
-            document.title = "Photograph Not Found | Kris Photography";
-            photoTitle.textContent = "Photograph not found";
-            photoContent.textContent = "Return to Gallery and choose an available photograph.";
+            photoPageState = "notFound";
+            refreshPhotoLanguage();
             return;
         }
 
-        const title = photo.title || photo.alt || "Untitled photograph";
-        document.title = `${title} | Kris Photography`;
-        photoTitle.textContent = title;
-        photoCategory.textContent = photo.category || "Photograph";
-        photoDescription.textContent = photo.description || "";
-        photoDescription.hidden = !photo.description;
+        currentPhoto = photo;
+        currentPhotoCollections = collections;
+        const title = siteI18n.content(photo, "title")
+            || siteI18n.content(photo, "alt")
+            || siteI18n.t("photo.untitled");
 
         const image = document.createElement("img");
         image.src = resolvePhotoAsset(photo.fullSrc || photo.src);
-        image.alt = photo.alt || title;
+        image.alt = siteI18n.content(photo, "alt") || title;
         image.decoding = "async";
         if (photo.srcset) {
             image.srcset = photo.srcset.split(",").map((candidate) => {
@@ -80,38 +190,22 @@ async function renderPhotoPage() {
         figure.appendChild(image);
         const downloadLink = createWebDownload(photo);
         photoContent.replaceChildren(...(downloadLink ? [figure, downloadLink] : [figure]));
-
-        const details = [createPhotoInfo("Photograph", title)];
-        const collection = collections.find((item) => item.id === photo.collectionId);
-        if (collection) details.push(createPhotoInfo("Collection", collection.title));
-        if (photo.location) details.push(createPhotoInfo("Location", photo.location));
-        if (photo.date) details.push(createPhotoInfo("Capture date", photo.date));
-        if (photo.camera) details.push(createPhotoInfo("Camera", photo.camera));
-        if (photo.lens) details.push(createPhotoInfo("Lens", photo.lens));
-        if (photo.focalLength) details.push(createPhotoInfo("Focal length", photo.focalLength));
-        if (photo.aperture) details.push(createPhotoInfo("Aperture", photo.aperture));
-        if (photo.shutterSpeed) details.push(createPhotoInfo("Shutter speed", photo.shutterSpeed));
-        if (photo.iso) details.push(createPhotoInfo("ISO", photo.iso));
-        if (Array.isArray(photo.tags) && photo.tags.length) {
-            details.push(createPhotoInfo("Tags", photo.tags.join(", ")));
-        }
-        photoInfo.replaceChildren(...details);
+        photoPageState = "ready";
+        refreshPhotoLanguage();
 
         const canonicalUrl = document.body.dataset.photoId
             ? new URL(window.location.pathname, window.location.origin)
             : new URL(`photo.html?id=${encodeURIComponent(photo.id)}`, window.location.href);
         const canonical = document.querySelector('link[rel="canonical"]');
         if (canonical) canonical.href = canonicalUrl.href;
-        const description = document.querySelector('meta[name="description"]');
-        if (description) description.content = title;
     } catch (error) {
         console.error("Unable to load this photograph.", error);
-        document.title = "Photograph Error | Kris Photography";
-        photoTitle.textContent = "Photograph unavailable";
-        photoContent.textContent = "The photograph could not be loaded. Please try again later.";
+        photoPageState = "error";
+        refreshPhotoLanguage();
     } finally {
         photoContent.removeAttribute("aria-busy");
     }
 }
 
 renderPhotoPage();
+siteI18n.onChange(refreshPhotoLanguage);

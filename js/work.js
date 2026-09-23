@@ -4,6 +4,13 @@
 // ================================================================
 
 const collectionGrid = document.querySelector("#collection-grid");
+let workCollections = [];
+let workPhotos = [];
+let workState = "loading";
+
+function workPhotoCount(count) {
+    return siteI18n.t(count === 1 ? "work.photoCountOne" : "work.photoCountOther", { count });
+}
 
 function createWorkState(message) {
     const state = document.createElement("p");
@@ -25,7 +32,8 @@ function createWorkCard(collection, photoCount) {
 
     const image = document.createElement("img");
     image.src = collection.cover;
-    image.alt = collection.coverAlt || `${collection.title} collection cover`;
+    image.alt = siteI18n.content(collection, "coverAlt")
+        || siteI18n.t("work.coverAlt", { title: siteI18n.content(collection, "title") });
     image.loading = "lazy";
     image.decoding = "async";
 
@@ -42,7 +50,7 @@ function createWorkCard(collection, photoCount) {
     const overlay = document.createElement("span");
     overlay.className = "project-card-overlay";
     overlay.setAttribute("aria-hidden", "true");
-    overlay.textContent = "View Project";
+    overlay.textContent = siteI18n.t("work.viewProject");
 
     imageWrapper.append(image, overlay);
 
@@ -50,16 +58,16 @@ function createWorkCard(collection, photoCount) {
     info.className = "project-card-info";
 
     const title = document.createElement("h3");
-    title.textContent = collection.title;
+    title.textContent = siteI18n.content(collection, "title");
 
     const meta = document.createElement("div");
     meta.className = "project-card-meta";
 
     const type = document.createElement("span");
-    type.textContent = "Collection";
+    type.textContent = siteI18n.t("work.collection");
 
     const count = document.createElement("span");
-    count.textContent = `${photoCount} ${photoCount === 1 ? "photograph" : "photographs"}`;
+    count.textContent = workPhotoCount(photoCount);
 
     meta.append(type, count);
     info.append(title, meta);
@@ -69,11 +77,43 @@ function createWorkCard(collection, photoCount) {
     return card;
 }
 
+function updateWorkCardLanguage(card, collection, photoCount) {
+    card.querySelector(".project-card-image img").alt = siteI18n.content(collection, "coverAlt")
+        || siteI18n.t("work.coverAlt", { title: siteI18n.content(collection, "title") });
+    card.querySelector(".project-card-overlay").textContent = siteI18n.t("work.viewProject");
+    card.querySelector(".project-card-info h3").textContent = siteI18n.content(collection, "title");
+    const [type, count] = card.querySelectorAll(".project-card-meta span");
+    type.textContent = siteI18n.t("work.collection");
+    count.textContent = workPhotoCount(photoCount);
+}
+
+function refreshWorkLanguage() {
+    if (!collectionGrid) return;
+
+    const stateKeys = {
+        loading: "work.loading",
+        empty: "work.empty",
+        error: "work.error"
+    };
+    if (stateKeys[workState]) {
+        const message = collectionGrid.querySelector(".gallery-empty");
+        if (message) message.textContent = siteI18n.t(stateKeys[workState]);
+        return;
+    }
+
+    const cards = collectionGrid.querySelectorAll(".project-card");
+    workCollections.forEach((collection, index) => {
+        const photoCount = workPhotos.filter((photo) => photo.collectionId === collection.id).length;
+        if (cards[index]) updateWorkCardLanguage(cards[index], collection, photoCount);
+    });
+}
+
 function renderWorks(collectionList, photoList) {
     if (!collectionGrid) return;
 
     if (collectionList.length === 0) {
-        collectionGrid.replaceChildren(createWorkState("No collections found."));
+        workState = "empty";
+        collectionGrid.replaceChildren(createWorkState(siteI18n.t("work.empty")));
         return;
     }
 
@@ -85,13 +125,15 @@ function renderWorks(collectionList, photoList) {
     });
 
     collectionGrid.replaceChildren(fragment);
+    workState = "ready";
 }
 
 async function initWorks() {
     if (!collectionGrid) return;
 
     collectionGrid.setAttribute("aria-busy", "true");
-    collectionGrid.replaceChildren(createWorkState("Loading collections…"));
+    workState = "loading";
+    collectionGrid.replaceChildren(createWorkState(siteI18n.t("work.loading")));
 
     try {
         const [collections, photos] = await Promise.all([
@@ -99,14 +141,18 @@ async function initWorks() {
             contentService.getPhotos()
         ]);
 
+        workCollections = collections;
+        workPhotos = photos;
         renderWorks(collections, photos);
         if (typeof observeRevealElements === "function") observeRevealElements(collectionGrid);
     } catch (error) {
         console.error("Unable to load collections.", error);
-        collectionGrid.replaceChildren(createWorkState("Unable to load collections."));
+        workState = "error";
+        collectionGrid.replaceChildren(createWorkState(siteI18n.t("work.error")));
     } finally {
         collectionGrid.removeAttribute("aria-busy");
     }
 }
 
 initWorks();
+siteI18n.onChange(refreshWorkLanguage);

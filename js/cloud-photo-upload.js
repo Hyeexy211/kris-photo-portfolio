@@ -4,11 +4,18 @@ const CLOUD_WEB_BUCKET = "portfolio-web";
 const CLOUD_WEB_WIDTHS = [640, 1200, 1800];
 const CLOUD_WEB_MAX_FILE_BYTES = 6 * 1024 * 1024;
 
+function cloudUploadError(key, values = {}) {
+    const error = new Error(window.siteI18n.t(key, values));
+    error.translationKey = key;
+    error.translationValues = values;
+    return error;
+}
+
 function canvasToWebp(canvas) {
     return new Promise((resolve, reject) => {
         canvas.toBlob((blob) => {
             if (!blob || blob.type !== "image/webp") {
-                reject(new Error("This browser could not encode WebP. Use a browser with WebP export support."));
+                reject(cloudUploadError("admin.upload.webpUnsupported"));
                 return;
             }
             resolve(blob);
@@ -23,7 +30,7 @@ async function assertNoExifOrXmp(blob) {
 
     if (bytes.length < 12 || chunkName(0) !== "RIFF" || chunkName(8) !== "WEBP"
         || view.getUint32(4, true) + 8 !== bytes.length) {
-        throw new Error("The browser produced an invalid WebP file.");
+        throw cloudUploadError("admin.upload.invalidWebp");
     }
 
     let offset = 12;
@@ -31,53 +38,53 @@ async function assertNoExifOrXmp(blob) {
         const type = chunkName(offset);
         const length = view.getUint32(offset + 4, true);
         if (type === "EXIF" || type === "XMP ") {
-            throw new Error("The WebP export contains EXIF or XMP metadata and was not uploaded.");
+            throw cloudUploadError("admin.upload.metadataFound");
         }
         offset += 8 + length + (length % 2);
-        if (offset > bytes.length) throw new Error("The browser produced a malformed WebP file.");
+        if (offset > bytes.length) throw cloudUploadError("admin.upload.malformedWebp");
     }
-    if (offset !== bytes.length) throw new Error("The browser produced a malformed WebP file.");
+    if (offset !== bytes.length) throw cloudUploadError("admin.upload.malformedWebp");
 }
 
 async function prepareCloudWebExports(file) {
     if (!file || !["image/jpeg", "image/webp", "image/avif"].includes(file.type)) {
-        throw new Error("Choose a JPEG, WebP, or AVIF photograph.");
+        throw cloudUploadError("admin.upload.chooseImage");
     }
     if (file.size > 25 * 1024 * 1024) {
-        throw new Error("The selected file exceeds the 25 MiB browser processing limit.");
+        throw cloudUploadError("admin.upload.fileTooLarge");
     }
 
     let image;
     try {
         image = await createImageBitmap(file);
     } catch {
-        throw new Error("The browser could not open this photograph. Check its format and file integrity.");
+        throw cloudUploadError("admin.upload.cannotOpenImage");
     }
 
     try {
         if (image.width < 1800 || image.height < 1 || image.width * image.height > 40000000) {
-            throw new Error("Choose a photograph at least 1800 pixels wide and no more than 40 megapixels.");
+            throw cloudUploadError("admin.upload.invalidDimensions");
         }
 
         const exports = [];
         for (const width of CLOUD_WEB_WIDTHS) {
             const height = Math.round(image.height * width / image.width);
             if (height > 8192) {
-                throw new Error("This photograph is too tall for browser export.");
+                throw cloudUploadError("admin.upload.tooTall");
             }
 
             const canvas = document.createElement("canvas");
             canvas.width = width;
             canvas.height = height;
             const context = canvas.getContext("2d", { colorSpace: "srgb" });
-            if (!context) throw new Error("The browser could not prepare an image canvas.");
+            if (!context) throw cloudUploadError("admin.upload.canvasUnavailable");
             context.drawImage(image, 0, 0, width, height);
             const blob = await canvasToWebp(canvas);
             canvas.width = 0;
             canvas.height = 0;
 
             if (blob.size > CLOUD_WEB_MAX_FILE_BYTES) {
-                throw new Error(`${width}px WebP exceeds 6 MiB. Choose a smaller source image.`);
+                throw cloudUploadError("admin.upload.exportTooLarge", { width });
             }
             await assertNoExifOrXmp(blob);
             exports.push({ width, height, blob });
@@ -94,7 +101,7 @@ function getVerifiedCloudPublicUrl(storage, path) {
     const expected = new URL(`/storage/v1/object/public/${CLOUD_WEB_BUCKET}/${path}`,
         CONTENT_DATA_SOURCE.supabase.url);
     if (actual.href !== expected.href) {
-        throw new Error("Storage returned an unexpected public image URL.");
+        throw cloudUploadError("admin.upload.unexpectedPublicUrl");
     }
     return actual.href;
 }
@@ -102,7 +109,7 @@ function getVerifiedCloudPublicUrl(storage, path) {
 async function uploadCloudWebExports(photoId, exports, onUploaded) {
     const revision = createContentId("revision");
     if (!/^[a-z0-9-]+$/.test(photoId) || !/^[a-z0-9-]+$/.test(revision)) {
-        throw new Error("A safe photo ID could not be generated.");
+        throw cloudUploadError("admin.upload.unsafePhotoId");
     }
 
     const client = await getSupabaseClient();
@@ -118,10 +125,17 @@ async function uploadCloudWebExports(photoId, exports, onUploaded) {
             upsert: false
         });
         if (error) {
-            throw new Error(`Upload of ${item.width}px WebP failed at ${path}: ${error.message}`);
+            throw cloudUploadError("admin.upload.storageUploadFailed", {
+                width: item.width,
+                path,
+                message: error.message
+            });
         }
         if (data?.path !== path) {
-            throw new Error(`Storage reported an unexpected path after uploading ${path}. Check both the expected and reported paths before retrying: ${data?.path || "none reported"}.`);
+            throw cloudUploadError("admin.upload.unexpectedStoragePath", {
+                path,
+                reported: data?.path || "—"
+            });
         }
 
         onUploaded(path);
@@ -142,8 +156,8 @@ async function removeCloudWebExports(paths) {
     if (paths.length === 0) return;
     const client = await getSupabaseClient();
     const { data, error } = await client.storage.from(CLOUD_WEB_BUCKET).remove(paths);
-    if (error) throw new Error(error.message);
+    if (error) throw error;
     if (!Array.isArray(data) || data.length !== paths.length) {
-        throw new Error("Storage did not confirm removal of every uploaded web file.");
+        throw cloudUploadError("admin.upload.removalUnconfirmed");
     }
 }

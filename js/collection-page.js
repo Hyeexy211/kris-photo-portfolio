@@ -7,6 +7,15 @@ const collectionTitle = document.querySelector("#collection-title");
 const collectionDescription = document.querySelector("#collection-description");
 const collectionGallery = document.querySelector("#collection-gallery");
 const collectionInfo = document.querySelector("#collection-info");
+let currentCollection = null;
+let currentCollectionPhotos = [];
+let collectionPageState = "loading";
+
+function collectionPhotoLabel(photo) {
+    return siteI18n.content(photo, "alt")
+        || siteI18n.content(photo, "title")
+        || siteI18n.t("gallery.photographyWork");
+}
 
 function createCollectionPhoto(photo, index) {
     const figure = document.createElement("figure");
@@ -17,11 +26,11 @@ function createCollectionPhoto(photo, index) {
     button.type = "button";
     button.dataset.fullSrc = photo.fullSrc || photo.src;
     button.dataset.id = photo.id;
-    button.setAttribute("aria-label", `Open ${photo.alt || photo.title || "photography work"}`);
+    button.setAttribute("aria-label", siteI18n.t("gallery.openPhoto", { title: collectionPhotoLabel(photo) }));
 
     const image = document.createElement("img");
     image.src = photo.src;
-    image.alt = photo.alt || photo.title || "Photography work";
+    image.alt = collectionPhotoLabel(photo);
     image.loading = index === 0 ? "eager" : "lazy";
     image.decoding = "async";
 
@@ -54,27 +63,99 @@ function createInfoItem(labelText, valueText) {
     return item;
 }
 
-function updateCollectionMetadata(collection) {
-    const pageTitle = `${collection.title} | Kris Photography`;
-    const liveUrl = `https://hyeexy211.github.io/kris-photo-portfolio/collection.html?slug=${encodeURIComponent(collection.slug)}`;
-    const metadata = {
-        'meta[name="description"]': collection.description,
-        'meta[property="og:title"]': pageTitle,
-        'meta[property="og:description"]': collection.description,
-        'meta[property="og:url"]': liveUrl,
-        'meta[name="twitter:title"]': pageTitle,
-        'meta[name="twitter:description"]': collection.description
-    };
-
+function setCollectionTextMetadata(title, description, pageTitle = siteI18n.t("seo.collectionPageTitle", { title })) {
+    const titleElement = document.querySelector("title");
+    if (titleElement) titleElement.removeAttribute("data-i18n");
     document.title = pageTitle;
+
+    const metadata = {
+        'meta[name="description"]': description,
+        'meta[property="og:title"]': pageTitle,
+        'meta[property="og:description"]': description,
+        'meta[name="twitter:title"]': pageTitle,
+        'meta[name="twitter:description"]': description
+    };
 
     Object.entries(metadata).forEach(([selector, content]) => {
         const meta = document.querySelector(selector);
-        if (meta) meta.content = content;
+        if (meta) {
+            meta.removeAttribute("data-i18n-content");
+            meta.content = content;
+        }
     });
+}
+
+function updateCollectionMetadata(collection) {
+    const title = siteI18n.content(collection, "title");
+    const description = siteI18n.content(collection, "description") || siteI18n.t("seo.collectionDescription");
+    const liveUrl = `https://hyeexy211.github.io/kris-photo-portfolio/collection.html?slug=${encodeURIComponent(collection.slug)}`;
+    setCollectionTextMetadata(title, description);
+
+    const openGraphUrl = document.querySelector('meta[property="og:url"]');
+    if (openGraphUrl) openGraphUrl.content = liveUrl;
 
     const canonical = document.querySelector('link[rel="canonical"]');
     if (canonical) canonical.href = liveUrl;
+}
+
+function refreshCollectionLanguage() {
+    collectionTitle.removeAttribute("data-i18n");
+    collectionDescription.removeAttribute("data-i18n");
+    collectionGallery.removeAttribute("data-i18n-aria-label");
+
+    if (collectionPageState === "loading") {
+        collectionTitle.textContent = siteI18n.t("work.collection");
+        collectionDescription.textContent = siteI18n.t("work.loadingCollection");
+        collectionGallery.setAttribute("aria-label", siteI18n.t("work.photographs"));
+        return;
+    }
+
+    if (collectionPageState === "notFound") {
+        const title = siteI18n.t("work.collectionNotFound");
+        const description = siteI18n.t("work.collectionNotFoundHelp");
+        setCollectionTextMetadata(title, description, siteI18n.t("seo.collectionNotFoundTitle"));
+        collectionTitle.textContent = title;
+        collectionDescription.textContent = description;
+        collectionGallery.setAttribute("aria-label", siteI18n.t("work.noCollectionPhotographs"));
+        collectionInfo.replaceChildren(createInfoItem(siteI18n.t("work.status"), siteI18n.t("work.notFound")));
+        return;
+    }
+
+    if (collectionPageState === "error") {
+        const title = siteI18n.t("work.collectionUnavailable");
+        const description = siteI18n.t("work.collectionErrorHelp");
+        setCollectionTextMetadata(title, description, siteI18n.t("seo.collectionErrorTitle"));
+        collectionTitle.textContent = title;
+        collectionDescription.textContent = description;
+        collectionGallery.setAttribute("aria-label", siteI18n.t("work.collectionLoadingError"));
+        collectionInfo.replaceChildren(createInfoItem(siteI18n.t("work.status"), siteI18n.t("work.unableToLoad")));
+        return;
+    }
+
+    const title = siteI18n.content(currentCollection, "title");
+    updateCollectionMetadata(currentCollection);
+    collectionTitle.textContent = title;
+    collectionDescription.textContent = siteI18n.content(currentCollection, "description");
+    collectionGallery.setAttribute("aria-label", siteI18n.t("work.collectionPhotographs", { title }));
+
+    const buttons = collectionGallery.querySelectorAll(".lightbox-trigger");
+    currentCollectionPhotos.forEach((photo, index) => {
+        if (!buttons[index]) return;
+        const label = collectionPhotoLabel(photo);
+        buttons[index].setAttribute("aria-label", siteI18n.t("gallery.openPhoto", { title: label }));
+        buttons[index].querySelector("img").alt = label;
+    });
+
+    if (currentCollectionPhotos.length === 0) {
+        const emptyMessage = collectionGallery.querySelector(".gallery-empty");
+        if (emptyMessage) emptyMessage.textContent = siteI18n.t("gallery.empty");
+    }
+
+    collectionInfo.replaceChildren(
+        createInfoItem(siteI18n.t("work.collection"), title),
+        createInfoItem(siteI18n.t("work.photographs"), String(currentCollectionPhotos.length)),
+        createInfoItem(siteI18n.t("work.photographer"), "Kris Huang")
+    );
 }
 
 async function renderCollectionPage() {
@@ -82,20 +163,14 @@ async function renderCollectionPage() {
     const collection = slug ? await contentService.getCollectionBySlug(slug) : null;
 
     if (!collection) {
-        document.title = "Collection Not Found | Kris Photography";
-        collectionTitle.textContent = "Collection not found";
-        collectionDescription.textContent = "Return to All work and choose an available collection.";
-        collectionGallery.setAttribute("aria-label", "No collection photographs");
-        collectionInfo.replaceChildren(createInfoItem("Status", "Not found"));
+        collectionPageState = "notFound";
+        refreshCollectionLanguage();
         return;
     }
 
     const collectionPhotos = await contentService.getPhotosByCollection(collection.id);
-    updateCollectionMetadata(collection);
-
-    collectionTitle.textContent = collection.title;
-    collectionDescription.textContent = collection.description;
-    collectionGallery.setAttribute("aria-label", `${collection.title} photographs`);
+    currentCollection = collection;
+    currentCollectionPhotos = collectionPhotos;
 
     const galleryFragment = document.createDocumentFragment();
     collectionPhotos.forEach((photo, index) => {
@@ -105,30 +180,25 @@ async function renderCollectionPage() {
     if (collectionPhotos.length === 0) {
         const emptyMessage = document.createElement("p");
         emptyMessage.className = "gallery-empty";
-        emptyMessage.textContent = "No photos found.";
+        emptyMessage.textContent = siteI18n.t("gallery.empty");
         galleryFragment.appendChild(emptyMessage);
     }
 
     collectionGallery.replaceChildren(galleryFragment);
-    collectionInfo.replaceChildren(
-        createInfoItem("Collection", collection.title),
-        createInfoItem("Photographs", String(collectionPhotos.length)),
-        createInfoItem("Photographer", "Kris Huang")
-    );
+    collectionPageState = "ready";
+    refreshCollectionLanguage();
 }
 
 async function initCollectionPage() {
     collectionGallery.setAttribute("aria-busy", "true");
+    refreshCollectionLanguage();
 
     try {
         await renderCollectionPage();
     } catch (error) {
         console.error("Unable to load this collection.", error);
-        document.title = "Collection Error | Kris Photography";
-        collectionTitle.textContent = "Collection unavailable";
-        collectionDescription.textContent = "The collection could not be loaded. Please try again later.";
-        collectionGallery.setAttribute("aria-label", "Collection loading error");
-        collectionInfo.replaceChildren(createInfoItem("Status", "Unable to load"));
+        collectionPageState = "error";
+        refreshCollectionLanguage();
     } finally {
         collectionGallery.removeAttribute("aria-busy");
     }
@@ -136,3 +206,4 @@ async function initCollectionPage() {
 
 // main.js waits for this promise before binding Lightbox to asynchronously created buttons.
 window.collectionPageReady = initCollectionPage();
+siteI18n.onChange(refreshCollectionLanguage);

@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Landscape | Kris Photography</title>
-    <meta name="description" content="Three views of city light, changing skies and a garden path. Photography by Kris Huang.">
+    <title data-i18n="seo.projects.landscapeTitle">Landscape | Kris Photography</title>
+    <meta name="description" content="Three views of city light, changing skies and a garden path. Photography by Kris Huang." data-i18n-content="seo.projects.landscapeDescription">
     <meta name="theme-color" content="#000000">
     <link rel="canonical" href="https://hyeexy211.github.io/kris-photo-portfolio/projects/landscape.html">
-    <meta property="og:title" content="Landscape | Kris Photography">
-    <meta property="og:description" content="Three views of city light, changing skies and a garden path.">
+    <meta property="og:title" content="Landscape | Kris Photography" data-i18n-content="seo.projects.landscapeTitle">
+    <meta property="og:description" content="Three views of city light, changing skies and a garden path." data-i18n-content="seo.projects.landscapeOgDescription">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://hyeexy211.github.io/kris-photo-portfolio/projects/landscape.html">
     <meta property="og:image" content="https://hyeexy211.github.io/kris-photo-portfolio/images/social/social-cover.png">
@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body class="project-site">
-    <a class="skip-link" href="#main-content">Skip to content</a>
+    <a class="skip-link" href="#main-content" data-i18n="common.skipToContent">Skip to content</a>
 
     <!-- 子页面用 ../ 返回项目根目录，确保本地和 GitHub Pages 的相对路径都正确。 -->
     <header>
@@ -29,27 +29,33 @@
                 aria-controls="nav-links"
                 aria-expanded="false"
                 aria-label="Open navigation menu"
+                data-i18n-aria-label="nav.openMenu"
             >☰</button>
             <ul class="nav-links" id="nav-links">
-                <li><a href="../index.html#home">Home</a></li>
-                <li><a href="../index.html#work">Work</a></li>
-                <li><a href="../index.html#about">About</a></li>
+                <li><a href="../index.html#home" data-i18n="nav.home">Home</a></li>
+                <li><a href="../index.html#work" data-i18n="nav.work">Work</a></li>
+                <li><a href="../index.html#about" data-i18n="nav.about">About</a></li>
+                <li class="language-switch" role="group" aria-label="Language" data-i18n-aria-label="language.group">
+                    <button type="button" data-language="zh-CN" aria-label="Switch to Chinese" data-i18n-aria-label="language.chooseChinese">中文</button>
+                    <span aria-hidden="true">/</span>
+                    <button type="button" data-language="en" aria-label="Switch to English" data-i18n-aria-label="language.chooseEnglish">EN</button>
+                </li>
             </ul>
         </nav>
     </header>
 
     <main id="main-content" class="project-page">
         <section class="project-hero" aria-labelledby="project-title">
-            <a class="project-back" href="../index.html#work">← All work</a>
+            <a class="project-back" href="../index.html#work" data-i18n="work.backToWork">← All work</a>
             <div class="project-intro">
-                <p class="project-category">Selected collection</p>
+                <p class="project-category" data-i18n="work.selectedCollection">Selected collection</p>
                 <h1 id="project-title">Landscape</h1>
-                <p class="project-description">Three views of city light, changing skies and a garden path.</p>
+                <p class="project-description" data-i18n="legacy.landscapeDescription">Three views of city light, changing skies and a garden path.</p>
             </div>
         </section>
 
         <!-- figure 表示一张独立作品；lightbox-trigger 让共用脚本识别可放大的照片。 -->
-        <section class="project-gallery" aria-label="Landscape photographs">
+        <section class="project-gallery" aria-label="Landscape photographs" data-i18n-aria-label="legacy.landscapeGalleryLabel">
             <figure class="project-image">
                 <button class="gallery-item lightbox-trigger" type="button" data-id="landscape-001" data-full-src="../images/landscape/landscape-01-1800.webp">
                     <img
@@ -91,24 +97,27 @@
             </figure>
         </section>
 
-        <section class="project-info" aria-label="Collection details">
-            <div><p class="project-info-label">Collection</p><p>Landscape</p></div>
-            <div><p class="project-info-label">Photographs</p><p>3</p></div>
-            <div><p class="project-info-label">Photographer</p><p>Kris Huang</p></div>
+        <section class="project-info" aria-label="Collection details" data-i18n-aria-label="work.collectionDetails">
+            <div><p class="project-info-label" data-i18n="work.collection">Collection</p><p>Landscape</p></div>
+            <div><p class="project-info-label" data-i18n="work.photographs">Photographs</p><p>3</p></div>
+            <div><p class="project-info-label" data-i18n="work.photographer">Photographer</p><p>Kris Huang</p></div>
         </section>
     </main>
 
-    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" aria-describedby="lightbox-caption" aria-hidden="true">
-        <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Close photo viewer">×</button>
-        <button class="lightbox-nav lightbox-prev" id="lightbox-prev" type="button" aria-label="View previous photograph">‹</button>
+    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" data-i18n-aria-label="lightbox.viewer" aria-describedby="lightbox-caption" aria-hidden="true">
+        <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Close photo viewer" data-i18n-aria-label="lightbox.close">×</button>
+        <button class="lightbox-nav lightbox-prev" id="lightbox-prev" type="button" aria-label="View previous photograph" data-i18n-aria-label="lightbox.previous">‹</button>
         <img class="lightbox-image" id="lightbox-image" alt="">
         <p class="lightbox-caption" id="lightbox-caption" aria-live="polite"></p>
-        <button class="lightbox-nav lightbox-next" id="lightbox-next" type="button" aria-label="View next photograph">›</button>
+        <button class="lightbox-nav lightbox-next" id="lightbox-next" type="button" aria-label="View next photograph" data-i18n-aria-label="lightbox.next">›</button>
     </div>
 
-    <footer><p>© 2026 Kris Photography</p></footer>
+    <footer><p data-i18n="footer.copyright">© 2026 Kris Photography</p></footer>
     <!-- 第 23 课：共用 main.js 读取 photos 前，先加载照片数据。 -->
     <script src="../data/photos.js"></script>
+    <script src="../locales/en.js"></script>
+    <script src="../locales/zh-CN.js"></script>
+    <script src="../js/i18n.js"></script>
     <script src="../js/main.js"></script>
 </body>
 </html>

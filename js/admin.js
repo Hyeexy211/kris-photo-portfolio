@@ -26,12 +26,54 @@ const galleryUploadFile = document.querySelector("#gallery-upload-file");
 const galleryUploadProgress = document.querySelector("#gallery-upload-progress");
 const galleryUploadMessage = document.querySelector("#gallery-upload-message");
 const galleryUploadCount = document.querySelector("#gallery-upload-count");
+const adminI18n = window.siteI18n;
+const adminT = (key, values) => adminI18n.t(key, values);
 let cloudAccessGeneration = 0;
 let gallerySaving = false;
+let adminAccessAllowed = false;
+let currentWorks = null;
+let currentGalleryItems = null;
+let currentStatus = null;
+let currentUploadProgress = null;
 
-function showAdminStatus(message, isError = false) {
-    adminStatus.textContent = message;
-    adminStatus.classList.toggle("is-error", isError);
+function renderAdminStatus() {
+    if (!currentStatus) return;
+    adminStatus.textContent = currentStatus.parts.map(({ key, values, text }) => (
+        key ? adminT(key, values) : text
+    )).join(" ");
+    adminStatus.classList.toggle("is-error", currentStatus.isError);
+}
+
+function showAdminStatusParts(parts, isError = false) {
+    currentStatus = { parts, isError };
+    renderAdminStatus();
+}
+
+function showAdminStatus(key, isError = false, values = {}) {
+    showAdminStatusParts([{ key, values }], isError);
+}
+
+function localizedError(key) {
+    const error = new Error(key);
+    error.translationKey = key;
+    return error;
+}
+
+function errorParts(error, includePrefix = true) {
+    return error.translationKey
+        ? [{ key: error.translationKey, values: error.translationValues || {} }]
+        : includePrefix
+            ? [{ key: "admin.error.external", values: { message: error.message || String(error) } }]
+            : [{ text: error.message || String(error) }];
+}
+
+function showAdminError(error) {
+    showAdminStatusParts(errorParts(error), true);
+}
+
+function renderGalleryUploadProgress() {
+    if (!currentUploadProgress) return;
+    galleryUploadMessage.textContent = adminT(currentUploadProgress.key, currentUploadProgress.values);
 }
 
 function getFormValues(form, numberFields) {
@@ -58,16 +100,17 @@ function fillForm(form, item) {
 function resetWorkForm() {
     workForm.reset();
     workForm.elements.id.value = "";
-    document.querySelector("#work-form-title").textContent = "Create Work";
+    document.querySelector("#work-form-title").textContent = adminT("admin.works.createTitle");
     cancelWorkEdit.hidden = true;
 }
 
 function resetGalleryForm() {
     galleryForm.reset();
     galleryForm.elements.id.value = "";
-    document.querySelector("#gallery-form-title").textContent = "Create Gallery Item";
+    document.querySelector("#gallery-form-title").textContent = adminT("admin.gallery.createTitle");
     cancelGalleryEdit.hidden = true;
     galleryUploadProgress.hidden = true;
+    currentUploadProgress = null;
     syncGalleryUploadFields();
 }
 
@@ -84,13 +127,14 @@ function syncGalleryUploadFields() {
     });
 }
 
-function showGalleryUploadProgress(message, completed) {
+function showGalleryUploadProgress(key, completed, values = {}) {
     galleryUploadProgress.hidden = false;
-    galleryUploadMessage.textContent = message;
+    currentUploadProgress = { key, values };
+    renderGalleryUploadProgress();
     galleryUploadCount.value = completed;
 }
 
-function createAdminItem(item, metaText, itemType) {
+function createAdminItem(item, metaText, itemTypeKey) {
     const row = document.createElement("article");
     const copy = document.createElement("div");
     const title = document.createElement("h3");
@@ -98,9 +142,10 @@ function createAdminItem(item, metaText, itemType) {
     const actions = document.createElement("div");
     const editButton = document.createElement("button");
     const deleteButton = document.createElement("button");
+    const displayTitle = adminI18n.content(item, "title") || adminT("admin.untitled");
 
     row.className = "admin-item";
-    title.textContent = item.title || "Untitled";
+    title.textContent = displayTitle;
     meta.textContent = metaText;
     actions.className = "admin-item-actions";
 
@@ -108,14 +153,17 @@ function createAdminItem(item, metaText, itemType) {
     editButton.type = "button";
     editButton.dataset.action = "edit";
     editButton.dataset.id = item.id;
-    editButton.textContent = "Edit";
+    editButton.textContent = adminT("admin.actions.edit");
 
     deleteButton.className = "admin-button admin-button-danger";
     deleteButton.type = "button";
     deleteButton.dataset.action = "delete";
     deleteButton.dataset.id = item.id;
-    deleteButton.textContent = "Delete";
-    deleteButton.setAttribute("aria-label", `Delete ${itemType} ${item.title || "Untitled"}`);
+    deleteButton.textContent = adminT("admin.actions.delete");
+    deleteButton.setAttribute("aria-label", adminT("admin.actions.deleteAria", {
+        type: adminT(itemTypeKey),
+        title: displayTitle
+    }));
 
     copy.append(title, meta);
     actions.append(editButton, deleteButton);
@@ -124,54 +172,70 @@ function createAdminItem(item, metaText, itemType) {
     return row;
 }
 
-function createEmptyMessage(message) {
+function createEmptyMessage(key) {
     const emptyMessage = document.createElement("p");
     emptyMessage.className = "admin-list-empty";
-    emptyMessage.textContent = message;
+    emptyMessage.textContent = adminT(key);
     return emptyMessage;
 }
 
-async function renderWorksAdmin() {
-    const works = await adminStore.getWorks();
+function renderWorksList(works) {
     const fragment = document.createDocumentFragment();
 
     works.forEach((work) => {
         fragment.appendChild(
-            createAdminItem(work, `ID: ${work.id} · Slug: ${work.slug || "none"} · Order: ${work.order ?? "none"}`, "Work")
+            createAdminItem(work, adminT("admin.works.meta", {
+                id: work.id,
+                slug: work.slug || adminT("admin.none"),
+                order: work.order ?? adminT("admin.none")
+            }), "admin.works.itemType")
         );
     });
 
-    workList.replaceChildren(works.length > 0 ? fragment : createEmptyMessage("No Works saved."));
+    workList.replaceChildren(works.length > 0 ? fragment : createEmptyMessage("admin.works.empty"));
     workCount.textContent = String(works.length);
 
     const optionFragment = document.createDocumentFragment();
     works.forEach((work) => {
         const option = document.createElement("option");
         option.value = work.id;
-        option.label = work.title || work.id;
+        option.label = adminI18n.content(work, "title") || work.id;
         optionFragment.appendChild(option);
     });
     workIdOptions.replaceChildren(optionFragment);
 }
 
-async function renderGalleryAdmin() {
-    const galleryItems = await adminStore.getGalleryItems();
+async function renderWorksAdmin() {
+    currentWorks = await adminStore.getWorks();
+    renderWorksList(currentWorks);
+}
+
+function renderGalleryList(galleryItems) {
     const fragment = document.createDocumentFragment();
 
     galleryItems.forEach((item) => {
         fragment.appendChild(
             createAdminItem(
                 item,
-                `ID: ${item.id} · Category: ${item.category || "none"} · Collection: ${item.collectionId || "none"}`,
-                "Gallery item"
+                adminT("admin.gallery.meta", {
+                    id: item.id,
+                    category: adminI18n.category(item.category) || adminT("admin.none"),
+                    collection: item.collectionId || adminT("admin.none")
+                }),
+                "admin.gallery.itemType"
             )
         );
     });
 
     galleryList.replaceChildren(
-        galleryItems.length > 0 ? fragment : createEmptyMessage("No Gallery items saved.")
+        galleryItems.length > 0 ? fragment : createEmptyMessage("admin.gallery.empty")
     );
     galleryCount.textContent = String(galleryItems.length);
+}
+
+async function renderGalleryAdmin() {
+    currentGalleryItems = await adminStore.getGalleryItems();
+    renderGalleryList(currentGalleryItems);
 }
 
 async function renderAdmin() {
@@ -187,7 +251,7 @@ workForm.addEventListener("submit", async (event) => {
             .some((work) => work.slug === values.slug && work.id !== id);
 
         if (duplicateSlug) {
-            showAdminStatus("That Work slug is already in use.", true);
+            showAdminStatus("admin.works.duplicateSlug", true);
             return;
         }
 
@@ -195,13 +259,13 @@ workForm.addEventListener("submit", async (event) => {
             ? await adminStore.updateWork(id, values)
             : await adminStore.createWork(values);
 
-        if (!savedWork) throw new Error("The Work could not be saved.");
+        if (!savedWork) throw localizedError("admin.works.saveFailed");
 
         resetWorkForm();
         await renderAdmin();
-        showAdminStatus(id ? "Work updated." : "Work created.");
+        showAdminStatus(id ? "admin.works.updated" : "admin.works.created");
     } catch (error) {
-        showAdminStatus(error.message, true);
+        showAdminError(error);
     }
 });
 
@@ -225,19 +289,21 @@ galleryForm.addEventListener("submit", async (event) => {
         values.tags = values.tags.split(",").map((tag) => tag.trim()).filter(Boolean);
 
         if (selectedFile && id) {
-            throw new Error("File upload is available only when creating a new Gallery item.");
+            throw localizedError("admin.gallery.fileOnlyNew");
         }
         if (selectedFile) {
             uploadPhotoId = createContentId("photo");
-            showGalleryUploadProgress("Preparing three web-size WebP files on this device…", 0);
+            showGalleryUploadProgress("admin.upload.preparing", 0);
             const exports = await prepareCloudWebExports(selectedFile);
             const accessGeneration = cloudAccessGeneration;
             const images = await uploadCloudWebExports(uploadPhotoId, exports, (path) => {
                 uploadedPaths.push(path);
-                showGalleryUploadProgress(`${uploadedPaths.length} of 3 web files uploaded.`, uploadedPaths.length);
+                showGalleryUploadProgress("admin.upload.filesUploaded", uploadedPaths.length, {
+                    count: uploadedPaths.length
+                });
             });
             if (accessGeneration !== cloudAccessGeneration) {
-                throw new Error("The owner session changed during upload. No photo row was published.");
+                throw localizedError("admin.upload.sessionChanged");
             }
             Object.assign(values, {
                 id: uploadPhotoId,
@@ -247,7 +313,7 @@ galleryForm.addEventListener("submit", async (event) => {
                 width: images.width,
                 height: images.height
             });
-            showGalleryUploadProgress("Three web files uploaded. Saving the photo record…", 3);
+            showGalleryUploadProgress("admin.upload.savingRecord", 3);
             databaseInsertAttempted = true;
         }
 
@@ -255,18 +321,18 @@ galleryForm.addEventListener("submit", async (event) => {
             ? await adminStore.updateGalleryItem(id, values)
             : await adminStore.createGalleryItem(values);
 
-        if (!savedItem) throw new Error("The Gallery item could not be saved.");
+        if (!savedItem) throw localizedError("admin.gallery.saveFailed");
         rowPublished = true;
 
         resetGalleryForm();
         await renderGalleryAdmin();
-        showAdminStatus(id ? "Gallery item updated." : selectedFile
-            ? "Gallery item created with three web-size photos. Review its public page before sharing."
-            : "Gallery item created.");
+        showAdminStatus(id ? "admin.gallery.updated" : selectedFile
+            ? "admin.gallery.createdWithFiles"
+            : "admin.gallery.created");
     } catch (error) {
-        let message = error.message;
+        const messages = errorParts(error);
         if (rowPublished && uploadPhotoId) {
-            message += " The photo row was saved, but the Admin list did not refresh. Reload before retrying.";
+            messages.push({ key: "admin.gallery.rowSavedListStale" });
         }
         if (uploadedPaths.length > 0 && !rowPublished) {
             let cleanupIsSafe = true;
@@ -275,25 +341,30 @@ galleryForm.addEventListener("submit", async (event) => {
                     const existing = await cloudAdminService.photoRowExists(uploadPhotoId);
                     if (existing) {
                         cleanupIsSafe = false;
-                        message += " A photo row with this ID exists; the new web files were kept for review.";
+                        messages.push({ key: "admin.gallery.rowExistsFilesKept" });
                     }
                 } catch {
                     cleanupIsSafe = false;
-                    message += " The photo row could not be checked; new web files were kept for review.";
+                    messages.push({ key: "admin.gallery.rowCheckFailedFilesKept" });
                 }
             }
             if (cleanupIsSafe) {
                 try {
                     await removeCloudWebExports(uploadedPaths);
-                    message += " Confirmed uploads from this attempt were removed.";
+                    messages.push({ key: "admin.gallery.cleanupRemoved" });
                 } catch (cleanupError) {
-                    message += ` Cleanup failed: ${cleanupError.message} Check these paths in ${CLOUD_WEB_BUCKET}: ${uploadedPaths.join(", ")}.`;
+                    messages.push({ key: "admin.gallery.cleanupFailed" });
+                    messages.push(...errorParts(cleanupError, false));
+                    messages.push({ key: "admin.gallery.cleanupPaths", values: {
+                        bucket: CLOUD_WEB_BUCKET,
+                        paths: uploadedPaths.join(", ")
+                    } });
                 }
             }
         }
-        showAdminStatus(message, true);
+        showAdminStatusParts(messages, true);
         if (uploadedPaths.length > 0) {
-            showGalleryUploadProgress("Upload stopped; see the status above.", uploadedPaths.length);
+            showGalleryUploadProgress("admin.upload.stopped", uploadedPaths.length);
         }
     } finally {
         gallerySaving = false;
@@ -313,22 +384,23 @@ workList.addEventListener("click", async (event) => {
 
         if (button.dataset.action === "edit") {
             fillForm(workForm, work);
-            document.querySelector("#work-form-title").textContent = "Edit Work";
+            document.querySelector("#work-form-title").textContent = adminT("admin.works.editTitle");
             cancelWorkEdit.hidden = false;
             workForm.scrollIntoView({ behavior: "smooth", block: "start" });
             workForm.elements.title.focus({ preventScroll: true });
             return;
         }
 
-        const warning = cloudMode ? " Photographs in it must be moved or deleted first." : "";
-        if (!window.confirm(`Delete the Work "${work.title || work.id}"?${warning}`)) return;
+        if (!window.confirm(adminT(cloudMode
+            ? "admin.works.deleteConfirmCloud"
+            : "admin.works.deleteConfirm", { title: adminI18n.content(work, "title") || work.id }))) return;
 
-        if (!await adminStore.deleteWork(work.id)) throw new Error("The Work could not be deleted.");
+        if (!await adminStore.deleteWork(work.id)) throw localizedError("admin.works.deleteFailed");
         resetWorkForm();
         await renderAdmin();
-        showAdminStatus("Work deleted.");
+        showAdminStatus("admin.works.deleted");
     } catch (error) {
-        showAdminStatus(error.message, true);
+        showAdminError(error);
     }
 });
 
@@ -336,7 +408,7 @@ galleryList.addEventListener("click", async (event) => {
     const button = event.target.closest("button[data-action]");
     if (!button || !galleryList.contains(button)) return;
     if (gallerySaving) {
-        showAdminStatus("Wait for the current Gallery save to finish before editing another item.");
+        showAdminStatus("admin.gallery.waitSave");
         return;
     }
 
@@ -347,28 +419,26 @@ galleryList.addEventListener("click", async (event) => {
         if (button.dataset.action === "edit") {
             galleryUploadFile.value = "";
             fillForm(galleryForm, item);
-            document.querySelector("#gallery-form-title").textContent = "Edit Gallery Item";
+            document.querySelector("#gallery-form-title").textContent = adminT("admin.gallery.editTitle");
             cancelGalleryEdit.hidden = false;
             galleryUploadProgress.hidden = true;
+            currentUploadProgress = null;
             syncGalleryUploadFields();
             galleryForm.scrollIntoView({ behavior: "smooth", block: "start" });
             galleryForm.elements.title.focus({ preventScroll: true });
             return;
         }
 
-        const warning = cloudMode
-            ? " This removes the database row only. Any uploaded web files remain publicly accessible until reviewed and removed separately from Storage."
-            : "";
-        if (!window.confirm(`Delete the Gallery item "${item.title || item.id}"?${warning}`)) return;
+        if (!window.confirm(adminT(cloudMode
+            ? "admin.gallery.deleteConfirmCloud"
+            : "admin.gallery.deleteConfirm", { title: adminI18n.content(item, "title") || item.id }))) return;
 
-        if (!await adminStore.deleteGalleryItem(item.id)) throw new Error("The Gallery item could not be deleted.");
+        if (!await adminStore.deleteGalleryItem(item.id)) throw localizedError("admin.gallery.deleteFailed");
         resetGalleryForm();
         await renderGalleryAdmin();
-        showAdminStatus(cloudMode
-            ? "Cloud photo record deleted. Any uploaded web files remain in Storage for manual review."
-            : "Gallery item deleted.");
+        showAdminStatus(cloudMode ? "admin.gallery.cloudDeleted" : "admin.gallery.deleted");
     } catch (error) {
-        showAdminStatus(error.message, true);
+        showAdminError(error);
     }
 });
 
@@ -378,9 +448,7 @@ galleryUploadFile.addEventListener("change", syncGalleryUploadFields);
 
 resetContentButton.addEventListener("click", async () => {
     if (cloudMode) return;
-    const confirmed = window.confirm(
-        "Reset all Work and Gallery content? This overwrites every browser-local change with the default seed data."
-    );
+    const confirmed = window.confirm(adminT("admin.reset.confirm"));
 
     if (!confirmed) return;
 
@@ -388,13 +456,14 @@ resetContentButton.addEventListener("click", async () => {
         resetWorkForm();
         resetGalleryForm();
         await renderAdmin();
-        showAdminStatus("Default Work and Gallery content restored.");
+        showAdminStatus("admin.reset.restored");
     } else {
-        showAdminStatus("Content could not be reset. Check the browser console for details.", true);
+        showAdminStatus("admin.reset.failed", true);
     }
 });
 
 function setAdminAccess(allowed) {
+    adminAccessAllowed = allowed;
     document.querySelector("#works-admin").hidden = !allowed;
     document.querySelector("#gallery-admin").hidden = !allowed;
     resetSection.hidden = cloudMode || !allowed;
@@ -404,7 +473,7 @@ function setAdminAccess(allowed) {
 
     if (cloudMode) {
         authSection.hidden = false;
-        authHeading.textContent = allowed ? "Owner session" : "Owner sign in";
+        authHeading.textContent = adminT(allowed ? "admin.auth.sessionTitle" : "admin.auth.signInTitle");
         loginForm.hidden = allowed;
         signOutButton.hidden = !allowed;
     }
@@ -420,7 +489,7 @@ async function initializeCloudAdmin() {
         if (generation !== cloudAccessGeneration) return;
 
         if (!userData?.user) {
-            showAdminStatus("Sign in with the enrolled owner account to manage cloud content.");
+            showAdminStatus("admin.auth.signInRequired");
             return;
         }
 
@@ -428,7 +497,7 @@ async function initializeCloudAdmin() {
         if (generation !== cloudAccessGeneration) return;
         if (error) throw error;
         if (allowed !== true) {
-            showAdminStatus("This account is not enrolled as a portfolio admin.", true);
+            showAdminStatus("admin.auth.notOwner", true);
             return;
         }
 
@@ -438,11 +507,11 @@ async function initializeCloudAdmin() {
         if (requestedSection?.id === "works-admin" || requestedSection?.id === "gallery-admin") {
             requestedSection.scrollIntoView();
         }
-        showAdminStatus("Cloud content loaded. Changes here update Supabase.");
+        showAdminStatus("admin.auth.cloudLoaded");
     } catch (error) {
         if (generation !== cloudAccessGeneration) return;
         setAdminAccess(false);
-        showAdminStatus(`Cloud Admin unavailable: ${error.message}`, true);
+        showAdminStatus("admin.auth.cloudUnavailable", true, { message: error.message });
     }
 }
 
@@ -461,7 +530,7 @@ loginForm.addEventListener("submit", async (event) => {
         await initializeCloudAdmin();
     } catch (error) {
         loginForm.elements.password.value = "";
-        showAdminStatus(`Sign in failed: ${error.message}`, true);
+        showAdminStatus("admin.auth.signInFailed", true, { message: error.message });
     }
 });
 
@@ -474,17 +543,42 @@ signOutButton.addEventListener("click", async () => {
         if (error) throw error;
         cloudAccessGeneration++;
         setAdminAccess(false);
-        showAdminStatus("Signed out of Cloud Admin.");
+        showAdminStatus("admin.auth.signedOut");
     } catch (error) {
-        showAdminStatus(`Sign out failed: ${error.message}`, true);
+        showAdminStatus("admin.auth.signOutFailed", true, { message: error.message });
     }
 });
 
+function updateAdminLanguage() {
+    document.title = adminT("admin.seo.title");
+    const description = document.querySelector('meta[name="description"]');
+    if (description) description.content = adminT("admin.seo.description");
+    document.querySelector("#admin-mode-label").textContent = adminT(
+        cloudMode ? "admin.mode.cloudLabel" : "admin.mode.localLabel"
+    );
+    document.querySelector("#admin-intro-copy").textContent = adminT(
+        cloudMode ? "admin.mode.cloudIntro" : "admin.mode.localIntro"
+    );
+    authHeading.textContent = adminT(
+        adminAccessAllowed ? "admin.auth.sessionTitle" : "admin.auth.signInTitle"
+    );
+    document.querySelector("#work-form-title").textContent = adminT(
+        workForm.elements.id.value ? "admin.works.editTitle" : "admin.works.createTitle"
+    );
+    document.querySelector("#gallery-form-title").textContent = adminT(
+        galleryForm.elements.id.value ? "admin.gallery.editTitle" : "admin.gallery.createTitle"
+    );
+    if (currentWorks) renderWorksList(currentWorks);
+    if (currentGalleryItems) renderGalleryList(currentGalleryItems);
+    renderAdminStatus();
+    renderGalleryUploadProgress();
+}
+
+adminI18n.onChange(updateAdminLanguage);
+updateAdminLanguage();
+
 if (cloudMode) {
     syncGalleryUploadFields();
-    document.querySelector("#admin-mode-label").textContent = "Authenticated cloud editor";
-    document.querySelector("#admin-intro-copy").textContent =
-        "Cloud changes update Supabase after owner sign-in. Published photo share previews need regeneration and deployment after edits.";
     setAdminAccess(false);
     getSupabaseClient().then((client) => {
         client.auth.onAuthStateChange((event) => {
@@ -494,8 +588,8 @@ if (cloudMode) {
             }
         });
         initializeCloudAdmin();
-    }).catch((error) => showAdminStatus(`Cloud Admin unavailable: ${error.message}`, true));
+    }).catch((error) => showAdminStatus("admin.auth.cloudUnavailable", true, { message: error.message }));
 } else {
     setAdminAccess(true);
-    renderAdmin().catch((error) => showAdminStatus(error.message, true));
+    renderAdmin().catch(showAdminError);
 }

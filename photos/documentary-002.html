@@ -19,32 +19,37 @@
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body class="project-site photo-page" data-photo-id="documentary-002">
-    <a class="skip-link" href="#main-content">Skip to content</a>
+    <a class="skip-link" href="#main-content" data-i18n="common.skipToContent">Skip to content</a>
     <header>
         <nav>
             <a class="site-brand" href="../index.html">Kris Photography</a>
-            <button class="menu-toggle" id="menu-toggle" type="button" aria-controls="nav-links" aria-expanded="false" aria-label="Open navigation menu">☰</button>
+            <button class="menu-toggle" id="menu-toggle" type="button" aria-controls="nav-links" aria-expanded="false" aria-label="Open navigation menu" data-i18n-aria-label="nav.openMenu">☰</button>
             <ul class="nav-links" id="nav-links">
-                <li><a href="../index.html#home">Home</a></li>
-                <li><a href="../index.html#work">Work</a></li>
-                <li><a href="../index.html#gallery">Gallery</a></li>
-                <li><a href="../index.html#about">About</a></li>
+                <li><a href="../index.html#home" data-i18n="nav.home">Home</a></li>
+                <li><a href="../index.html#work" data-i18n="nav.work">Work</a></li>
+                <li><a href="../index.html#gallery" data-i18n="nav.gallery">Gallery</a></li>
+                <li><a href="../index.html#about" data-i18n="nav.about">About</a></li>
+                <li class="language-switch" role="group" aria-label="Language" data-i18n-aria-label="language.group">
+                    <button type="button" data-language="zh-CN" aria-label="Switch to Chinese" data-i18n-aria-label="language.chooseChinese">中文</button>
+                    <span aria-hidden="true">/</span>
+                    <button type="button" data-language="en" aria-label="Switch to English" data-i18n-aria-label="language.chooseEnglish">EN</button>
+                </li>
             </ul>
         </nav>
     </header>
     <main id="main-content" class="project-page">
         <section class="project-hero" aria-labelledby="photo-title">
-            <a class="project-back" href="../index.html#gallery">← Gallery</a>
+            <a class="project-back" href="../index.html#gallery" data-i18n="photo.backToGallery">← Gallery</a>
             <div class="project-intro">
                 <p class="project-category" id="photo-category">Photograph</p>
                 <h1 id="photo-title">Plants and a chandelier in a weathered indoor courtyard</h1>
                 <p class="project-description" id="photo-description" hidden></p>
             </div>
         </section>
-        <section class="project-gallery" id="photo-content" aria-label="Photograph" aria-busy="true"><figure class="project-image"><img src="../images/documentary/documentary-02-1200.webp" alt="Plants and a chandelier in a weathered indoor courtyard" width="1200" height="800"></figure></section>
-        <section class="project-info" id="photo-info" aria-label="Photograph details"></section>
+        <section class="project-gallery" id="photo-content" aria-label="Photograph" data-i18n-aria-label="photo.galleryLabel" aria-busy="true"><figure class="project-image"><img src="../images/documentary/documentary-02-1200.webp" alt="Plants and a chandelier in a weathered indoor courtyard" width="1200" height="800"></figure></section>
+        <section class="project-info" id="photo-info" aria-label="Photograph details" data-i18n-aria-label="photo.detailsLabel"></section>
     </main>
-    <footer><p>© 2026 Kris Photography</p></footer>
+    <footer><p data-i18n="footer.copyright">© 2026 Kris Photography</p></footer>
     <script src="../js/config/data-source.js"></script>
     <script src="../data/collections.js"></script>
     <script src="../data/photos.js"></script>
@@ -53,6 +58,9 @@
     <script src="../js/config/supabase-client.js"></script>
     <script src="../js/repositories/supabase-repository.js"></script>
     <script src="../js/content-service.js"></script>
+    <script src="../locales/en.js"></script>
+    <script src="../locales/zh-CN.js"></script>
+    <script src="../js/i18n.js"></script>
     <script src="../js/photo-page.js"></script>
     <script src="../js/main.js"></script>
 </body>

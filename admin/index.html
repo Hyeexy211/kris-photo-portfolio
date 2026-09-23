@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | Kris Photography</title>
+    <title data-i18n="dashboard.seo.title">Dashboard | Kris Photography</title>
     <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#000000">
     <link rel="icon" href="../images/favicon/favicon.png">
@@ -11,52 +11,62 @@
     <link rel="stylesheet" href="../css/admin.css">
 </head>
 <body class="project-site admin-site">
-    <a class="skip-link" href="#main-content">Skip to content</a>
+    <a class="skip-link" href="#main-content" data-i18n="common.skipToContent">Skip to content</a>
     <header>
         <nav>
             <a class="site-brand" href="../">Kris Photography</a>
-            <ul class="admin-nav" aria-label="Dashboard navigation">
-                <li><a href="../">Back to Website</a></li>
+            <ul class="admin-nav" aria-label="Dashboard navigation" data-i18n-aria-label="dashboard.nav.label">
+                <li><a href="../" data-i18n="dashboard.backToWebsite">Back to Website</a></li>
+                <li class="admin-language-item">
+                    <div class="admin-language-switcher" role="group" aria-label="Language" data-i18n-aria-label="language.group">
+                        <button type="button" data-language="zh-CN" aria-label="Switch to Chinese" data-i18n-aria-label="language.chooseChinese" aria-pressed="false">中文</button>
+                        <span aria-hidden="true">/</span>
+                        <button type="button" data-language="en" aria-label="Switch to English" data-i18n-aria-label="language.chooseEnglish" aria-pressed="false">EN</button>
+                    </div>
+                </li>
             </ul>
         </nav>
     </header>
 
     <main id="main-content" class="admin-main">
         <section class="admin-intro" aria-labelledby="dashboard-title">
-            <p class="section-label">Content Management</p>
-            <h1 id="dashboard-title">Dashboard</h1>
-            <p>Manage your photography collections and gallery photos.</p>
-            <p class="admin-status" id="dashboard-status" role="status" aria-live="polite">Checking owner access…</p>
-            <a class="dashboard-back" href="../">Back to Website</a>
+            <p class="section-label" data-i18n="dashboard.sectionLabel">Content Management</p>
+            <h1 id="dashboard-title" data-i18n="dashboard.title">Dashboard</h1>
+            <p data-i18n="dashboard.intro">Manage your photography collections and gallery photos.</p>
+            <p class="admin-status" id="dashboard-status" role="status" aria-live="polite" data-i18n="dashboard.status.checking">Checking owner access…</p>
+            <a class="dashboard-back" href="../" data-i18n="dashboard.backToWebsite">Back to Website</a>
         </section>
 
         <section class="admin-section" id="dashboard-auth" aria-labelledby="dashboard-auth-title" hidden>
-            <h2 id="dashboard-auth-title">Owner sign in</h2>
+            <h2 id="dashboard-auth-title" data-i18n="admin.auth.signInTitle">Owner sign in</h2>
             <form class="admin-form" id="dashboard-login-form">
-                <label>Email <input name="email" type="email" autocomplete="username" required></label>
-                <label>Password <input name="password" type="password" autocomplete="current-password" required></label>
+                <label><span class="admin-label" data-i18n="admin.auth.email">Email</span><input name="email" type="email" autocomplete="username" required></label>
+                <label><span class="admin-label" data-i18n="admin.auth.password">Password</span><input name="password" type="password" autocomplete="current-password" required></label>
                 <div class="admin-form-actions admin-field-wide">
-                    <button class="admin-button admin-button-primary" type="submit">Sign in</button>
+                    <button class="admin-button admin-button-primary" type="submit" data-i18n="admin.auth.signIn">Sign in</button>
                 </div>
             </form>
         </section>
 
         <div class="dashboard-grid" id="dashboard-links" hidden>
             <article class="dashboard-card">
-                <h2>Work / Collections</h2>
-                <p>Manage photography collections.</p>
-                <a href="../admin.html?mode=cloud#works-admin">Manage Work →</a>
+                <h2 data-i18n="dashboard.works.title">Work / Collections</h2>
+                <p data-i18n="dashboard.works.description">Manage photography collections.</p>
+                <a href="../admin.html?mode=cloud#works-admin" data-i18n="dashboard.works.manage">Manage Work →</a>
             </article>
             <article class="dashboard-card">
-                <h2>Gallery / Photos</h2>
-                <p>Manage gallery photos.</p>
-                <a href="../admin.html?mode=cloud#gallery-admin">Manage Gallery →</a>
+                <h2 data-i18n="dashboard.gallery.title">Gallery / Photos</h2>
+                <p data-i18n="dashboard.gallery.description">Manage gallery photos.</p>
+                <a href="../admin.html?mode=cloud#gallery-admin" data-i18n="dashboard.gallery.manage">Manage Gallery →</a>
             </article>
         </div>
     </main>
 
-    <footer><p>© 2026 Kris Photography</p></footer>
+    <footer><p data-i18n="footer.copyright">© 2026 Kris Photography</p></footer>
 
+    <script src="../locales/en.js"></script>
+    <script src="../locales/zh-CN.js"></script>
+    <script src="../js/i18n.js"></script>
     <script src="../js/config/data-source.js"></script>
     <script src="../js/config/supabase-client.js"></script>
     <script src="dashboard.js"></script>
