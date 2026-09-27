@@ -414,7 +414,7 @@ window.siteLocales["zh-CN"] = {
         backToWebsite: "返回网站",
         sectionLabel: "内容管理",
         title: "管理面板",
-        intro: "在作品区管理作品集、照片和类别，并预览公开画廊。",
+        intro: "管理作品、首页图片和 About 文案，并预览公开画廊。",
         works: {
             title: "作品 / 作品集",
             description: "管理作品集、照片上传、资料和类别。",
@@ -425,12 +425,50 @@ window.siteLocales["zh-CN"] = {
             description: "预览已发布照片和类别筛选。",
             manage: "查看画廊 →"
         },
+        actions: { save: "保存", cancel: "取消本次修改" },
+        hero: {
+            title: "首页图片（Hero）",
+            description: "更换首页首屏照片。",
+            manage: "管理首页图片 →",
+            noImage: "尚未设置 Hero 图片，当前显示深色背景。",
+            current: "当前公开图片",
+            previewFailed: "当前公开图片无法加载预览。",
+            newImage: "新图片",
+            imageHint: "支持 JPEG、PNG、WebP、AVIF；不超过 25 MiB，最长边至少 1800 像素。点击保存后才上传 3 个 WebP 网页尺寸。",
+            pending: "已选择图片，尚未保存。",
+            pendingAlt: "待保存的新 Hero 图片",
+            checking: "正在检查图片…",
+            invalid: "图片不可用：{{message}}",
+            cancelled: "已取消选择，公开图片未改变。",
+            selectFirst: "请先选择新图片。",
+            preparing: "正在制作 WebP 网页图片…",
+            uploading: "正在上传第 {{count}}/3 张图片…",
+            saving: "图片已上传，正在保存 Hero 配置…",
+            saved: "首页图片已保存，刷新公开首页即可查看。",
+            saveFailed: "未确认 Hero 保存成功：{{message}}。已选图片保留，可重试；已上传文件可能需要人工核对。"
+        },
+        about: {
+            title: "关于我（About）",
+            description: "编辑首页 About 文案。",
+            manage: "管理关于我 →",
+            languageHint: "正在编辑当前所选语言。可通过上方语言按钮切换并分别保存。",
+            heading: "标题（1～160 字）",
+            body: "正文（1～3000 字；保留换行）",
+            cancelled: "已取消修改，恢复最近一次保存的文字。",
+            invalid: "请填写标题和正文，并遵守字数限制。",
+            saving: "正在保存 About 文字…",
+            saved: "About 文字已保存，刷新公开首页即可查看。",
+            saveFailed: "About 文字保存失败：{{message}}。输入内容已保留，可重试。"
+        },
         status: {
             checking: "正在核查所有者权限…",
             signInRequired: "请使用已登记的所有者账号登录，以打开管理面板。",
             confirmed: "已确认所有者权限。",
             unavailable: "管理面板暂不可用：{{message}}",
-            signedOut: "请登录后打开管理面板。"
+            signedOut: "请登录后打开管理面板。",
+            loading: "正在加载已保存内容…",
+            ready: "已加载保存的内容。",
+            loadFailed: "无法加载已保存内容：{{message}}"
         }
     },
     seo: {

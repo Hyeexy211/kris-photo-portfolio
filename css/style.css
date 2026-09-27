@@ -434,6 +434,10 @@ section p {
     display: block;
 }
 
+#home img[hidden] {
+    display: none;
+}
+
 /* ::after 创建覆盖在照片上的渐变遮罩。 */
 #home::after {
     /* 空内容用于生成伪元素。 */
@@ -1418,6 +1422,11 @@ footer {
     line-height: 1.7;
 
     color: var(--color-muted);
+}
+
+.about-content h2,
+.about-content p {
+    white-space: pre-line;
 }
 
 @media (max-width: 768px) {

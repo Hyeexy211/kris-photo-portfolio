@@ -414,7 +414,7 @@ window.siteLocales.en = {
         backToWebsite: "Back to Website",
         sectionLabel: "Content Management",
         title: "Dashboard",
-        intro: "Manage collections, photos, and categories in Work. Preview the public Gallery.",
+        intro: "Manage Work, the home page Hero image, and About text. Preview the public Gallery.",
         works: {
             title: "Work / Collections",
             description: "Manage collections, photo uploads, details, and categories.",
@@ -425,12 +425,50 @@ window.siteLocales.en = {
             description: "Preview published photos and category filters.",
             manage: "View Gallery →"
         },
+        actions: { save: "Save", cancel: "Cancel changes" },
+        hero: {
+            title: "Hero image",
+            description: "Replace the home page photograph.",
+            manage: "Manage Hero →",
+            noImage: "No Hero image is configured. The dark background is currently shown.",
+            current: "Current published image",
+            previewFailed: "The published image could not be loaded for preview.",
+            newImage: "New image",
+            imageHint: "JPEG, PNG, WebP or AVIF, up to 25 MiB and at least 1800 px on the longest edge. Three WebP sizes are uploaded only after Save.",
+            pending: "Selected image, not saved yet.",
+            pendingAlt: "Selected new Hero image",
+            checking: "Checking image…",
+            invalid: "Image cannot be used: {{message}}",
+            cancelled: "Selection cancelled. The published image is unchanged.",
+            selectFirst: "Choose a new image before saving.",
+            preparing: "Preparing WebP images…",
+            uploading: "Uploading image {{count}} of 3…",
+            saving: "Images uploaded. Saving the Hero setting…",
+            saved: "Hero image saved. Refresh the home page to see it.",
+            saveFailed: "Hero was not confirmed saved: {{message}}. The selected image remains here for retry; uploaded files may need manual review."
+        },
+        about: {
+            title: "About",
+            description: "Edit the home page About copy.",
+            manage: "Manage About →",
+            languageHint: "Editing the selected language. Switch language above to edit the other version.",
+            heading: "Heading (1–160 characters)",
+            body: "Body (1–3000 characters; line breaks are preserved)",
+            cancelled: "Changes cancelled. The last saved text is restored.",
+            invalid: "Enter a heading and body within the stated character limits.",
+            saving: "Saving About text…",
+            saved: "About text saved. Refresh the home page to see it.",
+            saveFailed: "About text could not be saved: {{message}}. Your input remains for retry."
+        },
         status: {
             checking: "Checking owner access…",
             signInRequired: "Sign in with the enrolled owner account to open the Dashboard.",
             confirmed: "Owner access confirmed.",
             unavailable: "Dashboard unavailable: {{message}}",
-            signedOut: "Sign in to open the Dashboard."
+            signedOut: "Sign in to open the Dashboard.",
+            loading: "Loading saved content…",
+            ready: "Saved content loaded.",
+            loadFailed: "Saved content could not be loaded: {{message}}"
         }
     },
     seo: {

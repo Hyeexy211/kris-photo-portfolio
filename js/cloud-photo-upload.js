@@ -116,7 +116,7 @@ function getVerifiedCloudPublicUrl(storage, path) {
 
 async function uploadCloudWebExports(kind, contentId, exports, onUploaded, onAttempt) {
     const revision = createContentId("revision");
-    if (!["photos", "collections"].includes(kind)
+    if (!["photos", "collections", "hero"].includes(kind)
         || !/^[a-z0-9-]+$/.test(contentId) || !/^[a-z0-9-]+$/.test(revision)) {
         throw cloudUploadError("admin.upload.unsafeContentId");
     }

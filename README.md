@@ -4,6 +4,12 @@
 
 这是一个不依赖框架的摄影作品集。首页通过 Content Service 读取作品集与照片，并在下方生成可筛选 Gallery；点击作品卡片后会进入通用的 `collection.html?slug=...` 页面。HTML 负责内容结构，CSS 负责外观与响应式布局，JavaScript 负责数据读取、动态渲染、灯箱、手机菜单和滚动动画。现有照片保存在 `images/` 下；Cloud Admin 新上传的网页图使用 Supabase Storage。`dist/` 是给 Sites 预览和托管使用的同内容副本。
 
+## 首页图片与 About 内容管理
+
+本次源码新增 Dashboard 的「首页图片（Hero）」与「关于我（About）」卡片，进入 `admin/`、使用已登记的所有者账号登录后点击对应卡片。Hero 选择本地 JPEG、PNG、WebP 或 AVIF（不超过 25 MiB、最长边至少 1800 像素）只生成待保存预览；点击保存后才使用现有流程导出并上传三张 WebP，再更新站点设置。About 按当前界面语言编辑原有标题和正文，中文、英文分别保存；正文换行会在公开首页保留。两个页面的「取消本次修改」都只撤销当前未保存输入。未配置 Hero 图片时，首页继续显示原有深色背景；未保存 About 文字或读取失败时，使用原有双语文案。
+
+迁移文件为 [`supabase/migrations/20260927_site_content.sql`](supabase/migrations/20260927_site_content.sql)。它需要已有的 `is_portfolio_admin()`、`portfolio-web` 桶和对应管理员登记，只创建 `site_settings` 单行配置及 Hero 上传权限，不修改旧图片、作品或文案。**2026-09-27 已在本项目现有 Supabase 库应用**，匿名读取与匿名写入拒绝已实际验证；事务内的管理员／非管理员角色写入检查分别返回 1／0 行，事务均已回滚。所有者在真实后台上传及保存、跨设备读取需在部署后实测。其他环境上线时，在该环境的 Supabase SQL Editor 执行该文件，再部署更新后的静态源码及 `dist/` 副本。首次部署后，这两项日常内容更新直接写 Supabase，不需要再次部署。未执行迁移时新页面会显示加载失败，公开首页仍使用原内容。
+
 ## 本轮源码状态（2026-09-23）
 
 - 首页通过 Content Service 和 Repository 只读查询 Supabase。浏览器本地默认作品集、照片和类别已改为空；旧版本的本地记录会按明确的旧 ID 清理。云端读取失败会显示读取错误，不会回退并重新展示旧 localStorage 内容。

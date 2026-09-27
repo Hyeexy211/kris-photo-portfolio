@@ -169,6 +169,34 @@ async function writeSupabaseRow(tableName, operation, values, id) {
 }
 
 const supabaseRepository = Object.freeze({
+    async getSiteSettings() {
+        const client = await getSupabaseClient();
+        const { data, error } = await client.from("site_settings")
+            .select("hero_src, hero_srcset, about_title_en, about_description_en, about_title_zh, about_description_zh")
+            .eq("id", "home")
+            .maybeSingle();
+        if (error) throw new Error(`Supabase could not read site settings: ${error.message}`);
+        return data;
+    },
+
+    async updateSiteHero(image) {
+        return writeSupabaseRow("site_settings", "update", {
+            hero_src: image.src,
+            hero_srcset: image.srcset,
+            updated_at: new Date().toISOString()
+        }, "home");
+    },
+
+    async updateSiteAbout(language, title, description) {
+        const suffix = language === "zh-CN" ? "zh" : language === "en" ? "en" : null;
+        if (!suffix) throw new Error("Unsupported About language.");
+        return writeSupabaseRow("site_settings", "update", {
+            [`about_title_${suffix}`]: title,
+            [`about_description_${suffix}`]: description,
+            updated_at: new Date().toISOString()
+        }, "home");
+    },
+
     async getCategories() {
         const client = await getSupabaseClient();
         const { data, error } = await client.from("categories")
