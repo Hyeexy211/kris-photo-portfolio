@@ -64,6 +64,11 @@ deployment checks, with remaining negative-path limits listed below.
   legacy 404 routes, generic not-found views, and anonymous Admin gating passed
   online without page, console, or same-origin resource errors. The ignored
   `dist/` preview copy matched the root source in bytewise checks.
+- On 2026-09-27, the current `320b372` source and live site received another
+  read-only public/anonymous check. Isolated browser-local CRUD, batch editing,
+  Gallery, Lightbox, language, mobile, image-export, and cloud-read failure
+  checks passed. The exact scope and untested owner cloud paths are recorded in
+  `docs/functionality-test-report-2026-09-27.md`.
 
 ## Verified in an earlier release or test
 
