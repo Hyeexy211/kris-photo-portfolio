@@ -24,8 +24,8 @@ backend and storage phases are optional expansion, not release prerequisites.
 
 Checkboxes in older phases record the work verified **at that time**. The
 previously merged `main` static files were checked on GitHub Pages; the current
-zero-content and Work Admin changes require their own database and deployment
-checks.
+zero-content and Work Admin changes have also received separate database and
+deployment checks, with remaining negative-path limits listed below.
 
 ---
 
@@ -59,6 +59,11 @@ checks.
 - On 2026-09-27, public read-only data returned 0 Collections, 0 Photos, and
   4 later-added Categories. These were not on the audited deletion list and
   have been retained.
+- Source commit `2035280` was pushed to `main`; GitHub Pages built that exact
+  commit. Desktop English and mobile Chinese public pages, empty filters,
+  legacy 404 routes, generic not-found views, and anonymous Admin gating passed
+  online without page, console, or same-origin resource errors. The ignored
+  `dist/` preview copy matched the root source in bytewise checks.
 
 ## Verified in an earlier release or test
 
@@ -73,16 +78,15 @@ checks.
 
 ## In Progress
 
-- Confirm the new source and `dist/` parity, then publish and inspect the
-  GitHub Pages build and public pages separately from the database
 - Finish negative permission checks with a second signed-in non-admin account
   and a real partial-failure cleanup test; mock retries and ambiguous responses
   are verified locally
 
 ## Next
 
-- After release, confirm zero-content states, category filters, old routes,
-  desktop/mobile layouts, languages, images, and console on GitHub Pages
+- Add real owner content through Work Admin when photos and verified metadata
+  are ready; generate a content-aware sitemap if individual entries later need
+  search indexing
 - Complete remaining non-admin, invalid-upload, and live failure-cleanup checks
 
 ## Deferred
@@ -791,7 +795,7 @@ Verify Work Admin, Gallery, empty-state, and retry tests
     ↓
 Remove temporary QA content and verify post-test counts (2026-09-23)
     ↓
-Synchronize dist, then separately publish and check GitHub Pages
+Synchronize dist, publish commit 2035280, and check GitHub Pages (done)
 ```
 
 The earlier local release checks are recorded in `docs/performance-audit.md`.
@@ -807,7 +811,7 @@ originals and old web images as backups and publish no unverified metadata.
 | --- | --- | --- |
 | COMPLETED; LATER CONTENT PRESERVED | Legacy content reset | Non-public export and exact ID/image manifest were checked; conditional deletion changed 3/9 to 0/0. Temporary QA rows and exports were removed; 2026-09-23 post-test counts were all zero. Four categories added afterward remain in production. Repository image files are retained. |
 | APPLIED; CORE BEHAVIOR VERIFIED | Shared categories | `20260923_shared_categories.sql` was applied after the audited reset. Public read, owner write, rename, merge, and unused-category removal passed. The rollback plan is documented, not executed. |
-| PENDING RELEASE CHECK | Current source and dist | Check the zero-content pages, Work-only editing, old URLs, desktop/mobile, both languages, resources, Console, and actual GitHub Pages state after release. |
+| RELEASED AND ONLINE CHECKED | Current source and dist | Root and ignored dist files matched; Pages built `2035280`. Online zero-content pages, old URLs, desktop English, mobile Chinese, resources, Console, and anonymous Admin passed. Owner editing was verified against real Supabase in the local HTTP preview. |
 | OWNER QUEUE/BATCH VERIFIED; NEGATIVE CASE OPEN | Cloud Admin and Auth | Owner multi-photo and batch flows passed with real Supabase; anonymous INSERT was denied. A second signed-in non-admin account remains untested. See `docs/supabase-admin-setup.md`. |
 | OWNER UPLOAD VERIFIED; FAILURE INJECTION OPEN | Storage | Owner multi-photo WebP upload and test-export cleanup passed with real Supabase; ambiguous PUT/retry behavior passed mock tests. Real partial failure, invalid path/MIME/size, overwrite, and other negative cases remain. See `docs/supabase-storage-setup.md`. |
 | MANUAL ACTION REQUIRED | Complete backup and monitoring | Keep the current non-public JSON export, choose an external backup destination, and test restoration and alerts. The public JSON is only a partial copy. |

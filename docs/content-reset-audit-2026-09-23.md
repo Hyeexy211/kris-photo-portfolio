@@ -58,3 +58,9 @@ Storage 页面同时显示 `portfolio-web` 桶根为空。此次清理的是本�
 ## 后续只读复核（2026-09-27）
 
 公开只读 API 再次返回 `collections=0`、`photos=0`、`categories=4`。这 4 个类别（`portrait`、`street`、`landscape`、`cafe`）的 `created_at` 均为 2026-09-23 14:13:41 UTC，晚于本轮测试清理时的零计数；它们不在旧内容或临时 QA 删除清单中，因此保留。上述 Storage 的 `0/0` 是 2026-09-23 清理后的实测值，不能据此推断 2026-09-27 的 Storage 对象数量。
+
+## 静态发布与线上复核（2026-09-27）
+
+根目录源码提交 `203528009657c8a2e590fdfce69b86c7c9f32979` 已推送到 `main`，GitHub Pages（来源 `main` 仓库根目录）报告该提交的构建状态为 `built`、错误为空。独立维护的 `dist/` 不参与 GitHub Pages 构建；本轮已对 HTML、CSS、JavaScript、数据、语言包、文档和保留的图片逐项核对与根目录一致。
+
+公开站点桌面英文（1440px）和手机中文（390px）实测为 0 个作品集、0 张照片、4 个可筛选的空类别；首页无旧 Hero 图片，画廊与作品集均显示正常空状态，页面无横向溢出、脚本错误或同源资源失败。旧 `projects/portrait.html`、`photos/portrait-001.html` 返回 404；通用 `photo.html?id=portrait-001` 与 `collection.html?slug=portrait` 不展示旧记录；站点地图只列首页；匿名打开后台不能进入编辑区。旧 Hero 图片 URL 仍返回 200，这是按要求保留公开图片文件的结果，不代表页面仍展示它。
