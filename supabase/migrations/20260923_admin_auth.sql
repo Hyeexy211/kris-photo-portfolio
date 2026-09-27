@@ -1,4 +1,4 @@
--- Run after schema.sql and seed.sql. Existing public reads remain available.
+-- Run after schema.sql. Existing public reads remain available.
 -- No user is granted write access until an Auth user is explicitly enrolled.
 
 begin;

@@ -22,60 +22,74 @@ Avoid implementing later-stage infrastructure before the current stage is stable
 The first GitHub Pages release belongs to the current static-site stage; the later
 backend and storage phases are optional expansion, not release prerequisites.
 
-Checkboxes describe verified work in this repository. The previously merged
-`main` static files were also checked on GitHub Pages; later changes require
-their own deployment check.
+Checkboxes in older phases record the work verified **at that time**. The
+previously merged `main` static files were checked on GitHub Pages; the current
+zero-content and Work Admin changes require their own database and deployment
+checks.
 
 ---
 
-# Current Project Status (2026-09-23)
+# Current Project Status (2026-09-27)
 
-## Completed
+## Implemented in current repository source
 
-- Native HTML/CSS/JavaScript responsive portfolio foundation
-- Three real Collection pages plus the reusable `collection.html?slug=...` page
-- Data-driven Work and Gallery rendering, category filters, Reveal, and Lightbox
-- Responsive 640px, 1200px, and 1800px WebP delivery for current photographs
-- Browser-local Content Admin prototype with localStorage persistence
-- Content Service plus local and Supabase Repository boundaries
-- Real Supabase `collections` / `photos` tables, seed data, public-read RLS, and verified cloud reads
-- Public GitHub Pages release at `https://hyeexy211.github.io/kris-photo-portfolio/`
-- Merged into local `main` from `feature/roadmap-completion`: nine static photograph pages with individual
-  previews, captions and mobile Lightbox swipe, optional local tags/metadata,
-  1200px web-size downloads, sitemap, and local performance checks
-- Live owner sign-in and administrator identity were verified on 2026-09-23;
-  the content-field and Collection unlink migration was applied, preserving
-  all previous fields and timestamps of the three Collections and nine Photos
-- Live SQL inspection confirmed the two Storage buckets and four owner-only
-  policies already existed; both buckets were empty at that inspection and
-  the Storage migration was not rerun
-- Post-migration owner CRUD, cover/photo upload and replacement, category
-  changes, membership/order, and deletion passed against real Supabase from
-  the current source's HTTP preview; the original three Collections and nine
-  Photos matched the baseline afterward and all 15 test exports were removed
-- Anonymous database INSERT and Storage upload were denied; a public-content
-  export script is also implemented
+- Native HTML/CSS/JavaScript responsive pages, generic Collection and Photo
+  routes, data-driven Work and Gallery, Reveal, Lightbox, and responsive WebPs
+- Empty browser-local default Collections and Photos, a targeted old-ID cache
+  cleanup, and no public fallback to stale localStorage when Supabase fails
+- Default authenticated Cloud Admin with the Work / Collection section as the
+  photo editor: shared category controls, multiple file selection, per-photo
+  review and retry, membership/order/category batch actions, and batch deletion
+- Shared-category SQL migration and rollback files, with Repository and Content
+  Service support; the SQL has been applied to this project's production database
+- Old static Collection and Photo pages removed from source; the sitemap lists
+  only the homepage, while existing image files remain in place
+
+## Verified in this reset
+
+- A non-public JSON export was read back with 3 Collections and 9 Photos;
+  its path, SHA-256, record IDs, and image references are documented in
+  `docs/content-reset-audit-2026-09-23.md`.
+- The production database deleted only the inventoried old IDs, then returned
+  0 Collections and 0 Photos. The shared-category migration was applied after
+  that reset. Real owner QA then passed multi-photo, shared-category, batch,
+  move, order, and public display flows. Its 2 Collections, 2 Photos, 1 Category,
+  12 WebPs, and 4 automatic empty-folder objects were removed. Immediately after
+  cleanup, the three content tables and two Storage buckets all counted 0.
+- On 2026-09-27, public read-only data returned 0 Collections, 0 Photos, and
+  4 later-added Categories. These were not on the audited deletion list and
+  have been retained.
+
+## Verified in an earlier release or test
+
+- The then-current `main` was released on GitHub Pages. That check does not
+  establish that the current source or `dist/` is deployed.
+- On 2026-09-23, the owner login, content-field migration, two Storage buckets,
+  owner policies, single-photo/cover upload and replacement, and several CRUD
+  paths were verified against real Supabase. The old 3 Collection / 9 Photo
+  baseline was preserved after those tests and 15 test web exports were removed.
+- Anonymous database INSERT and Storage upload were denied then. A second
+  signed-in non-admin account was not tested.
 
 ## In Progress
 
-- Remaining negative permission and failure-cleanup checks, including a second
-  signed-in non-admin account, and verification after publishing the current source
-- Phase 5 archive cleanup is paused by the owner's decision to keep originals
-  in the public repository; real photographs have no verified date, location,
-  or equipment values to publish
+- Confirm the new source and `dist/` parity, then publish and inspect the
+  GitHub Pages build and public pages separately from the database
+- Finish negative permission checks with a second signed-in non-admin account
+  and a real partial-failure cleanup test; mock retries and ambiguous responses
+  are verified locally
 
 ## Next
 
-- Verify the merged `main` release on the deployed site and check social previews
-- Complete the remaining permission/failure scenarios with temporary content,
-  then remove it and compare original records with the baseline
+- After release, confirm zero-content states, category filters, old routes,
+  desktop/mobile layouts, languages, images, and console on GitHub Pages
+- Complete remaining non-admin, invalid-upload, and live failure-cleanup checks
 
 ## Deferred
 
-- Original-file removal, verified but unavailable photo metadata, and a decision
-  about Street/Cafe work
-- Live upload release, source-file archive, production CDN, monitoring, custom
-  domain, and full database/image backup until service and account setup is available
+- Original-file removal and unverified date, location, or equipment metadata
+- Original-file archive, production CDN, monitoring, custom domain, and a full
+  database/image restore process
 - Analytics and long-term platform ideas until the owner chooses their scope
 
 `Weblesson.docx` is outside this roadmap execution at the owner's request.
@@ -204,9 +218,10 @@ Make viewing individual photographs immersive.
 - [ ] Shutter speed
 - [ ] ISO
 
-Metadata should only be displayed when useful.
-The interfaces accept these optional fields, but the nine published photos
-have no owner-confirmed values. Their public values intentionally stay blank.
+Metadata should only be displayed when useful. In the earlier nine-photo
+release, those photos had no owner-confirmed optional values; their public
+values intentionally stayed blank. New records should likewise leave unknown
+fields blank.
 
 The interface should remain visually minimal.
 
@@ -259,6 +274,9 @@ Make the first static portfolio fast while preserving photographic quality.
 
 ## Web Image Export (Lesson 16)
 
+These checkboxes document the earlier photo-filled release. The current
+zero-content Hero keeps its structure without referencing an old photograph.
+
 - [ ] Keep RAW and high-quality photo archives outside the website repository; publish only web-ready assets
 - [ ] Resize the hero export to roughly 2000-2400px on its longest edge
 - [ ] Resize gallery exports to roughly 1600-1800px on their longest edge
@@ -269,17 +287,17 @@ Make the first static portfolio fast while preserving photographic quality.
 - [x] Keep the hero eager-loaded and lazy-load below-the-fold gallery images
 - [x] Replace numbered placeholder `alt` text with meaningful descriptions of the photographs
 
-The responsive WebP set now contains real 640px, 1200px, and 1800px-wide
-files. Its total size fell from roughly 128 MiB to 6.4 MiB, and the HTML
-dimensions match each default `src`. ExifTool confirms embedded sRGB ICC
+The retained responsive WebP set contains real 640px, 1200px, and 1800px-wide
+files. In the earlier release, its total size fell from roughly 128 MiB to
+6.4 MiB, and the HTML dimensions matched each default `src`. ExifTool confirmed embedded sRGB ICC
 profiles in all 30 responsive variants. The 10 source JPEGs and 10 unnumbered
 full-resolution WebPs have neither an embedded ICC profile nor EXIF ColorSpace;
 `sips` reporting sRGB for the JPEGs does not establish an embedded profile.
-At matched 1200px dimensions, 10 current WebPs totaled 1.93 MiB, compared
+At matched 1200px dimensions, those 10 WebPs totaled 1.93 MiB, compared
 with 3.28 MiB for temporary JPEG quality 80 and 3.97 MiB at quality 85.
-Equal-pixel crops were inspected by eye; the current WebPs remain suitable.
+Equal-pixel crops were inspected by eye; the retained WebPs remain available.
 See `docs/performance-audit.md` for the method and limits. The 1800px label
-describes width: the hero and five portrait Gallery variants are 1800 × 2700,
+describes width: the old Hero and five portrait Gallery variants are 1800 × 2700,
 so the longest-edge export targets above remain open. The owner chose to
 retain all originals and full-size WebPs in the repository for now.
 
@@ -318,6 +336,9 @@ Original
 - [x] Mobile network testing
 - [x] Test 200 synthetic cards at desktop and mobile widths
 
+These checks belong to the earlier image-filled release; the current
+zero-content Hero and Gallery require a separate layout and console check.
+
 ---
 
 # Phase 6: Photography Data Model
@@ -352,14 +373,13 @@ Tasks:
 
 This phase may initially use JSON before introducing a database.
 
-Lesson 22 starts this phase with `data/photos.js` and one real repository image.
-Lesson 24 expands that data to the nine existing portfolio photographs and uses
+Lesson 22 started this phase with `data/photos.js` and one real repository image.
+Lesson 24 expanded that data to the nine then-existing portfolio photographs and used
 `createPhotoCard()` plus `renderGallery()` to build a filterable homepage
-Gallery. Unverified dates remain empty and are not rendered. The category
-filters preserve the repository's real Portrait, Documentary and Landscape
-categories. The later Gallery implementation generates filters from categories
-used by actual Photos. Street has no Photo now, so its filter is hidden until
-real Street work is added. The empty dataset still has an empty state.
+Gallery. Unverified dates remained empty. In the current source, category
+filters use the shared category definitions; a category with no photos can
+show an empty state. The old Portrait, Documentary, Landscape, and Street
+examples are not default content after the reset.
 
 ---
 
@@ -438,18 +458,22 @@ Tasks:
 - [x] Select Supabase as the Lesson 34 database/Data API architecture
 - [x] Use the Supabase Data API for public read requests
 - [x] Create the `collections` and `photos` database tables
-- [ ] Connect object storage
-- [x] Create the initial collection and photograph records
-- [ ] Category management
+- [x] Connect Supabase Storage for owner-uploaded web exports
+- [x] Create the initial collection and photograph records (historical stage;
+  those records are being retired)
+- [x] Implement shared category definitions, owner CRUD, and merge in source
+- [x] Apply the shared category migration in the existing production database
+- [ ] Verify all current owner and anonymous category behavior after migration
 - [ ] Tag management
 
 ## Lesson 34: Supabase Database + API Integration
 
 - [x] Add a browser-safe Supabase client and dedicated read repository
 - [x] Keep UI reads behind the existing Content Service
-- [x] Preserve localStorage as the local repository and cloud-read fallback
+- [x] Preserve localStorage for the explicit local Admin prototype
+- [x] Disable cloud-read fallback to old localStorage content for public pages
 - [x] Convert Work, Gallery, and Collection reads to async loading/error/empty flows
-- [x] Document the `collections` / `photos` schema, relationship, seed, and public-read RLS
+- [x] Document the `collections` / `photos` schema, relationship, and public-read RLS
 - [x] Create the real Supabase project/tables and add its URL plus publishable key
 - [x] Verify live cloud reads after the dashboard configuration is available
 
@@ -469,9 +493,9 @@ Allow photographs to be uploaded and managed through the website.
 
 ## Current Browser-local Prototype (Lesson 33)
 
-- [x] Create, edit, and delete Work and Gallery records in the current browser
+- [x] Create, edit, and delete Work and Photo records in the current browser
 - [x] Persist browser-local changes with localStorage
-- [x] Restore the repository seed data
+- [x] Clear browser-local records and categories to the empty default after confirmation
 - [x] Connect Admin writes to authenticated cloud data
 
 This prototype is intentionally not a secure cloud CMS. It has no login, still
@@ -483,14 +507,15 @@ and optional photo metadata columns. Live owner sign-in, administrator
 identity, and the existing Auth/RLS configuration were verified on 2026-09-23.
 The default `admin.html` (and compatible `?mode=cloud` URL) has an owner sign-in
 gate and repository-backed CRUD code; `?mode=local` retains the browser-local
-prototype. Local CRUD tests passed. Live temporary row creation/deletion and
+prototype. Local CRUD tests passed in the earlier implementation. Live temporary row creation/deletion and
 category changes passed before the content migration; missing-field and old-FK
 errors were then resolved by applying `20260923_collection_content.sql`.
-Post-migration owner forms, membership, ordering, cover/photo uploads and
-replacement, and deletion passed using temporary content against real
-Supabase. Original rows matched the baseline afterward, and all test exports
-were removed. Anonymous INSERT/upload was denied; a second signed-in
-non-admin account and broader negative cases remain untested.
+Post-migration owner forms, membership, ordering, single cover/photo uploads
+and replacement, and deletion passed using temporary content against real
+Supabase **before this reset**. Original rows matched that baseline afterward,
+and all test exports were removed. Anonymous INSERT/upload was denied; a
+second signed-in non-admin account and the new queue/batch flows remain
+untested against the live project.
 The static Admin URL itself cannot be server-protected by GitHub Pages; RLS
 provides the data boundary.
 
@@ -502,7 +527,9 @@ provides the data boundary.
 
 ## Upload
 
-- [x] Select an image for a new or existing Collection/Gallery item in Cloud Admin
+- [x] Select an image for a new or existing Collection/Photo in Work Admin
+- [x] Add multiple-photo selection, per-photo review, status, and failed-only retry in source
+- [ ] Verify the multiple-photo queue and retry against real Supabase
 - [x] Preview the current or newly selected image before saving
 - [x] Upload photographs to the live owner-controlled Storage bucket
 - [x] Show completed-file progress for the three prepared web exports
@@ -510,7 +537,7 @@ provides the data boundary.
 - [x] Generate the 640px Gallery thumbnail export
 - [ ] Store originals
 
-Cloud Admin upload handles Collection covers and Gallery photos
+Cloud Admin upload handles Collection covers and Photos in the Work section
 on create or edit. It accepts JPEG, PNG, WebP, or browser-decodable AVIF at
 least 1800 pixels on the longest edge, no larger than 25 MiB or 40 megapixels.
 The three export sizes refer to longest edges; portrait and landscape images
@@ -524,7 +551,7 @@ On an upload or confirmed database failure, the editor attempts to remove
 only the new keys from that attempt. Ambiguous writes or cleanup failures
 require manual review. Replacing an image does not delete its older objects.
 
-The new Collection and Gallery create/edit flows, desktop and mobile previews,
+The earlier single-image Collection and Photo create/edit flows, desktop and mobile previews,
 database rejection, partial upload failure, and cleanup passed local browser
 tests with mocked Storage and database services. A
 temporary JPEG containing GPS EXIF was exported in Chromium; ExifTool found
@@ -619,15 +646,16 @@ Original download
 
 Tasks:
 
-- [x] Offer 1200px WebP downloads for the nine published photos
+- [x] Offer 1200px WebP downloads for the nine photos in the earlier release
 - [x] Limit the website download link to verified same-site web exports
 - [x] Use stable `kris-<photo-id>-web.webp` filenames
 - [ ] Original image protection
 - [ ] Optional watermark strategy
 
-The owner chose web-size downloads only. Browser checks verified all nine
-downloaded files and filenames at desktop and mobile widths. See
-`docs/download-policy.md` for the scope and the current original-file limit.
+The owner chose web-size downloads only. Earlier browser checks verified all
+nine files and filenames at desktop and mobile widths. The current generic
+Photo page does not offer downloads for new cloud Storage photos. See
+`docs/download-policy.md` for the earlier scope and original-file limit.
 
 ---
 
@@ -646,16 +674,18 @@ Make the website publicly accessible.
 - [x] Test the live hero, Collections, Gallery filters, navigation, Lightbox, and mobile menu
 - [x] Confirm the deployed page loads its CSS, scripts, photographs, and Supabase reads without console errors
 
-The public site is available at
+The previously published site is available at
 `https://hyeexy211.github.io/kris-photo-portfolio/`. Deployment verification on
 September 23, 2026 covered desktop, 390px mobile, the three Collections, all
 nine Gallery photographs, filters, dynamic/static Lightbox flows, browser-local
-Admin compatibility, real Supabase `200` reads, and simulated cloud fallback.
+Admin compatibility, real Supabase `200` reads, and the then-current simulated
+cloud fallback. That fallback is disabled in the current source.
 The authenticated GitHub Pages API confirmed `main` and repository root as
 the current build source, with HTTPS enforced; see
 `docs/deployment-settings-audit.md`. After the feature merge, the public
 homepage, main CSS/JS files, and `admin/` route were checked against the
-merged source. The later default Admin entry change needs its own live check.
+merged source. The current zero-content and Work Admin changes need their own
+live check.
 
 ## Later Production Improvements
 
@@ -666,10 +696,11 @@ merged source. The later default Admin entry change needs its own live check.
 - [ ] Error monitoring
 - [ ] Backup strategy
 
-`scripts/export-public-content.js` now makes a read-only, external JSON copy
-of the public Collections and Photos rows; it was checked against the live
-3-Collection/9-Photo data. This is a recovery aid, not a database or image
-backup. Dashboard backup configuration, a separate copy, and a restore test
+`scripts/export-public-content.js` makes a read-only, external JSON copy of
+public Collections and Photos rows. The current reset's 3/9 archive was read
+back and its SHA-256 checked before the audited deletion returned 0/0; see
+`docs/content-reset-audit-2026-09-23.md`. The JSON is a recovery aid, not a
+database or image backup. Dashboard backup configuration and a restore test
 remain manual. Release checks and the monitoring gap are recorded in
 `docs/backup-and-monitoring.md`.
 
@@ -698,15 +729,14 @@ system for its first release.
 - [x] Generate structured static pages for the nine published photographs
 - [x] Give those nine pages individual social preview metadata
 
-The sitemap lists the nine static photo pages. `node scripts/generate-photo-pages.js`
-regenerates them from the seed; `--source=supabase` reads those same nine IDs
-from the public cloud table after a Cloud Admin edit. Review and deploy the
-generated files to update their preview metadata. New cloud-only photos still
-use `photo.html?id=...` with generic initial metadata, and a removed seed photo
-needs a deliberate static-page/sitemap review. Social crawlers still need a
-live check after the merged source is deployed. On a GitHub Pages project site,
-this repository's `robots.txt` is served beneath `/kris-photo-portfolio/`;
-it cannot set the domain-root robots policy.
+These checkboxes record the earlier release. During the zero-content reset, the
+nine old static photo pages and seed-based generator were retired. Current
+photographs use `photo.html?id=...` with generic initial metadata, and the
+sitemap lists only the homepage until a new static publishing process is
+chosen. Social crawlers still need a live check after the changed source is
+deployed. On a GitHub Pages project site, this repository's `robots.txt` is
+served beneath `/kris-photo-portfolio/`; it cannot set the domain-root robots
+policy.
 
 ---
 
@@ -753,37 +783,37 @@ These are optional and should not distract from the core portfolio.
 Current development priority:
 
 ```text
-Confirm the default Cloud Admin entry reaches GitHub Pages
+Non-public export read back; audited old IDs deleted (3/9 → 0/0)
     ↓
-Verify Pages, social previews, downloads, and public reads after deployment
+Shared category migration applied in production
     ↓
-Complete remaining non-admin, invalid-upload, and failure-cleanup checks
+Verify Work Admin, Gallery, empty-state, and retry tests
     ↓
-Keep test cleanup and original-record comparison as acceptance requirements
+Remove temporary QA content and verify post-test counts (2026-09-23)
     ↓
-Choose whether to activate upload, analytics, and optional platform ideas
+Synchronize dist, then separately publish and check GitHub Pages
 ```
 
-The local release checks are complete as recorded in `docs/performance-audit.md`.
-Live owner identity, content migration, Storage configuration, and owner
-upload/CRUD workflows are verified. Test rows and all test exports were
-removed; original rows and timestamps were unchanged. Remaining negative
-permission, failure-cleanup, and recovery checks are recorded in
-`docs/crud-test-report-2026-09-23.md`. The owner has decided to keep originals
-in the repository and to publish no unverified photo metadata.
+The earlier local release checks are recorded in `docs/performance-audit.md`.
+The earlier live owner login, content-field migration, Storage configuration,
+and single-photo upload/CRUD checks are recorded in
+`docs/crud-test-report-2026-09-23.md`. Its test rows and exports were removed
+then; it does not establish completion of this reset. The owner chose to keep
+originals and old web images as backups and publish no unverified metadata.
 
 ## Manual actions and owner decisions
 
 | Status | Roadmap item | Required action |
 | --- | --- | --- |
-| MANUAL ACTION REQUIRED | Verify the next release | Check the live default Admin entry, image downloads, links, Console, and social previews after publishing the next `main` update. |
-| OWNER WORKFLOWS VERIFIED; PERMISSION CHECKS REMAIN | Cloud Admin and Auth | Owner sign-in and CRUD passed; anonymous INSERT was denied. Test a second signed-in non-admin account and remaining negative cases. See `docs/supabase-admin-setup.md`. |
-| VERIFIED | Collection story and Photo metadata | `20260923_collection_content.sql` was applied on 2026-09-23. Story/time edits, independent Collection order, membership changes, and deletion retaining Photos passed; original rows and timestamps matched after cleanup. See `docs/user-guide.zh-CN.md`. |
-| OWNER UPLOAD VERIFIED; NEGATIVE CHECKS REMAIN | Storage and CDN | Existing buckets/policies were retained. Owner upload, replacement, public delivery, and cleanup passed; anonymous upload was denied. Complete non-admin, invalid-path/MIME/size, overwrite, and live failure-cleanup cases. See `docs/supabase-storage-setup.md`. |
-| MANUAL ACTION REQUIRED | Complete backup and monitoring | Select an external backup destination and monitoring service, then test restoration and production alerts. The public JSON export is only a partial copy. |
+| COMPLETED; LATER CONTENT PRESERVED | Legacy content reset | Non-public export and exact ID/image manifest were checked; conditional deletion changed 3/9 to 0/0. Temporary QA rows and exports were removed; 2026-09-23 post-test counts were all zero. Four categories added afterward remain in production. Repository image files are retained. |
+| APPLIED; CORE BEHAVIOR VERIFIED | Shared categories | `20260923_shared_categories.sql` was applied after the audited reset. Public read, owner write, rename, merge, and unused-category removal passed. The rollback plan is documented, not executed. |
+| PENDING RELEASE CHECK | Current source and dist | Check the zero-content pages, Work-only editing, old URLs, desktop/mobile, both languages, resources, Console, and actual GitHub Pages state after release. |
+| OWNER QUEUE/BATCH VERIFIED; NEGATIVE CASE OPEN | Cloud Admin and Auth | Owner multi-photo and batch flows passed with real Supabase; anonymous INSERT was denied. A second signed-in non-admin account remains untested. See `docs/supabase-admin-setup.md`. |
+| OWNER UPLOAD VERIFIED; FAILURE INJECTION OPEN | Storage | Owner multi-photo WebP upload and test-export cleanup passed with real Supabase; ambiguous PUT/retry behavior passed mock tests. Real partial failure, invalid path/MIME/size, overwrite, and other negative cases remain. See `docs/supabase-storage-setup.md`. |
+| MANUAL ACTION REQUIRED | Complete backup and monitoring | Keep the current non-public JSON export, choose an external backup destination, and test restoration and alerts. The public JSON is only a partial copy. |
 | OWNER CONTENT REQUIRED | Real date, location, gear, GPS | Leave the optional fields blank until trustworthy source information and a privacy decision are supplied. |
 | OWNER DECISION | Archive and original protection | Keep all originals in the public repository for now, as requested. This means already published originals are publicly accessible even if a private Storage bucket is configured later. |
-| OWNER REVIEW | Hero and portrait longest-edge exports | Current `-1800.webp` files use 1800px width and reach 2700px in height. Local mobile Lighthouse scored 98. Re-exporting to the earlier longest-edge targets would change photo detail; review full-size appearance before replacing them. |
+| HISTORICAL PERFORMANCE NOTE | Retained old image exports | Some old `-1800.webp` files use 1800px width and reach 2700px in height. They remain stored as backups; the zero-content Hero no longer references an old photograph. |
 | OPTIONAL | Custom domain, analytics, Street/Cafe, and long-term ideas | Define actual content, service, and privacy requirements before implementation. These are not prerequisites for the current portfolio release. |
 
 ---

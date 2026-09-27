@@ -18,9 +18,7 @@ window.siteLocales["zh-CN"] = {
         closeMenu: "关闭导航菜单"
     },
     hero: {
-        title: "Kris Huang 摄影",
-        categories: "人像 · 纪实 · 风光",
-        imageAlt: "暖色吊灯悬在雨痕斑驳的窗边，窗外是薄雾中的树木"
+        title: "Kris Huang 摄影"
     },
     home: {
         workEyebrow: "精选作品",
@@ -30,14 +28,10 @@ window.siteLocales["zh-CN"] = {
         filterLabel: "按类别筛选照片",
         aboutLabel: "关于",
         aboutTitle: "我拍摄值得被记住的人、地方和安静瞬间。",
-        aboutDescription: "我是 Kris，主要拍摄人像、纪实和风光。"
+        aboutDescription: "我是 Kris，正在逐步整理自己的摄影作品。"
     },
     categories: {
-        all: "全部",
-        street: "街头",
-        portrait: "人像",
-        documentary: "纪实",
-        landscape: "风光"
+        all: "全部"
     },
     work: {
         noScript: "需要启用 JavaScript 才能加载作品集。",
@@ -110,14 +104,6 @@ window.siteLocales["zh-CN"] = {
     footer: {
         copyright: "© 2026 Kris Photography"
     },
-    legacy: {
-        portraitDescription: "从室内看雨窗、倒影与安静瞬间。",
-        portraitGalleryLabel: "Portrait 作品集照片",
-        documentaryDescription: "在柔和的光线中观察安静的室内、植物与物件。",
-        documentaryGalleryLabel: "Documentary 作品集照片",
-        landscapeDescription: "城市灯光、变化的天空与花园小径的三个画面。",
-        landscapeGalleryLabel: "Landscape 作品集照片"
-    },
     admin: {
         seo: {
             title: "内容管理 | Kris Photography",
@@ -126,7 +112,7 @@ window.siteLocales["zh-CN"] = {
         nav: {
             label: "管理导航",
             works: "作品",
-            gallery: "画廊",
+            gallery: "查看画廊",
             viewSite: "查看网站"
         },
         mode: {
@@ -135,7 +121,7 @@ window.siteLocales["zh-CN"] = {
             localLink: "浏览器本地编辑器",
             cloudLink: "云端管理",
             cloudLabel: "已认证的云端编辑器",
-            cloudIntro: "所有者登录后，云端修改会更新 Supabase。已发布照片的分享预览需要在编辑后重新生成并部署。",
+            cloudIntro: "所有者登录后，此处修改会更新 Supabase。照片在作品区编辑；公开画廊负责展示结果。",
             fileNotice: "这是电脑上的本地文件，不是已发布的网站。上传图片请打开线上 Dashboard；预览本地源码请通过 HTTP 服务。",
             openOnlineDashboard: "打开线上 Dashboard"
         },
@@ -190,14 +176,14 @@ window.siteLocales["zh-CN"] = {
             deleteCheckFailed: "作品集已删除，但无法核实照片是否全部解除关联。请刷新并检查 Gallery。"
         },
         gallery: {
-            sectionLabel: "画廊 / 照片",
-            title: "管理画廊",
-            save: "保存画廊项目",
-            createTitle: "新建画廊项目",
-            editTitle: "编辑画廊项目",
+            sectionLabel: "作品区照片",
+            title: "管理照片",
+            save: "保存照片",
+            createTitle: "请先在上方选择照片并填写资料",
+            editTitle: "编辑照片",
             meta: "ID：{{id}} · 类别：{{category}} · 作品集：{{collection}}",
-            itemType: "画廊项目",
-            empty: "尚未保存画廊项目。",
+            itemType: "照片",
+            empty: "尚未保存照片。",
             fileOnlyNew: "只有新建画廊项目时才能上传文件。",
             saveFailed: "无法保存画廊项目。",
             unknownCollection: "请选择已有的作品集 ID；也可留空，让照片只出现在 Gallery。",
@@ -234,6 +220,25 @@ window.siteLocales["zh-CN"] = {
             add: "加入所选照片",
             remove: "移出所选照片",
             saveOrder: "保存集内顺序",
+            commonCategory: "为所选照片设置共同类别",
+            applyCategory: "应用类别",
+            deleteSelected: "删除所选照片记录",
+            retryFailed: "只重试失败的修改",
+            addFieldsConfirm: "将 {{count}} 张照片加入“{{title}}”？只修改 collectionId 和 collectionOrder；已有其他归属的照片会移到这里。",
+            removeFieldsConfirm: "将 {{count}} 张照片移出当前作品集？只清空 collectionId 和 collectionOrder，照片记录与图片文件保留。",
+            orderFieldsConfirm: "保存 {{count}} 张照片的集内顺序？只修改 collectionOrder，画廊顺序保持不变。",
+            categoryFieldsConfirm: "把 {{count}} 张照片设为“{{category}}”类别？只修改 category，逐张资料保持不变。",
+            deleteConfirm: "删除所选的 {{count}} 条照片记录？它们会从作品集和画廊消失。已上传图片对象会作为备份留在 Storage，旧地址可能仍可访问。后台无法撤销此删除。",
+            savingOne: "正在保存第 {{current}}/{{total}} 张…",
+            savedOne: "已保存",
+            skippedOne: "无变动",
+            deletingOne: "正在删除第 {{current}}/{{total}} 张…",
+            deletedOne: "已删除",
+            failedOne: "失败：{{message}}",
+            failedCount: "项失败；可只重试这些项目。",
+            categorySaved: "已保存 {{count}} 张照片的类别。",
+            deleteDone: "已删除 {{deleted}} 条照片记录。图片对象仍保留在 Storage。",
+            deletePartial: "已删除 {{deleted}} 条照片记录，{{failed}} 条失败；可只重试失败项。",
             up: "上移“{{title}}”",
             down: "下移“{{title}}”",
             moveConfirm: "所选照片中有 {{count}} 张已属于其他作品集。确定移动其归属到当前作品集吗？",
@@ -242,20 +247,62 @@ window.siteLocales["zh-CN"] = {
             noOrderChanges: "集内顺序没有未保存的修改。",
             saved: "已保存 {{count}} 张照片的作品集归属。",
             orderSaved: "已保存 {{count}} 张照片的集内顺序；Gallery 顺序未改变。",
-            partial: "失败前已有 {{count}} 项修改保存成功。列表已重新读取；请核查当前归属后重试。{{message}}",
+            partial: "已保存 {{count}} 项修改；{{message}} 列表已重新读取。",
             reloadFailed: "部分修改可能已保存，但无法重新读取列表。请刷新本页后再重试。{{message}}",
             busy: "请等待当前保存完成。"
         },
         categories: {
-            title: "批量重命名或合并类别",
-            intro: "旧类别下的全部照片将改为新名称；照片仍保留在 Gallery。",
-            source: "当前类别",
-            target: "新类别或已有类别",
-            apply: "重命名或合并",
-            confirm: "将 {{count}} 张照片的类别从“{{source}}”改为“{{target}}”？",
-            same: "请选择不同的类别名称。",
-            saved: "{{count}} 张照片现使用“{{target}}”。旧类别无人使用后，其筛选按钮会消失。",
-            partial: "失败前已有 {{count}} 张照片修改成功。列表已重新读取；请核查类别后重试。{{message}}"
+            manageTitle: "照片类别",
+            manageIntro: "作品集和照片共用一份类别。保存内容前先创建类别；没有照片的类别也会在画廊显示正常空状态。",
+            choose: "请选择类别",
+            newName: "新类别名称",
+            create: "创建照片类别",
+            source: "待重命名类别",
+            target: "新名称",
+            rename: "重命名",
+            mergeSource: "待合并类别",
+            mergeTarget: "保留的类别",
+            merge: "合并",
+            deleteTarget: "未使用的类别",
+            delete: "删除未使用类别",
+            same: "请选择不同类别或不同名称。",
+            saveFailed: "无法保存类别。",
+            deleteFailed: "无法删除此类别，请检查是否仍有作品集或照片使用。",
+            created: "已创建“{{name}}”；作品集、照片和画廊筛选可使用它。",
+            renameConfirm: "把“{{source}}”改名为“{{target}}”？{{works}} 个作品集和 {{photos}} 张照片会显示新类别名称，其余字段不变。",
+            renamed: "类别已重命名为“{{target}}”；作品集、照片和画廊筛选已同步。",
+            mergeConfirm: "将“{{source}}”合并到“{{target}}”？{{works}} 个作品集和 {{photos}} 张照片的 category 字段会改变；不会删除照片记录。",
+            merged: "已合并到“{{target}}”，没有删除照片记录。",
+            deleteConfirm: "删除未使用的“{{name}}”类别？它没有关联的作品集或照片。",
+            deleted: "已删除未使用的“{{name}}”类别。"
+        },
+        queue: {
+            title: "向当前作品集批量上传照片",
+            intro: "一次选择多张本机图片，逐张查看预览、审核 EXIF 建议并填写资料后再上传。源文件留在本设备。",
+            choose: "选择多张照片",
+            empty: "尚未选择文件。",
+            untitledDraft: "未命名草稿",
+            editDetails: "填写资料",
+            removeDraft: "移除草稿",
+            detailsTitle: "当前所选照片的资料",
+            saveDraft: "保存草稿资料",
+            draftSaved: "资料暂存在本页，上传前不会发布。",
+            chooseFirst: "请先在上方选择一张或多张照片，再选择其中一张填写资料。",
+            titleRequired: "请为这张照片填写标题；不会把文件名当作标题。",
+            categoryRequired: "请选择已有类别。",
+            collectionRequired: "上传前请先选择已有作品集。",
+            draft: "待审核",
+            preparing: "正在准备 WebP 图片",
+            uploading: "已上传 {{count}}/3 张 WebP",
+            saving: "正在保存记录",
+            success: "已保存",
+            failed: "失败，可只重试此项",
+            needsReview: "记录或 Storage 状态不明，请先人工核查再重试",
+            uploadAll: "上传待处理照片",
+            retryFailed: "只重试失败项",
+            clearDone: "清除已完成项",
+            summary: "共选 {{total}} 张 · 已保存 {{success}} 张 · 失败 {{failed}} 张 · 待人工核查 {{review}} 张",
+            finished: "批量处理完成：成功 {{success}} 张，失败 {{failed}} 张，待人工核查 {{review}} 张；可只重试失败项。"
         },
         exif: {
             title: "审核 JPEG EXIF 候选信息",
@@ -315,11 +362,11 @@ window.siteLocales["zh-CN"] = {
         },
         reset: {
             sectionLabel: "恢复",
-            title: "恢复默认内容",
-            description: "这会用仓库的种子数据覆盖当前浏览器里对作品和画廊的全部修改。",
-            button: "重置内容",
-            confirm: "重置所有作品和画廊内容？这会用默认种子数据覆盖当前浏览器的全部修改。",
-            restored: "已恢复默认作品和画廊内容。",
+            title: "清空浏览器本地内容",
+            description: "这会清空当前浏览器本地的作品集、照片和类别，不会修改 Supabase。",
+            button: "清空本地内容",
+            confirm: "清空当前浏览器本地的全部作品集、照片和类别？云端内容不变。",
+            restored: "已清空浏览器本地的作品集、照片和类别。",
             failed: "无法重置内容。请查看浏览器控制台了解详情。"
         },
         upload: {
@@ -367,16 +414,16 @@ window.siteLocales["zh-CN"] = {
         backToWebsite: "返回网站",
         sectionLabel: "内容管理",
         title: "管理面板",
-        intro: "管理摄影作品集和画廊照片。",
+        intro: "在作品区管理作品集、照片和类别，并预览公开画廊。",
         works: {
             title: "作品 / 作品集",
-            description: "管理摄影作品集。",
+            description: "管理作品集、照片上传、资料和类别。",
             manage: "管理作品 →"
         },
         gallery: {
-            title: "画廊 / 照片",
-            description: "管理画廊照片。",
-            manage: "管理画廊 →"
+            title: "公开画廊",
+            description: "预览已发布照片和类别筛选。",
+            manage: "查看画廊 →"
         },
         status: {
             checking: "正在核查所有者权限…",
@@ -387,10 +434,10 @@ window.siteLocales["zh-CN"] = {
         }
     },
     seo: {
-        homeTitle: "Kris Photography | 人像、纪实与风光",
-        homeDescription: "Kris Photography 是 Kris Huang 的个人摄影作品集，展示人像、纪实与风光作品。",
+        homeTitle: "Kris Photography | 摄影作品集",
+        homeDescription: "Kris Photography 是 Kris Huang 的个人摄影作品集。",
         homeOgTitle: "Kris Photography",
-        homeOgDescription: "Kris 的人像、纪实与风光摄影。",
+        homeOgDescription: "Kris Huang 的个人摄影作品集。",
         collectionTitle: "作品集 | Kris Photography",
         collectionDescription: "Kris Huang 的摄影作品集。",
         photoTitle: "照片 | Kris Photography",
@@ -400,17 +447,6 @@ window.siteLocales["zh-CN"] = {
         collectionErrorTitle: "作品集加载失败 | Kris Photography",
         photoPageTitle: "{{title}} | Kris Photography",
         photoNotFoundTitle: "未找到照片 | Kris Photography",
-        photoErrorTitle: "照片加载失败 | Kris Photography",
-        projects: {
-            portraitTitle: "Portrait | Kris Photography",
-            portraitDescription: "Kris Huang 拍摄的雨窗、倒影与安静瞬间。",
-            portraitOgDescription: "雨窗、倒影与安静瞬间。",
-            documentaryTitle: "Documentary | Kris Photography",
-            documentaryDescription: "Kris Huang 在柔和光线中记录的室内、植物与物件。",
-            documentaryOgDescription: "柔和光线中的室内、植物与物件。",
-            landscapeTitle: "Landscape | Kris Photography",
-            landscapeDescription: "Kris Huang 拍摄的城市灯光、变化的天空与花园小径。",
-            landscapeOgDescription: "城市灯光、变化的天空与花园小径。"
-        }
+        photoErrorTitle: "照片加载失败 | Kris Photography"
     }
 };

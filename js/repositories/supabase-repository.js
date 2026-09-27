@@ -17,11 +17,15 @@ function mapSupabaseCollection(row) {
         coverHeight: row.cover_height,
         year: row.year || "",
         location: row.location || "",
-        category: row.category || row.slug,
+        category: row.category || "",
         order: row.sort_order,
         createdAt: row.created_at || "",
         updatedAt: row.updated_at || ""
     };
+}
+
+function mapSupabaseCategory(row) {
+    return { id: row.id, name: row.name };
 }
 
 function mapSupabasePhoto(row) {
@@ -86,7 +90,7 @@ function toSupabaseCollection(collection) {
         cover_height: collection.coverHeight || null,
         year: collection.year || "",
         location: collection.location || "",
-        category: collection.category || "",
+        category: collection.category || null,
         sort_order: Number.isFinite(collection.order) ? collection.order : 0
     };
 }
@@ -100,7 +104,7 @@ function toSupabasePhoto(photo) {
         src: photo.src,
         full_src: photo.fullSrc || photo.src,
         srcset: photo.srcset || "",
-        category: photo.category || "",
+        category: photo.category || null,
         location: photo.location || "",
         shot_at: photo.date || null,
         capture_time: photo.captureTime || null,
@@ -145,6 +149,9 @@ async function writeSupabaseRow(tableName, operation, values, id) {
 
     const { data, error } = await query;
     if (error) {
+        if (tableName === "categories" && error.code === "PGRST205") {
+            throw new Error(`Supabase categories need migration supabase/migrations/20260923_shared_categories.sql. ${error.message}`);
+        }
         const newColumn = ["story", "collection_order", "capture_time"]
             .find((column) => error.message?.includes(column));
         if (newColumn && ["PGRST204", "42703"].includes(error.code)) {
@@ -153,12 +160,68 @@ async function writeSupabaseRow(tableName, operation, values, id) {
         if (tableName === "collections" && operation === "delete" && error.code === "23503") {
             throw new Error(`Collection deletion needs migration supabase/migrations/20260923_collection_content.sql so linked photos can be detached. ${error.message}`);
         }
+        if (tableName === "categories" && operation === "delete" && error.code === "23503") {
+            throw new Error("This category is still used by a Collection or Photo. Move its content before deleting it.");
+        }
         throw new Error(`Supabase ${operation} on ${tableName} failed: ${error.message}`);
     }
     return data;
 }
 
 const supabaseRepository = Object.freeze({
+    async getCategories() {
+        const client = await getSupabaseClient();
+        const { data, error } = await client.from("categories")
+            .select("id, name")
+            .order("name", { ascending: true });
+        if (error?.code === "PGRST205") {
+            throw new Error(`Supabase categories need migration supabase/migrations/20260923_shared_categories.sql. ${error.message}`);
+        }
+        if (error) throw new Error(`Supabase could not read categories: ${error.message}`);
+        return (data || []).map(mapSupabaseCategory);
+    },
+
+    async createCategory(name) {
+        const trimmedName = String(name || "").trim();
+        if (!trimmedName) throw new Error("Enter a category name.");
+        const row = await writeSupabaseRow("categories", "insert", {
+            id: createContentId("category"),
+            name: trimmedName
+        });
+        return mapSupabaseCategory(row);
+    },
+
+    async renameCategory(id, name) {
+        const trimmedName = String(name || "").trim();
+        if (!trimmedName) throw new Error("Enter a category name.");
+        const row = await writeSupabaseRow("categories", "update", {
+            name: trimmedName,
+            updated_at: new Date().toISOString()
+        }, id);
+        return mapSupabaseCategory(row);
+    },
+
+    async mergeCategories(sourceId, targetId) {
+        if (!sourceId || !targetId || sourceId === targetId) {
+            throw new Error("Choose two different categories.");
+        }
+        const client = await getSupabaseClient();
+        const { data, error } = await client.rpc("merge_categories", {
+            source_id: sourceId,
+            target_id: targetId
+        });
+        if (error?.code === "PGRST202") {
+            throw new Error(`Supabase category merge needs migration supabase/migrations/20260923_shared_categories.sql. ${error.message}`);
+        }
+        if (error) throw new Error(`Supabase category merge failed: ${error.message}`);
+        return data;
+    },
+
+    async deleteUnusedCategory(id) {
+        await writeSupabaseRow("categories", "delete", null, id);
+        return true;
+    },
+
     async getCollections() {
         // Selecting existing rows without naming optional columns also works before migration.
         const rows = await querySupabaseTable("collections", "*");

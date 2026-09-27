@@ -1,5 +1,10 @@
 // Cloud Admin uses the same UI fields but only the Supabase repository writes rows.
 const cloudAdminService = Object.freeze({
+    getCategories: () => supabaseRepository.getCategories(),
+    createCategory: (name) => supabaseRepository.createCategory(name),
+    renameCategory: (id, name) => supabaseRepository.renameCategory(id, name),
+    mergeCategories: (sourceId, targetId) => supabaseRepository.mergeCategories(sourceId, targetId),
+    deleteUnusedCategory: (id) => supabaseRepository.deleteUnusedCategory(id),
     getWorks: () => supabaseRepository.getCollections(),
     getGalleryItems: () => supabaseRepository.getPhotos(),
     async getWorkById(id) {

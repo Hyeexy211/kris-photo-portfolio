@@ -114,7 +114,7 @@ function getVerifiedCloudPublicUrl(storage, path) {
     return actual.href;
 }
 
-async function uploadCloudWebExports(kind, contentId, exports, onUploaded) {
+async function uploadCloudWebExports(kind, contentId, exports, onUploaded, onAttempt) {
     const revision = createContentId("revision");
     if (!["photos", "collections"].includes(kind)
         || !/^[a-z0-9-]+$/.test(contentId) || !/^[a-z0-9-]+$/.test(revision)) {
@@ -128,17 +128,39 @@ async function uploadCloudWebExports(kind, contentId, exports, onUploaded) {
 
     for (const item of exports) {
         const path = `${prefix}/${item.size}.webp`;
-        const { data, error } = await storage.upload(path, item.blob, {
-            contentType: "image/webp",
-            cacheControl: "31536000",
-            upsert: false
-        });
+        onAttempt?.(path);
+        let response;
+        try {
+            response = await storage.upload(path, item.blob, {
+                contentType: "image/webp",
+                cacheControl: "31536000",
+                upsert: false
+            });
+        } catch (error) {
+            const uploadError = cloudUploadError("admin.upload.storageUploadFailed", {
+                size: item.size,
+                path,
+                message: error.message || String(error)
+            });
+            uploadError.uploadOutcomeUnknown = true;
+            throw uploadError;
+        }
+        if (!response) {
+            const uploadError = cloudUploadError("admin.upload.storageUploadFailed", {
+                size: item.size, path, message: "No Storage response"
+            });
+            uploadError.uploadOutcomeUnknown = true;
+            throw uploadError;
+        }
+        const { data, error } = response;
         if (error) {
-            throw cloudUploadError("admin.upload.storageUploadFailed", {
+            const uploadError = cloudUploadError("admin.upload.storageUploadFailed", {
                 size: item.size,
                 path,
                 message: error.message
             });
+            uploadError.uploadOutcomeUnknown = error.name === "StorageUnknownError";
+            throw uploadError;
         }
         onUploaded(path);
         if (data?.path !== path) {
@@ -164,9 +186,28 @@ async function uploadCloudWebExports(kind, contentId, exports, onUploaded) {
 async function removeCloudWebExports(paths) {
     if (paths.length === 0) return;
     const client = await getSupabaseClient();
-    const { data, error } = await client.storage.from(CLOUD_WEB_BUCKET).remove(paths);
-    if (error) throw error;
-    if (!Array.isArray(data) || data.length !== paths.length) {
+    const storage = client.storage.from(CLOUD_WEB_BUCKET);
+    const folder = paths[0].slice(0, paths[0].lastIndexOf("/"));
+    const fileNames = new Set(paths.map((path) => path.slice(path.lastIndexOf("/") + 1)));
+    if (paths.some((path) => path.slice(0, path.lastIndexOf("/")) !== folder)) {
         throw cloudUploadError("admin.upload.removalUnconfirmed");
+    }
+
+    // A failed PUT can still have created its object. List the attempted paths,
+    // remove those that exist, then verify that all attempted names are absent.
+    const before = await storage.list(folder, { limit: 100 });
+    if (before.error || !Array.isArray(before.data)) {
+        throw before.error || cloudUploadError("admin.upload.removalUnconfirmed");
+    }
+    const present = before.data.filter((file) => fileNames.has(file.name))
+        .map((file) => `${folder}/${file.name}`);
+    if (present.length > 0) {
+        const { error } = await storage.remove(present);
+        if (error) throw error;
+    }
+    const after = await storage.list(folder, { limit: 100 });
+    if (after.error || !Array.isArray(after.data)
+        || after.data.some((file) => fileNames.has(file.name))) {
+        throw after.error || cloudUploadError("admin.upload.removalUnconfirmed");
     }
 }

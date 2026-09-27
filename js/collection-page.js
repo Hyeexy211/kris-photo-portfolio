@@ -1,6 +1,6 @@
 // ================================================================
 // Lesson 34: 通用 Collection 页面
-// 例如 collection.html?slug=portrait 会异步读取 Collection 及其关联照片。
+// collection.html?slug=... 会异步读取当前 Collection 及其关联照片。
 // ================================================================
 
 const collectionTitle = document.querySelector("#collection-title");

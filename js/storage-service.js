@@ -5,7 +5,9 @@
 
 const STORAGE_KEYS = Object.freeze({
     WORKS: "kris-photography-works",
-    GALLERY: "kris-photography-gallery"
+    GALLERY: "kris-photography-gallery",
+    CATEGORIES: "kris-photography-categories",
+    CONTENT_RESET_VERSION: "kris-photography-content-reset-v1"
 });
 
 const storageService = Object.freeze({

@@ -3,10 +3,11 @@ const photoCategory = document.querySelector("#photo-category");
 const photoDescription = document.querySelector("#photo-description");
 const photoContent = document.querySelector("#photo-content");
 const photoInfo = document.querySelector("#photo-info");
-const photoPageScript = document.querySelector('script[src$="photo-page.js"]');
+const photoPageScript = document.querySelector('script[src*="js/photo-page.js"]');
 const photoSiteRoot = new URL("../", photoPageScript.src);
 let currentPhoto = null;
 let currentPhotoCollections = [];
+let currentPhotoCategories = [];
 let photoPageState = "loading";
 
 function resolvePhotoAsset(assetPath) {
@@ -104,9 +105,8 @@ function refreshPhotoLanguage() {
     const description = siteI18n.content(photo, "description");
     setPhotoMetadata(title, description || title);
     photoTitle.textContent = title;
-    photoCategory.textContent = photo.category
-        ? siteI18n.category(photo.category)
-        : siteI18n.t("photo.photograph");
+    const category = currentPhotoCategories.find((item) => item.id === photo.category);
+    photoCategory.textContent = category?.name || siteI18n.t("photo.photograph");
     photoDescription.textContent = description;
     photoDescription.hidden = !description;
     photoContent.setAttribute("aria-label", siteI18n.t("photo.photograph"));
@@ -153,9 +153,10 @@ async function renderPhotoPage() {
     refreshPhotoLanguage();
 
     try {
-        const [photos, collections] = await Promise.all([
+        const [photos, collections, categories] = await Promise.all([
             contentService.getPhotos(),
-            contentService.getCollections()
+            contentService.getCollections(),
+            contentService.getPublicCategories()
         ]);
         const photo = photos.find((item) => item.id === id);
 
@@ -167,6 +168,7 @@ async function renderPhotoPage() {
 
         currentPhoto = photo;
         currentPhotoCollections = collections;
+        currentPhotoCategories = categories;
         const title = siteI18n.content(photo, "title")
             || siteI18n.content(photo, "alt")
             || siteI18n.t("photo.untitled");

@@ -1,5 +1,6 @@
 -- Lesson 34: public, read-only content schema for Supabase.
--- Run this file in the Supabase SQL Editor before seed.sql.
+-- Run this file only when creating a fresh project, then apply the migrations.
+-- New sites start without seeded photography content.
 
 create table if not exists public.collections (
     id text primary key,

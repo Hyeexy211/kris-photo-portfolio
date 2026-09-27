@@ -7,8 +7,8 @@ const CONTENT_DATA_SOURCE = Object.freeze({
     // Supabase is now configured; public pages read cloud content first.
     source: "supabase",
 
-    // A failed cloud read falls back to the existing browser-local repository.
-    fallbackToLocal: true,
+    // A cloud failure must not revive stale browser-local photographs.
+    fallbackToLocal: false,
 
     supabase: Object.freeze({
         url: "https://rekmdiatetetndrpyonx.supabase.co",

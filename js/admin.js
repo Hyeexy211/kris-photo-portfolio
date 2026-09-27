@@ -10,7 +10,6 @@ const workList = document.querySelector("#work-list");
 const galleryList = document.querySelector("#gallery-list");
 const workCount = document.querySelector("#work-count");
 const galleryCount = document.querySelector("#gallery-count");
-const workIdOptions = document.querySelector("#work-id-options");
 const cancelWorkEdit = document.querySelector("#cancel-work-edit");
 const cancelGalleryEdit = document.querySelector("#cancel-gallery-edit");
 const resetContentButton = document.querySelector("#reset-content");
@@ -60,6 +59,7 @@ let gallerySaving = false;
 let adminAccessAllowed = false;
 let currentWorks = null;
 let currentGalleryItems = null;
+let currentCategories = null;
 let currentStatus = null;
 const currentUploadProgress = { work: null, gallery: null };
 const previewObjectUrls = { work: null, gallery: null };
@@ -70,7 +70,22 @@ const membershipSummary = document.querySelector("#membership-summary");
 const membershipAdd = document.querySelector("#membership-add");
 const membershipRemove = document.querySelector("#membership-remove");
 const membershipSaveOrder = document.querySelector("#membership-save-order");
+const membershipCategory = document.querySelector("#membership-category");
+const membershipSetCategory = document.querySelector("#membership-set-category");
+const membershipDelete = document.querySelector("#membership-delete");
+const batchResults = document.querySelector("#batch-results");
+const batchRetryUpdates = document.querySelector("#batch-retry-updates");
+const categoryCreateForm = document.querySelector("#category-create-form");
 const categoryRenameForm = document.querySelector("#category-rename-form");
+const categoryMergeForm = document.querySelector("#category-merge-form");
+const categoryDeleteTarget = document.querySelector("#category-delete-target");
+const categoryDelete = document.querySelector("#category-delete");
+const batchPhotoFiles = document.querySelector("#batch-photo-files");
+const batchUploadList = document.querySelector("#batch-upload-list");
+const batchUploadAll = document.querySelector("#batch-upload-all");
+const batchRetryFailed = document.querySelector("#batch-retry-failed");
+const batchClearDone = document.querySelector("#batch-clear-done");
+const batchUploadSummary = document.querySelector("#batch-upload-summary");
 const exifReviewSection = document.querySelector("#exif-review");
 const exifReviewStatus = document.querySelector("#exif-review-status");
 const exifReviewFields = document.querySelector("#exif-review-fields");
@@ -84,6 +99,11 @@ let exifReviewPromise = Promise.resolve();
 let exifReviewData = null;
 let exifCandidates = {};
 let exifDecisions = {};
+let photoQueue = [];
+let selectedQueueId = null;
+let queueSaving = false;
+let lastBatchRetry = null;
+const unresolvedUploadStatus = { work: null, gallery: null };
 
 function renderAdminStatus() {
     if (!currentStatus) return;
@@ -118,6 +138,18 @@ function errorParts(error, includePrefix = true) {
 
 function showAdminError(error) {
     showAdminStatusParts(errorParts(error), true);
+}
+
+function uploadNeedsReview() {
+    return currentStatus?.parts.some(({ key }) => [
+        "admin.queue.needsReview", "admin.upload.cleanupFailed",
+        "admin.upload.rowCheckFailedFilesKept"
+    ].includes(key));
+}
+
+function cloudWriteFailureIsDefinitive(error) {
+    return /duplicate key|violates (?:foreign key|not-null|check|unique)|row-level security|permission denied|invalid input syntax|multiple \(or no\) rows returned/i
+        .test(error.message || "");
 }
 
 function renderUploadProgress(kind) {
@@ -156,6 +188,7 @@ function resetWorkForm() {
 }
 
 function resetGalleryForm() {
+    selectedQueueId = null;
     galleryForm.reset();
     galleryForm.elements.id.value = "";
     document.querySelector("#gallery-form-title").textContent = adminT("admin.gallery.createTitle");
@@ -166,7 +199,8 @@ function resetGalleryForm() {
 
 function syncImageFields(kind) {
     const { form, field, file, clear } = imageControls[kind];
-    field.hidden = kind === "work" && !cloudMode;
+    field.hidden = kind === "work" ? !cloudMode
+        : cloudMode && !form.elements.id.value && !selectedQueueId;
     form.querySelectorAll(".admin-manual-image-field").forEach((label) => {
         label.hidden = cloudMode;
     });
@@ -174,22 +208,34 @@ function syncImageFields(kind) {
     requiredFields.forEach((fieldName) => {
         form.elements[fieldName].required = !cloudMode;
     });
-    file.disabled = (kind === "work" && !cloudMode) || (kind === "work" ? workSaving : gallerySaving);
+    file.disabled = (kind === "work" && !cloudMode) || (kind === "work"
+        ? workSaving : gallerySaving || queueSaving || Boolean(selectedQueueId));
     clear.disabled = file.disabled;
 }
 
 function renderImagePreview(kind) {
     const control = imageControls[kind];
-    const selectedFile = control.file.files[0];
+    const queuedPhoto = kind === "gallery"
+        ? photoQueue.find((item) => item.id === selectedQueueId) : null;
+    const selectedFile = queuedPhoto?.file || control.file.files[0];
     if (previewObjectUrls[kind]) URL.revokeObjectURL(previewObjectUrls[kind]);
     previewObjectUrls[kind] = null;
-    control.clear.hidden = !selectedFile;
+    control.clear.hidden = !selectedFile || Boolean(queuedPhoto);
     control.fileName.textContent = selectedFile?.name || "";
 
     if (selectedFile) {
         try {
             validateCloudImageFile(selectedFile);
         } catch (error) {
+            if (queuedPhoto) {
+                queuedPhoto.status = "failed";
+                queuedPhoto.error = error.translationKey
+                    ? adminT(error.translationKey, error.translationValues || {}) : error.message;
+                control.preview.hidden = true;
+                showAdminError(error);
+                renderPhotoQueue();
+                return;
+            }
             control.file.value = "";
             showAdminError(error);
             renderImagePreview(kind);
@@ -229,6 +275,204 @@ function showUploadProgress(kind, key, completed, values = {}) {
     currentUploadProgress[kind] = { key, values };
     renderUploadProgress(kind);
     control.count.value = completed;
+}
+
+function readPhotoFormValues() {
+    const { values } = getFormValues(galleryForm, ["order", "collectionOrder", "width", "height"]);
+    values.title = values.title.trim();
+    values.category = values.category.trim();
+    values.collectionId = values.collectionId || null;
+    values.tags = values.tags.split(",").map((tag) => tag.trim()).filter(Boolean);
+    if (!values.collectionId) values.collectionOrder = null;
+    return values;
+}
+
+function saveQueueDraftFromForm() {
+    if (!selectedQueueId) return;
+    const item = photoQueue.find((photo) => photo.id === selectedQueueId);
+    if (!item || item.status === "success") return;
+    item.values = readPhotoFormValues();
+    renderPhotoQueue();
+}
+
+function queueItemStatus(item) {
+    const key = `admin.queue.${item.status}`;
+    const values = item.status === "uploading" ? { count: item.progress } : {};
+    return `${adminT(key, values)}${item.error ? ` · ${item.error}` : ""}`;
+}
+
+function renderPhotoQueue() {
+    const fragment = document.createDocumentFragment();
+    photoQueue.forEach((item) => {
+        const row = document.createElement("article");
+        const image = document.createElement("img");
+        const copy = document.createElement("div");
+        const title = document.createElement("strong");
+        const meta = document.createElement("span");
+        const actions = document.createElement("div");
+        const edit = document.createElement("button");
+        row.className = "admin-photo-row admin-queue-row";
+        if (item.id === selectedQueueId) row.classList.add("is-selected");
+        image.src = item.previewUrl;
+        image.alt = "";
+        copy.className = "admin-photo-copy";
+        title.textContent = item.values.title || adminT("admin.queue.untitledDraft");
+        meta.textContent = `${item.file.name} · ${collectionName(item.values.collectionId)} · ${queueItemStatus(item)}`;
+        copy.append(title, meta);
+        actions.className = "admin-item-actions";
+        edit.className = "admin-button";
+        edit.type = "button";
+        edit.dataset.queueAction = "edit";
+        edit.dataset.id = item.id;
+        edit.textContent = adminT("admin.queue.editDetails");
+        edit.disabled = queueSaving || item.status === "success" || item.status === "needsReview";
+        actions.appendChild(edit);
+        if (item.status !== "success" && item.status !== "needsReview") {
+            const remove = document.createElement("button");
+            remove.className = "admin-button";
+            remove.type = "button";
+            remove.dataset.queueAction = "remove";
+            remove.dataset.id = item.id;
+            remove.textContent = adminT("admin.queue.removeDraft");
+            remove.disabled = queueSaving;
+            actions.appendChild(remove);
+        }
+        row.append(image, copy, actions);
+        fragment.appendChild(row);
+    });
+    batchUploadList.replaceChildren(photoQueue.length
+        ? fragment : createEmptyMessage("admin.queue.empty"));
+    const success = photoQueue.filter((item) => item.status === "success").length;
+    const failed = photoQueue.filter((item) => item.status === "failed").length;
+    const review = photoQueue.filter((item) => item.status === "needsReview").length;
+    batchUploadSummary.textContent = adminT("admin.queue.summary", {
+        total: photoQueue.length, success, failed, review
+    });
+    batchUploadAll.disabled = queueSaving || !photoQueue.some((item) =>
+        item.status === "draft" || item.status === "failed");
+    batchRetryFailed.disabled = queueSaving || failed === 0;
+    batchClearDone.disabled = queueSaving || success === 0;
+    batchPhotoFiles.disabled = queueSaving || !membershipCollection.value;
+}
+
+function selectQueuePhoto(id) {
+    if (queueSaving) return;
+    saveQueueDraftFromForm();
+    const item = photoQueue.find((photo) => photo.id === id);
+    if (!item || item.status === "success" || item.status === "needsReview") return;
+    resetGalleryForm();
+    selectedQueueId = id;
+    fillForm(galleryForm, item.values);
+    imageControls.gallery.file.value = "";
+    renderImagePreview("gallery");
+    readSelectedPhotoExif(item.file);
+    syncImageFields("gallery");
+    renderPhotoQueue();
+    document.querySelector("#gallery-form-title").textContent = adminT("admin.queue.detailsTitle");
+    galleryForm.scrollIntoView({ behavior: "smooth", block: "start" });
+    galleryForm.elements.title.focus({ preventScroll: true });
+}
+
+function forgetQueueItem(item) {
+    URL.revokeObjectURL(item.previewUrl);
+    photoQueue = photoQueue.filter((photo) => photo.id !== item.id);
+    if (selectedQueueId === item.id) resetGalleryForm();
+    renderPhotoQueue();
+}
+
+function validateQueueDetails(item) {
+    if (!item.values.title?.trim()) throw localizedError("admin.queue.titleRequired");
+    if (!currentCategories?.some((category) => category.id === item.values.category)) {
+        throw localizedError("admin.queue.categoryRequired");
+    }
+    if (!currentWorks?.some((work) => work.id === item.values.collectionId)) {
+        throw localizedError("admin.queue.collectionRequired");
+    }
+    validateCloudImageFile(item.file);
+}
+
+async function uploadQueueItems(items) {
+    if (!cloudMode || queueSaving || !adminAccessAllowed) return;
+    saveQueueDraftFromForm();
+    const disabledControls = [...galleryForm.elements].map((field) => [field, field.disabled]);
+    queueSaving = true;
+    const accessGeneration = cloudAccessGeneration;
+    disabledControls.forEach(([field]) => { field.disabled = true; });
+    membershipCollection.disabled = true;
+    renderPhotoQueue();
+    signOutButton.disabled = true;
+    try {
+        for (const item of items) {
+            if (accessGeneration !== cloudAccessGeneration) break;
+            try {
+                // A fixed ID lets a retry recognize an insert that succeeded despite a lost response.
+                if (await cloudAdminService.photoRowExists(item.id)) {
+                    item.status = "success";
+                    item.error = "";
+                    renderPhotoQueue();
+                    continue;
+                }
+                validateQueueDetails(item);
+                item.status = "preparing";
+                item.progress = 0;
+                item.error = "";
+                renderPhotoQueue();
+                const saved = await saveImageRecord("gallery", "", { ...item.values }, item.file, {
+                    recordId: item.id,
+                    skipExifWait: true,
+                    onProgress(status, completed) {
+                        item.status = status;
+                        item.progress = completed;
+                        renderPhotoQueue();
+                    }
+                });
+                if (!saved) {
+                    if (uploadNeedsReview()) {
+                        item.status = "needsReview";
+                        item.error = adminStatus.textContent;
+                        renderPhotoQueue();
+                        continue;
+                    }
+                    let rowExists;
+                    try {
+                        rowExists = await cloudAdminService.photoRowExists(item.id);
+                    } catch {
+                        item.status = "needsReview";
+                        item.error = adminStatus.textContent;
+                        renderPhotoQueue();
+                        continue;
+                    }
+                    if (!rowExists) {
+                        throw new Error(adminStatus.textContent || adminT("admin.gallery.saveFailed"));
+                    }
+                }
+                item.status = "success";
+                item.error = "";
+                if (selectedQueueId === item.id) resetGalleryForm();
+            } catch (error) {
+                item.status = "failed";
+                item.error = error.translationKey
+                    ? adminT(error.translationKey, error.translationValues || {})
+                    : error.message || String(error);
+            }
+            renderPhotoQueue();
+        }
+        await renderGalleryAdmin();
+        showAdminStatus("admin.queue.finished", false, {
+            success: photoQueue.filter((item) => item.status === "success").length,
+            failed: photoQueue.filter((item) => item.status === "failed").length,
+            review: photoQueue.filter((item) => item.status === "needsReview").length
+        });
+    } catch (error) {
+        showAdminError(error);
+    } finally {
+        queueSaving = false;
+        disabledControls.forEach(([field, wasDisabled]) => { field.disabled = wasDisabled; });
+        membershipCollection.disabled = !(currentWorks || []).length || bulkSaving;
+        signOutButton.disabled = workSaving || gallerySaving || bulkSaving;
+        renderPhotoQueue();
+        syncImageFields("gallery");
+    }
 }
 
 function createAdminItem(item, metaText, itemTypeKey) {
@@ -291,15 +535,6 @@ function renderWorksList(works) {
 
     workList.replaceChildren(works.length > 0 ? fragment : createEmptyMessage("admin.works.empty"));
     workCount.textContent = String(works.length);
-
-    const optionFragment = document.createDocumentFragment();
-    works.forEach((work) => {
-        const option = document.createElement("option");
-        option.value = work.id;
-        option.label = adminI18n.content(work, "title") || work.id;
-        optionFragment.appendChild(option);
-    });
-    workIdOptions.replaceChildren(optionFragment);
 }
 
 async function renderWorksAdmin() {
@@ -316,7 +551,7 @@ function renderGalleryList(galleryItems) {
                 item,
                 adminT("admin.gallery.meta", {
                     id: item.id,
-                    category: adminI18n.category(item.category) || adminT("admin.none"),
+                    category: categoryName(item.category) || adminT("admin.none"),
                     collection: item.collectionId || adminT("admin.none")
                 }),
                 "admin.gallery.itemType"
@@ -337,8 +572,20 @@ async function renderGalleryAdmin() {
 }
 
 async function renderAdmin() {
+    await renderCategoriesAdmin();
     await Promise.all([renderWorksAdmin(), renderGalleryAdmin()]);
     renderAdminBatchControls();
+    renderPhotoQueue();
+}
+
+async function renderCategoriesAdmin() {
+    currentCategories = await adminStore.getCategories();
+    renderCategoryOptions();
+}
+
+function categoryName(id) {
+    return currentCategories?.find((item) => item.id === id)?.name
+        || adminI18n.category(id) || id || "";
 }
 
 function collectionName(id) {
@@ -374,33 +621,64 @@ function renderCollectionOptions() {
         membershipOrderDraft = null;
     }
     membershipCollection.disabled = !currentWorks?.length || bulkSaving;
+    const photoCollection = galleryForm.elements.collectionId;
+    const previousPhotoCollection = photoCollection.value;
+    const photoOptions = document.createDocumentFragment();
+    const emptyOption = document.createElement("option");
+    emptyOption.value = "";
+    emptyOption.textContent = adminT("admin.membership.unassigned");
+    photoOptions.appendChild(emptyOption);
+    (currentWorks || []).forEach((work) => {
+        const option = document.createElement("option");
+        option.value = work.id;
+        option.textContent = adminI18n.content(work, "title") || work.title || work.id;
+        photoOptions.appendChild(option);
+    });
+    photoCollection.replaceChildren(photoOptions);
+    if ((currentWorks || []).some((work) => work.id === previousPhotoCollection)) {
+        photoCollection.value = previousPhotoCollection;
+    } else if (!galleryForm.elements.id.value) {
+        photoCollection.value = membershipCollection.value;
+    }
 }
 
 function renderCategoryOptions() {
-    const categories = [...new Set((currentGalleryItems || [])
-        .map((photo) => String(photo.category || "")).filter((category) => category.trim()))]
-        .sort((a, b) => a.localeCompare(b, adminI18n.getLanguage()));
-    const source = categoryRenameForm.elements.source;
-    const chosen = source.value;
-    const sourceOptions = document.createDocumentFragment();
-    const datalistOptions = document.createDocumentFragment();
-    const photoFormOptions = document.createDocumentFragment();
-    categories.forEach((category) => {
-        const option = document.createElement("option");
-        option.value = category;
-        option.textContent = adminI18n.category(category) || category;
-        sourceOptions.appendChild(option);
-        const targetOption = document.createElement("option");
-        targetOption.value = category;
-        datalistOptions.appendChild(targetOption);
-        photoFormOptions.appendChild(targetOption.cloneNode());
+    const categories = currentCategories || [];
+    const selects = [workForm.elements.category, galleryForm.elements.category,
+        membershipCategory, categoryRenameForm.elements.source,
+        categoryMergeForm.elements.source, categoryMergeForm.elements.target,
+        categoryDeleteTarget];
+    const used = new Set([...(currentWorks || []), ...(currentGalleryItems || [])]
+        .map((item) => item.category).filter(Boolean));
+    selects.forEach((select) => {
+        const previous = select.value;
+        const options = document.createDocumentFragment();
+        if ([workForm.elements.category, galleryForm.elements.category, membershipCategory]
+            .includes(select)) {
+            const emptyOption = document.createElement("option");
+            emptyOption.value = "";
+            emptyOption.textContent = adminT("admin.categories.choose");
+            options.appendChild(emptyOption);
+        }
+        categories.filter((category) => select !== categoryDeleteTarget || !used.has(category.id))
+            .forEach((category) => {
+                const option = document.createElement("option");
+                option.value = category.id;
+                option.textContent = category.name;
+                options.appendChild(option);
+            });
+        select.replaceChildren(options);
+        if (categories.some((item) => item.id === previous)) select.value = previous;
     });
-    source.replaceChildren(sourceOptions);
-    if (categories.includes(chosen)) source.value = chosen;
-    document.querySelector("#category-merge-options").replaceChildren(datalistOptions);
-    document.querySelector("#gallery-category-options").replaceChildren(photoFormOptions);
-    source.disabled = categories.length === 0 || bulkSaving;
-    categoryRenameForm.querySelector('button[type="submit"]').disabled = categories.length === 0 || bulkSaving;
+    const hasCategories = categories.length > 0;
+    categoryRenameForm.elements.source.disabled = !hasCategories || bulkSaving;
+    categoryMergeForm.elements.source.disabled = categories.length < 2 || bulkSaving;
+    categoryMergeForm.elements.target.disabled = categories.length < 2 || bulkSaving;
+    categoryDelete.disabled = !categoryDeleteTarget.options.length || bulkSaving;
+    categoryDeleteTarget.disabled = categoryDelete.disabled;
+    membershipCategory.disabled = !hasCategories || bulkSaving;
+    membershipSetCategory.disabled = !hasCategories || bulkSaving
+        || selectedMembershipIds.size === 0;
 }
 
 function renderMembershipList() {
@@ -426,7 +704,7 @@ function renderMembershipList() {
     const search = membershipSearch.value.trim().toLocaleLowerCase();
     const visible = [...orderedMembers, ...otherPhotos].filter((photo) => {
         const title = adminI18n.content(photo, "title") || photo.title || "";
-        const category = adminI18n.category(photo.category) || photo.category || "";
+        const category = categoryName(photo.category);
         return !search || `${title} ${category} ${photo.category || ""}`
             .toLocaleLowerCase().includes(search);
     });
@@ -472,7 +750,7 @@ function renderMembershipList() {
             : photo.collectionId
                 ? adminT("admin.membership.other", { title: collectionName(photo.collectionId) })
                 : adminT("admin.membership.unassigned");
-        meta.textContent = `${adminI18n.category(photo.category) || photo.category || adminT("admin.none")} · ${belonging}`;
+        meta.textContent = `${categoryName(photo.category) || adminT("admin.none")} · ${belonging}`;
         copy.append(title, meta);
         picker.append(checkbox, image, imageFallback, copy);
         row.appendChild(picker);
@@ -512,6 +790,9 @@ function renderMembershipList() {
     membershipSaveOrder.disabled = bulkSaving || members.length < 2;
     membershipSearch.disabled = bulkSaving;
     categoryRenameForm.elements.target.disabled = bulkSaving;
+    membershipDelete.disabled = bulkSaving || selectedMembershipIds.size === 0;
+    membershipSetCategory.disabled = bulkSaving || selectedMembershipIds.size === 0
+        || !(currentCategories || []).length;
 }
 
 function renderAdminBatchControls() {
@@ -525,50 +806,70 @@ function renderAdminBatchControls() {
 function setBulkSaving(saving) {
     bulkSaving = saving;
     renderAdminBatchControls();
-    if (cloudMode) signOutButton.disabled = saving || workSaving || gallerySaving;
+    batchRetryUpdates.disabled = saving;
+    if (cloudMode) signOutButton.disabled = saving || workSaving || gallerySaving || queueSaving;
+}
+
+function appendBatchResult(photo, key, values = {}) {
+    const row = document.createElement("p");
+    row.textContent = `${photo.title || photo.id}: ${adminT(key, values)}`;
+    batchResults.appendChild(row);
+    return row;
 }
 
 async function savePhotoBatch(photos, changePhoto, successKey, successValues = {},
     partialKey = "admin.membership.partial") {
     setBulkSaving(true);
+    batchResults.replaceChildren();
     let savedCount = 0;
-    let writeError = null;
-    for (const photo of photos) {
+    const failed = [];
+    for (const [index, photo] of photos.entries()) {
+        const resultRow = appendBatchResult(photo, "admin.membership.savingOne", {
+            current: index + 1, total: photos.length
+        });
         try {
             const latest = await adminStore.getGalleryItemById(photo.id);
             if (!latest) throw new Error(`Photo ${photo.id} no longer exists.`);
             const changes = changePhoto(latest, savedCount);
-            if (!changes) continue;
+            if (!changes) {
+                resultRow.textContent = `${photo.title || photo.id}: ${adminT("admin.membership.skippedOne")}`;
+                continue;
+            }
             const saved = await adminStore.updateGalleryItem(latest.id, changes);
             if (!saved) throw localizedError("admin.gallery.saveFailed");
             savedCount++;
+            resultRow.textContent = `${photo.title || photo.id}: ${adminT("admin.membership.savedOne")}`;
         } catch (error) {
-            writeError = error;
-            break;
+            failed.push({ photo, error });
+            resultRow.textContent = `${photo.title || photo.id}: ${adminT("admin.membership.failedOne", {
+                message: error.translationKey ? adminT(error.translationKey) : error.message || String(error)
+            })}`;
         }
     }
 
-    selectedMembershipIds.clear();
+    selectedMembershipIds = new Set(failed.map(({ photo }) => photo.id));
     membershipOrderDraft = null;
+    lastBatchRetry = failed.length ? () => savePhotoBatch(failed.map(({ photo }) => photo),
+        changePhoto, successKey, successValues, partialKey) : null;
+    batchRetryUpdates.hidden = !lastBatchRetry;
     try {
         await renderGalleryAdmin();
-        if (writeError) {
+        if (failed.length) {
             showAdminStatus(partialKey, true, {
                 count: savedCount,
-                message: writeError.translationKey
-                    ? adminT(writeError.translationKey) : writeError.message || String(writeError)
+                message: `${failed.length} ${adminT("admin.membership.failedCount")}`
             });
         } else {
             showAdminStatus(successKey, false, { count: savedCount, ...successValues });
         }
     } catch (reloadError) {
         showAdminStatus("admin.membership.reloadFailed", true, {
-            message: `${writeError?.message || ""} ${reloadError.message || String(reloadError)}`.trim()
+            message: reloadError.message || String(reloadError)
         });
     } finally {
         setBulkSaving(false);
     }
-    return { savedCount, writeError };
+    return { savedCount, failed };
 }
 
 function clearExifReview() {
@@ -649,9 +950,10 @@ function readSelectedPhotoExif(file) {
         });
 }
 
-async function saveImageRecord(kind, id, values, selectedFile) {
+async function saveImageRecord(kind, id, values, selectedFile, options = {}) {
     const isWork = kind === "work";
-    const recordId = id || createContentId(isWork ? "work" : "photo");
+    const recordId = id || options.recordId || createContentId(isWork ? "work" : "photo");
+    const attemptedPaths = [];
     const uploadedPaths = [];
     const accessGeneration = cloudAccessGeneration;
     let databaseWriteAttempted = false;
@@ -662,8 +964,9 @@ async function saveImageRecord(kind, id, values, selectedFile) {
             throw localizedError("admin.upload.imageRequired");
         }
         if (selectedFile) {
-            if (!isWork) await exifReviewPromise;
+            if (!isWork && !options.skipExifWait) await exifReviewPromise;
             showUploadProgress(kind, "admin.upload.preparing", 0);
+            options.onProgress?.("preparing", 0);
             const exports = await prepareCloudWebExports(selectedFile);
             const images = await uploadCloudWebExports(
                 isWork ? "collections" : "photos", recordId, exports, (path) => {
@@ -671,7 +974,8 @@ async function saveImageRecord(kind, id, values, selectedFile) {
                     showUploadProgress(kind, "admin.upload.filesUploaded", uploadedPaths.length, {
                         count: uploadedPaths.length
                     });
-                }
+                    options.onProgress?.("uploading", uploadedPaths.length);
+                }, (path) => attemptedPaths.push(path)
             );
             if (accessGeneration !== cloudAccessGeneration) {
                 throw localizedError("admin.upload.sessionChanged");
@@ -690,6 +994,7 @@ async function saveImageRecord(kind, id, values, selectedFile) {
                 height: images.height
             });
             showUploadProgress(kind, "admin.upload.savingRecord", 3);
+            options.onProgress?.("saving", 3);
         }
 
         if (!id && cloudMode) values.id = recordId;
@@ -705,35 +1010,48 @@ async function saveImageRecord(kind, id, values, selectedFile) {
         return saved;
     } catch (error) {
         const messages = errorParts(error);
-        if (uploadedPaths.length > 0) {
+        let needsReview = Boolean(error.uploadOutcomeUnknown);
+        if (attemptedPaths.length > 0) {
             let cleanupIsSafe = true;
-            if (databaseWriteAttempted) {
+            if (databaseWriteAttempted && uploadedUrl) {
                 try {
                     if (await cloudAdminService.imageRowUsesUrl(
                         isWork ? "collections" : "photos", recordId, uploadedUrl
                     )) {
-                        cleanupIsSafe = false;
-                        messages.push({ key: "admin.upload.rowUsesFilesKept" });
+                        // The database committed even though its reply was lost.
+                        return { ...values, id: recordId };
                     }
                 } catch {
                     cleanupIsSafe = false;
+                    needsReview = true;
                     messages.push({ key: "admin.upload.rowCheckFailedFilesKept" });
+                }
+                if (!cloudWriteFailureIsDefinitive(error)) {
+                    // A network/server failure can leave a write in flight after
+                    // the first row check. Keep its files until manually checked.
+                    cleanupIsSafe = false;
+                    needsReview = true;
                 }
             }
             if (cleanupIsSafe) {
                 try {
-                    await removeCloudWebExports(uploadedPaths);
+                    await removeCloudWebExports(attemptedPaths);
                     messages.push({ key: "admin.upload.cleanupRemoved" });
                 } catch (cleanupError) {
+                    needsReview = true;
                     messages.push({ key: "admin.upload.cleanupFailed" });
                     messages.push(...errorParts(cleanupError, false));
-                    messages.push({ key: "admin.upload.cleanupPaths", values: {
-                        bucket: CLOUD_WEB_BUCKET,
-                        paths: uploadedPaths.join(", ")
-                    } });
                 }
             }
+            if (needsReview) {
+                messages.push({ key: "admin.queue.needsReview" });
+                messages.push({ key: "admin.upload.cleanupPaths", values: {
+                    bucket: CLOUD_WEB_BUCKET,
+                    paths: attemptedPaths.join(", ")
+                } });
+            }
             showUploadProgress(kind, "admin.upload.stopped", uploadedPaths.length);
+            options.onProgress?.(needsReview ? "needsReview" : "failed", uploadedPaths.length);
         }
         showAdminStatusParts(messages, true);
         return null;
@@ -742,7 +1060,11 @@ async function saveImageRecord(kind, id, values, selectedFile) {
 
 workForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (workSaving || gallerySaving || bulkSaving) return;
+    if (workSaving || gallerySaving || bulkSaving || queueSaving) return;
+    if (unresolvedUploadStatus.work) {
+        showAdminStatusParts(unresolvedUploadStatus.work.parts, true);
+        return;
+    }
 
     const { id, values } = getFormValues(workForm, ["order", "coverWidth", "coverHeight"]);
     const selectedFile = cloudMode ? imageControls.work.file.files[0] : null;
@@ -760,7 +1082,10 @@ workForm.addEventListener("submit", async (event) => {
             return;
         }
         const saved = await saveImageRecord("work", id, values, selectedFile);
-        if (!saved) return;
+        if (!saved) {
+            if (selectedFile && uploadNeedsReview()) unresolvedUploadStatus.work = currentStatus;
+            return;
+        }
 
         resetWorkForm();
         try {
@@ -782,10 +1107,24 @@ workForm.addEventListener("submit", async (event) => {
 
 galleryForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (gallerySaving || workSaving || bulkSaving) return;
+    if (gallerySaving || workSaving || bulkSaving || queueSaving) return;
 
-    const { id, values } = getFormValues(galleryForm, ["order", "collectionOrder", "width", "height"]);
-    values.category = values.category.trim();
+    if (selectedQueueId) {
+        saveQueueDraftFromForm();
+        showAdminStatus("admin.queue.draftSaved");
+        return;
+    }
+    if (unresolvedUploadStatus.gallery) {
+        showAdminStatusParts(unresolvedUploadStatus.gallery.parts, true);
+        return;
+    }
+    if (cloudMode && !galleryForm.elements.id.value) {
+        showAdminStatus("admin.queue.chooseFirst", true);
+        return;
+    }
+
+    const id = galleryForm.elements.id.value;
+    const values = readPhotoFormValues();
     if (!values.category) {
         galleryForm.elements.category.value = "";
         galleryForm.elements.category.reportValidity();
@@ -799,8 +1138,6 @@ galleryForm.addEventListener("submit", async (event) => {
     syncImageFields("gallery");
 
     try {
-        values.tags = values.tags.split(",").map((tag) => tag.trim()).filter(Boolean);
-        values.collectionId = values.collectionId.trim() || null;
         if (!values.collectionId) {
             values.collectionOrder = null;
         } else if (!(await adminStore.getWorks()).some((work) => work.id === values.collectionId)) {
@@ -808,7 +1145,10 @@ galleryForm.addEventListener("submit", async (event) => {
             return;
         }
         const saved = await saveImageRecord("gallery", id, values, selectedFile);
-        if (!saved) return;
+        if (!saved) {
+            if (selectedFile && uploadNeedsReview()) unresolvedUploadStatus.gallery = currentStatus;
+            return;
+        }
 
         resetGalleryForm();
         try {
@@ -831,7 +1171,7 @@ galleryForm.addEventListener("submit", async (event) => {
 workList.addEventListener("click", async (event) => {
     const button = event.target.closest("button[data-action]");
     if (!button || !workList.contains(button)) return;
-    if (workSaving || gallerySaving || bulkSaving) {
+    if (workSaving || gallerySaving || bulkSaving || queueSaving) {
         showAdminStatus("admin.works.waitSave");
         return;
     }
@@ -854,6 +1194,7 @@ workList.addEventListener("click", async (event) => {
             selectedMembershipIds.clear();
             membershipOrderDraft = null;
             renderMembershipList();
+            renderPhotoQueue();
             workForm.scrollIntoView({ behavior: "smooth", block: "start" });
             workForm.elements.title.focus({ preventScroll: true });
             return;
@@ -897,7 +1238,7 @@ workList.addEventListener("click", async (event) => {
 galleryList.addEventListener("click", async (event) => {
     const button = event.target.closest("button[data-action]");
     if (!button || !galleryList.contains(button)) return;
-    if (gallerySaving || workSaving || bulkSaving) {
+    if (gallerySaving || workSaving || bulkSaving || queueSaving) {
         showAdminStatus("admin.gallery.waitSave");
         return;
     }
@@ -907,6 +1248,8 @@ galleryList.addEventListener("click", async (event) => {
         if (!item) return;
 
         if (button.dataset.action === "edit") {
+            saveQueueDraftFromForm();
+            resetGalleryForm();
             imageControls.gallery.file.value = "";
             clearExifReview();
             fillForm(galleryForm, item);
@@ -935,7 +1278,13 @@ galleryList.addEventListener("click", async (event) => {
 });
 
 cancelWorkEdit.addEventListener("click", resetWorkForm);
-cancelGalleryEdit.addEventListener("click", resetGalleryForm);
+cancelGalleryEdit.addEventListener("click", () => {
+    saveQueueDraftFromForm();
+    resetGalleryForm();
+    renderPhotoQueue();
+});
+galleryForm.addEventListener("input", saveQueueDraftFromForm);
+galleryForm.addEventListener("change", saveQueueDraftFromForm);
 Object.entries(imageControls).forEach(([kind, control]) => {
     function refreshSelection() {
         control.progress.hidden = true;
@@ -950,10 +1299,72 @@ Object.entries(imageControls).forEach(([kind, control]) => {
     });
 });
 
+batchPhotoFiles.addEventListener("change", () => {
+    if (!cloudMode || queueSaving) return;
+    const collection = currentWorks?.find((work) => work.id === membershipCollection.value);
+    if (!collection) {
+        batchPhotoFiles.value = "";
+        showAdminStatus("admin.queue.collectionRequired", true);
+        return;
+    }
+    const files = [...batchPhotoFiles.files];
+    const maxGlobal = Math.max(0, ...(currentGalleryItems || []).map((photo) =>
+        Number.isFinite(photo.order) ? photo.order : 0));
+    const maxCollection = Math.max(0, ...orderedCollectionPhotos(collection.id).map((photo) =>
+        Number.isFinite(photo.collectionOrder) ? photo.collectionOrder : 0));
+    const previousQueue = photoQueue.filter((item) => item.values.collectionId === collection.id).length;
+    const added = files.map((file, index) => {
+        let fileError = "";
+        try {
+            validateCloudImageFile(file);
+        } catch (error) {
+            fileError = error.translationKey
+                ? adminT(error.translationKey, error.translationValues || {}) : error.message;
+        }
+        return {
+            id: createContentId("photo"),
+            file,
+            previewUrl: URL.createObjectURL(file),
+            values: {
+            title: "", alt: "", src: "", fullSrc: "", srcset: "",
+            category: collection.category || "", collectionId: collection.id,
+            order: maxGlobal + photoQueue.length + index + 1,
+            collectionOrder: maxCollection + previousQueue + index + 1,
+            date: "", captureTime: "", location: "", tags: [],
+            description: "", camera: "", lens: "", focalLength: "",
+            aperture: "", shutterSpeed: "", iso: "", width: "", height: ""
+            },
+            status: fileError ? "failed" : "draft", progress: 0, error: fileError
+        };
+    });
+    photoQueue.push(...added);
+    batchPhotoFiles.value = "";
+    renderPhotoQueue();
+    const firstValid = added.find((item) => item.status === "draft");
+    if (firstValid) selectQueuePhoto(firstValid.id);
+});
+batchUploadList.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-queue-action]");
+    if (!button || !batchUploadList.contains(button) || queueSaving) return;
+    if (button.dataset.queueAction === "edit") selectQueuePhoto(button.dataset.id);
+    if (button.dataset.queueAction === "remove") {
+        const item = photoQueue.find((photo) => photo.id === button.dataset.id);
+        if (item) forgetQueueItem(item);
+    }
+});
+batchUploadAll.addEventListener("click", () => uploadQueueItems(photoQueue.filter((item) =>
+    item.status === "draft" || item.status === "failed")));
+batchRetryFailed.addEventListener("click", () => uploadQueueItems(photoQueue.filter((item) =>
+    item.status === "failed")));
+batchClearDone.addEventListener("click", () => {
+    photoQueue.filter((item) => item.status === "success").forEach(forgetQueueItem);
+});
+
 membershipCollection.addEventListener("change", () => {
     selectedMembershipIds.clear();
     membershipOrderDraft = null;
     renderMembershipList();
+    renderPhotoQueue();
 });
 membershipSearch.addEventListener("input", renderMembershipList);
 membershipList.addEventListener("change", (event) => {
@@ -976,7 +1387,7 @@ membershipList.addEventListener("click", (event) => {
 });
 
 membershipAdd.addEventListener("click", async () => {
-    if (bulkSaving || workSaving || gallerySaving) return showAdminStatus("admin.membership.busy");
+    if (bulkSaving || workSaving || gallerySaving || queueSaving) return showAdminStatus("admin.membership.busy");
     if (!selectedMembershipIds.size) return showAdminStatus("admin.membership.nothingSelected", true);
     const collectionId = membershipCollection.value;
     if (!collectionId) return;
@@ -986,15 +1397,16 @@ membershipAdd.addEventListener("click", async () => {
         const selected = photos.filter((photo) => selectedMembershipIds.has(photo.id)
             && photo.collectionId !== collectionId);
         if (!selected.length) return showAdminStatus("admin.membership.noOrderChanges");
-        const moving = selected.filter((photo) => photo.collectionId).length;
-        if (moving && !window.confirm(adminT("admin.membership.moveConfirm", { count: moving }))) return;
+        if (!window.confirm(adminT("admin.membership.addFieldsConfirm", {
+            count: selected.length, title: collectionName(collectionId)
+        }))) return;
         const existing = photos.filter((photo) => photo.collectionId === collectionId);
         const maxOrder = Math.max(0, ...existing.map((photo) => Number.isFinite(photo.collectionOrder)
             ? photo.collectionOrder : Number.isFinite(photo.order) ? photo.order : 0));
-        let nextOrder = maxOrder + 1;
+        const positions = new Map(selected.map((photo, index) => [photo.id, maxOrder + index + 1]));
         await savePhotoBatch(selected, (photo) => ({
             collectionId,
-            collectionOrder: nextOrder++
+            collectionOrder: positions.get(photo.id)
         }), "admin.membership.saved");
     } catch (error) {
         showAdminError(error);
@@ -1004,7 +1416,7 @@ membershipAdd.addEventListener("click", async () => {
 });
 
 membershipRemove.addEventListener("click", async () => {
-    if (bulkSaving || workSaving || gallerySaving) return showAdminStatus("admin.membership.busy");
+    if (bulkSaving || workSaving || gallerySaving || queueSaving) return showAdminStatus("admin.membership.busy");
     if (!selectedMembershipIds.size) return showAdminStatus("admin.membership.nothingSelected", true);
     const collectionId = membershipCollection.value;
     setBulkSaving(true);
@@ -1013,6 +1425,9 @@ membershipRemove.addEventListener("click", async () => {
         const selected = photos.filter((photo) => selectedMembershipIds.has(photo.id)
             && photo.collectionId === collectionId);
         if (!selected.length) return showAdminStatus("admin.membership.nothingToRemove", true);
+        if (!window.confirm(adminT("admin.membership.removeFieldsConfirm", {
+            count: selected.length
+        }))) return;
         await savePhotoBatch(selected, (photo) => photo.collectionId === collectionId
             ? { collectionId: null, collectionOrder: null } : null, "admin.membership.saved");
     } catch (error) {
@@ -1023,7 +1438,7 @@ membershipRemove.addEventListener("click", async () => {
 });
 
 membershipSaveOrder.addEventListener("click", async () => {
-    if (bulkSaving || workSaving || gallerySaving) return showAdminStatus("admin.membership.busy");
+    if (bulkSaving || workSaving || gallerySaving || queueSaving) return showAdminStatus("admin.membership.busy");
     const collectionId = membershipCollection.value;
     const originalIds = orderedCollectionPhotos(collectionId).map((photo) => photo.id);
     if (!membershipOrderDraft || originalIds.every((id, index) => id === membershipOrderDraft[index])) {
@@ -1031,6 +1446,9 @@ membershipSaveOrder.addEventListener("click", async () => {
     }
     const photos = membershipOrderDraft.map((id) => currentGalleryItems.find((photo) => photo.id === id));
     const position = new Map(membershipOrderDraft.map((id, index) => [id, index + 1]));
+    if (!window.confirm(adminT("admin.membership.orderFieldsConfirm", {
+        count: photos.length
+    }))) return;
     setBulkSaving(true);
     try {
         await savePhotoBatch(photos, (photo) => {
@@ -1042,23 +1460,163 @@ membershipSaveOrder.addEventListener("click", async () => {
     }
 });
 
+membershipSetCategory.addEventListener("click", async () => {
+    if (bulkSaving || workSaving || gallerySaving || queueSaving) return showAdminStatus("admin.membership.busy");
+    const categoryId = membershipCategory.value;
+    if (!categoryId || !currentCategories?.some((item) => item.id === categoryId)) {
+        return showAdminStatus("admin.queue.categoryRequired", true);
+    }
+    const selected = (currentGalleryItems || []).filter((photo) =>
+        selectedMembershipIds.has(photo.id) && photo.category !== categoryId);
+    if (!selected.length) return showAdminStatus("admin.membership.noOrderChanges");
+    if (!window.confirm(adminT("admin.membership.categoryFieldsConfirm", {
+        count: selected.length, category: categoryName(categoryId)
+    }))) return;
+    await savePhotoBatch(selected, () => ({ category: categoryId }),
+        "admin.membership.categorySaved");
+});
+
+async function deletePhotoBatch(photos) {
+    setBulkSaving(true);
+    batchResults.replaceChildren();
+    const failed = [];
+    let deleted = 0;
+    for (const [index, photo] of photos.entries()) {
+        const row = appendBatchResult(photo, "admin.membership.deletingOne", {
+            current: index + 1, total: photos.length
+        });
+        try {
+            const latest = await adminStore.getGalleryItemById(photo.id);
+            if (latest && !await adminStore.deleteGalleryItem(photo.id)) {
+                throw localizedError("admin.gallery.deleteFailed");
+            }
+            deleted++;
+            row.textContent = `${photo.title || photo.id}: ${adminT("admin.membership.deletedOne")}`;
+        } catch (error) {
+            // An ambiguous response may follow a committed delete. A retry must not
+            // recreate anything or report a missing row as a failed deletion.
+            try {
+                if (!await adminStore.getGalleryItemById(photo.id)) {
+                    deleted++;
+                    row.textContent = `${photo.title || photo.id}: ${adminT("admin.membership.deletedOne")}`;
+                    continue;
+                }
+            } catch { /* Keep this item in the retry list. */ }
+            failed.push(photo);
+            row.textContent = `${photo.title || photo.id}: ${adminT("admin.membership.failedOne", {
+                message: error.message || String(error)
+            })}`;
+        }
+    }
+    selectedMembershipIds = new Set(failed.map((photo) => photo.id));
+    lastBatchRetry = failed.length ? () => deletePhotoBatch(failed) : null;
+    batchRetryUpdates.hidden = !lastBatchRetry;
+    try {
+        await renderGalleryAdmin();
+        showAdminStatus(failed.length ? "admin.membership.deletePartial"
+            : "admin.membership.deleteDone", Boolean(failed.length), {
+            deleted, failed: failed.length
+        });
+    } catch (error) {
+        showAdminError(error);
+    } finally {
+        setBulkSaving(false);
+    }
+}
+
+membershipDelete.addEventListener("click", async () => {
+    if (bulkSaving || workSaving || gallerySaving || queueSaving) return showAdminStatus("admin.membership.busy");
+    const selected = (currentGalleryItems || []).filter((photo) =>
+        selectedMembershipIds.has(photo.id));
+    if (!selected.length) return showAdminStatus("admin.membership.nothingSelected", true);
+    if (!window.confirm(adminT("admin.membership.deleteConfirm", { count: selected.length }))) return;
+    await deletePhotoBatch(selected);
+});
+
+batchRetryUpdates.addEventListener("click", () => {
+    if (!bulkSaving && lastBatchRetry) lastBatchRetry();
+});
+
+categoryCreateForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (bulkSaving || workSaving || gallerySaving || queueSaving) return showAdminStatus("admin.membership.busy");
+    const name = categoryCreateForm.elements.name.value.trim();
+    if (!name) return;
+    try {
+        const created = await adminStore.createCategory(name);
+        if (!created) throw localizedError("admin.categories.saveFailed");
+        categoryCreateForm.reset();
+        await renderAdmin();
+        showAdminStatus("admin.categories.created", false, { name });
+    } catch (error) {
+        showAdminError(error);
+    }
+});
+
 categoryRenameForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (bulkSaving || workSaving || gallerySaving) return showAdminStatus("admin.membership.busy");
+    if (bulkSaving || workSaving || gallerySaving || queueSaving) return showAdminStatus("admin.membership.busy");
     const source = categoryRenameForm.elements.source.value;
     const target = categoryRenameForm.elements.target.value.trim();
     if (!target) return;
-    if (source === target) return showAdminStatus("admin.categories.same", true);
+    const oldName = categoryName(source);
+    if (oldName === target) return showAdminStatus("admin.categories.same", true);
+    const worksCount = (currentWorks || []).filter((work) => work.category === source).length;
+    const photosCount = (currentGalleryItems || []).filter((photo) => photo.category === source).length;
+    if (!window.confirm(adminT("admin.categories.renameConfirm", {
+        source: oldName, target, works: worksCount, photos: photosCount
+    }))) return;
     setBulkSaving(true);
     try {
-        const photos = (await adminStore.getGalleryItems()).filter((photo) => photo.category === source);
-        if (!photos.length) return renderGalleryAdmin();
-        if (!window.confirm(adminT("admin.categories.confirm", {
-            count: photos.length, source, target
-        }))) return;
-        const { writeError } = await savePhotoBatch(photos, (photo) => photo.category === source
-            ? { category: target } : null, "admin.categories.saved", { target }, "admin.categories.partial");
-        if (!writeError) categoryRenameForm.elements.target.value = "";
+        const saved = await adminStore.renameCategory(source, target);
+        if (!saved) throw localizedError("admin.categories.saveFailed");
+        categoryRenameForm.elements.target.value = "";
+        await renderAdmin();
+        showAdminStatus("admin.categories.renamed", false, { target });
+    } catch (error) {
+        showAdminError(error);
+    } finally {
+        setBulkSaving(false);
+    }
+});
+
+categoryMergeForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (bulkSaving || workSaving || gallerySaving || queueSaving) return showAdminStatus("admin.membership.busy");
+    const source = categoryMergeForm.elements.source.value;
+    const target = categoryMergeForm.elements.target.value;
+    if (!source || !target || source === target) return showAdminStatus("admin.categories.same", true);
+    const worksCount = (currentWorks || []).filter((work) => work.category === source).length;
+    const photosCount = (currentGalleryItems || []).filter((photo) => photo.category === source).length;
+    if (!window.confirm(adminT("admin.categories.mergeConfirm", {
+        source: categoryName(source), target: categoryName(target),
+        works: worksCount, photos: photosCount
+    }))) return;
+    setBulkSaving(true);
+    try {
+        if (!await adminStore.mergeCategories(source, target)) {
+            throw localizedError("admin.categories.saveFailed");
+        }
+        await renderAdmin();
+        showAdminStatus("admin.categories.merged", false, { target: categoryName(target) });
+    } catch (error) {
+        showAdminError(error);
+    } finally {
+        setBulkSaving(false);
+    }
+});
+
+categoryDelete.addEventListener("click", async () => {
+    if (bulkSaving || workSaving || gallerySaving || queueSaving) return showAdminStatus("admin.membership.busy");
+    const id = categoryDeleteTarget.value;
+    if (!id) return;
+    const name = categoryName(id);
+    if (!window.confirm(adminT("admin.categories.deleteConfirm", { name }))) return;
+    setBulkSaving(true);
+    try {
+        if (!await adminStore.deleteUnusedCategory(id)) throw localizedError("admin.categories.deleteFailed");
+        await renderAdmin();
+        showAdminStatus("admin.categories.deleted", false, { name });
     } catch (error) {
         showAdminError(error);
     } finally {
@@ -1113,10 +1671,10 @@ resetContentButton.addEventListener("click", async () => {
 function setAdminAccess(allowed) {
     adminAccessAllowed = allowed;
     document.querySelector("#works-admin").hidden = !allowed;
-    document.querySelector("#gallery-admin").hidden = !allowed;
+    document.querySelector("#photo-upload-queue").hidden = !cloudMode || !allowed;
     resetSection.hidden = cloudMode || !allowed;
     document.querySelectorAll(".admin-nav li").forEach((item, index) => {
-        if (index < 2) item.hidden = !allowed;
+        if (index === 0) item.hidden = !allowed;
     });
 
     if (cloudMode) {
@@ -1152,7 +1710,7 @@ async function initializeCloudAdmin() {
         setAdminAccess(true);
         await renderAdmin();
         const requestedSection = document.getElementById(window.location.hash.slice(1));
-        if (requestedSection?.id === "works-admin" || requestedSection?.id === "gallery-admin") {
+        if (requestedSection?.id === "works-admin") {
             requestedSection.scrollIntoView();
         }
         showAdminStatus("admin.auth.cloudLoaded");
@@ -1225,6 +1783,7 @@ function updateAdminLanguage() {
     if (currentWorks) renderWorksList(currentWorks);
     if (currentGalleryItems) renderGalleryList(currentGalleryItems);
     renderAdminBatchControls();
+    renderPhotoQueue();
     if (exifReviewData) renderExifReview();
     else if (!exifReviewSection.hidden) exifReviewStatus.textContent = adminT("admin.exif.reading");
     renderAdminStatus();

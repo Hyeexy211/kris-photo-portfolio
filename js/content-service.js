@@ -5,6 +5,7 @@
 // ================================================================
 
 let contentReadPromise = null;
+let categoryReadPromise = null;
 
 function createContentId(prefix) {
     if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -33,17 +34,11 @@ async function readPublicContent() {
         ]);
         return { collections, photos };
     } catch (error) {
-        if (!CONTENT_DATA_SOURCE.fallbackToLocal) throw error;
-
         console.warn(
-            "Supabase content read failed; using both browser-local tables instead.",
+            "Supabase content read failed; browser-local content is not used as a fallback.",
             error
         );
-
-        return {
-            collections: localRepository.getCollections(),
-            photos: localRepository.getPhotos()
-        };
+        throw error;
     }
 }
 
@@ -58,6 +53,21 @@ function getCollections() {
 
 function getPhotos() {
     return getPublicContent().then((content) => content.photos);
+}
+
+function getPublicCategories() {
+    if (!categoryReadPromise) {
+        categoryReadPromise = (async () => {
+            if (!useSupabaseDataSource()) return localRepository.getCategories();
+            try {
+                return await supabaseRepository.getCategories();
+            } catch (error) {
+                console.warn("Supabase category read failed; showing no public categories.", error);
+                return [];
+            }
+        })();
+    }
+    return categoryReadPromise;
 }
 
 async function getCollectionById(id) {
@@ -206,11 +216,16 @@ function resetGallery() {
     return localRepository.resetPhotos();
 }
 
+function resetCategories() {
+    return localRepository.resetCategories();
+}
+
 function resetAllContent() {
     const worksReset = resetWorks();
     const galleryReset = resetGallery();
+    const categoriesReset = resetCategories();
 
-    return worksReset && galleryReset;
+    return worksReset && galleryReset && categoriesReset;
 }
 
 localRepository.initialize();
@@ -218,11 +233,17 @@ localRepository.initialize();
 const contentService = Object.freeze({
     getCollections,
     getPhotos,
+    getPublicCategories,
     getCollectionById,
     getCollectionBySlug,
     getPhotosByCollection,
 
     // Browser-local Admin API retained for Lesson 33 compatibility.
+    getCategories: () => localRepository.getCategories(),
+    createCategory: (name) => localRepository.createCategory(name),
+    renameCategory: (id, name) => localRepository.renameCategory(id, name),
+    mergeCategories: (sourceId, targetId) => localRepository.mergeCategories(sourceId, targetId),
+    deleteUnusedCategory: (id) => localRepository.deleteUnusedCategory(id),
     getWorks,
     getWorkById(id) {
         return getWorks().find((work) => work.id === id) || null;
@@ -239,5 +260,6 @@ const contentService = Object.freeze({
     deleteGalleryItem,
     resetWorks,
     resetGallery,
+    resetCategories,
     resetAllContent
 });

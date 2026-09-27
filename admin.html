@@ -8,8 +8,8 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#000000">
     <link rel="icon" href="images/favicon/favicon.png">
-    <link rel="stylesheet" href="css/style.css?v=20260923-curation">
-    <link rel="stylesheet" href="css/admin.css?v=20260923-curation">
+    <link rel="stylesheet" href="css/style.css?v=20260923-reset">
+    <link rel="stylesheet" href="css/admin.css?v=20260923-reset">
 </head>
 <body class="project-site admin-site">
     <a class="skip-link" href="#main-content" data-i18n="common.skipToContent">Skip to content</a>
@@ -19,7 +19,7 @@
             <a class="site-brand" href="index.html">Kris Photography</a>
             <ul class="admin-nav" aria-label="Admin navigation" data-i18n-aria-label="admin.nav.label">
                 <li><a href="#works-admin" data-i18n="admin.nav.works">Works</a></li>
-                <li><a href="#gallery-admin" data-i18n="admin.nav.gallery">Gallery</a></li>
+                <li><a href="index.html#gallery" data-i18n="admin.nav.gallery">View Gallery</a></li>
                 <li><a href="index.html" data-i18n="admin.nav.viewSite">View site</a></li>
                 <li class="admin-language-item">
                     <div class="admin-language-switcher" role="group" aria-label="Language" data-i18n-aria-label="language.group">
@@ -37,7 +37,7 @@
             <p class="section-label" id="admin-mode-label" data-i18n="admin.mode.cloudLabel">Authenticated cloud editor</p>
             <h1 id="admin-title" data-i18n="admin.title">Content Admin</h1>
             <p id="admin-intro-copy" data-i18n="admin.mode.cloudIntro">
-                Cloud changes update Supabase after owner sign-in. Published photo share previews need regeneration and deployment after edits.
+                Cloud changes update Supabase after owner sign-in. Photos are edited in Work; Gallery displays published results.
             </p>
             <p class="admin-mode-links"><a href="admin.html?mode=local" data-i18n="admin.mode.localLink">Browser-local editor</a> · <a href="admin.html" data-i18n="admin.mode.cloudLink">Cloud Admin</a></p>
             <p class="admin-mode-links" id="admin-file-notice" hidden><span data-i18n="admin.mode.fileNotice">This is a local file, not the published website. Open the online Dashboard to upload images; serve this folder over HTTP to preview local source.</span> <a href="https://hyeexy211.github.io/kris-photo-portfolio/admin/" data-i18n="admin.mode.openOnlineDashboard">Open online Dashboard</a></p>
@@ -64,6 +64,29 @@
                 </div>
                 <p><span id="work-count">0</span> <span data-i18n="admin.items">items</span></p>
             </div>
+
+            <section class="admin-batch" id="category-admin" aria-labelledby="category-admin-title">
+                <h3 id="category-admin-title" data-i18n="admin.categories.manageTitle">Photo categories</h3>
+                <p data-i18n="admin.categories.manageIntro">Works and photos share these categories. Create one before saving a work or photo.</p>
+                <form class="admin-batch-controls" id="category-create-form">
+                    <label><span data-i18n="admin.categories.newName">New category name</span><input name="name" type="text" maxlength="80" required></label>
+                    <button class="admin-button admin-button-primary" type="submit" data-i18n="admin.categories.create">Create category</button>
+                </form>
+                <form class="admin-batch-controls" id="category-rename-form">
+                    <label><span data-i18n="admin.categories.source">Category to rename</span><select name="source" required></select></label>
+                    <label><span data-i18n="admin.categories.target">New name</span><input name="target" type="text" maxlength="80" required></label>
+                    <button class="admin-button" type="submit" data-i18n="admin.categories.rename">Rename</button>
+                </form>
+                <form class="admin-batch-controls" id="category-merge-form">
+                    <label><span data-i18n="admin.categories.mergeSource">Category to merge</span><select name="source" required></select></label>
+                    <label><span data-i18n="admin.categories.mergeTarget">Keep category</span><select name="target" required></select></label>
+                    <button class="admin-button" type="submit" data-i18n="admin.categories.merge">Merge</button>
+                </form>
+                <div class="admin-batch-controls">
+                    <label><span data-i18n="admin.categories.deleteTarget">Unused category</span><select id="category-delete-target"></select></label>
+                    <button class="admin-button admin-button-danger" id="category-delete" type="button" data-i18n="admin.categories.delete">Delete unused category</button>
+                </div>
+            </section>
 
             <form class="admin-form" id="work-form">
                 <h3 id="work-form-title" data-i18n="admin.works.createTitle">Create Work</h3>
@@ -118,7 +141,7 @@
                 </label>
                 <label>
                     <span class="admin-label" data-i18n="admin.fields.category">Category</span>
-                    <input name="category" type="text" required>
+                    <select name="category" id="work-category" required></select>
                 </label>
                 <label>
                     <span class="admin-label" data-i18n="admin.fields.displayOrder">Display order</span>
@@ -155,20 +178,41 @@
                     <button class="admin-button" id="membership-remove" type="button" data-i18n="admin.membership.remove">Remove selected</button>
                     <button class="admin-button" id="membership-save-order" type="button" data-i18n="admin.membership.saveOrder">Save collection order</button>
                 </div>
+                <div class="admin-batch-controls">
+                    <label><span data-i18n="admin.membership.commonCategory">Set category for selected photos</span><select id="membership-category"></select></label>
+                    <button class="admin-button" id="membership-set-category" type="button" data-i18n="admin.membership.applyCategory">Apply category</button>
+                    <button class="admin-button admin-button-danger" id="membership-delete" type="button" data-i18n="admin.membership.deleteSelected">Delete selected photo records</button>
+                </div>
+                <div id="batch-results" class="admin-batch-results" role="status" aria-live="polite"></div>
+                <button class="admin-button" id="batch-retry-updates" type="button" data-i18n="admin.membership.retryFailed" hidden>Retry failed changes</button>
             </section>
-        </section>
-
-        <section class="admin-section" id="gallery-admin" aria-labelledby="gallery-admin-title" hidden>
+            <section class="admin-photo-editor" id="photo-admin" aria-labelledby="gallery-admin-title">
             <div class="admin-section-heading">
                 <div>
-                    <p class="section-label" data-i18n="admin.gallery.sectionLabel">Gallery / Photo</p>
-                    <h2 id="gallery-admin-title" data-i18n="admin.gallery.title">Manage Gallery</h2>
+                    <p class="section-label" data-i18n="admin.gallery.sectionLabel">Photos in Work</p>
+                    <h2 id="gallery-admin-title" data-i18n="admin.gallery.title">Manage Photos</h2>
                 </div>
                 <p><span id="gallery-count">0</span> <span data-i18n="admin.items">items</span></p>
             </div>
 
+            <section class="admin-batch" id="photo-upload-queue" aria-labelledby="photo-upload-title" hidden>
+                <h3 id="photo-upload-title" data-i18n="admin.queue.title">Upload photos to the selected collection</h3>
+                <p data-i18n="admin.queue.intro">Choose several files at once. Review each preview and its details below before uploading.</p>
+                <label class="admin-file-picker">
+                    <input id="batch-photo-files" type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple data-i18n-aria-label="admin.queue.choose">
+                    <span class="admin-button" data-i18n="admin.queue.choose">Choose photos</span>
+                </label>
+                <div id="batch-upload-list" class="admin-photo-list" aria-live="polite"></div>
+                <div class="admin-form-actions admin-batch-actions">
+                    <button class="admin-button admin-button-primary" id="batch-upload-all" type="button" data-i18n="admin.queue.uploadAll">Upload ready photos</button>
+                    <button class="admin-button" id="batch-retry-failed" type="button" data-i18n="admin.queue.retryFailed">Retry failed only</button>
+                    <button class="admin-button" id="batch-clear-done" type="button" data-i18n="admin.queue.clearDone">Clear completed</button>
+                </div>
+                <p id="batch-upload-summary" role="status" aria-live="polite"></p>
+            </section>
+
             <form class="admin-form" id="gallery-form">
-                <h3 id="gallery-form-title" data-i18n="admin.gallery.createTitle">Create Gallery Item</h3>
+                <h3 id="gallery-form-title" data-i18n="admin.gallery.createTitle">Choose photos above to enter details</h3>
                 <input id="gallery-item-id" name="id" type="hidden">
 
                 <label class="admin-field-wide">
@@ -211,13 +255,11 @@
                 </label>
                 <label>
                     <span class="admin-label" data-i18n="admin.fields.category">Category</span>
-                    <input name="category" type="text" list="gallery-category-options" required>
-                    <datalist id="gallery-category-options"></datalist>
+                    <select name="category" id="photo-category" required></select>
                 </label>
                 <label>
-                    <span class="admin-label" data-i18n="admin.fields.collectionId">Collection ID</span>
-                    <input name="collectionId" type="text" list="work-id-options">
-                    <datalist id="work-id-options"></datalist>
+                    <span class="admin-label" data-i18n="admin.fields.collectionId">Collection</span>
+                    <select name="collectionId" id="photo-collection"></select>
                 </label>
                 <label>
                     <span class="admin-label" data-i18n="admin.fields.displayOrder">Display order</span>
@@ -287,29 +329,21 @@
                 </label>
 
                 <div class="admin-form-actions admin-field-wide">
-                    <button class="admin-button admin-button-primary" type="submit" data-i18n="admin.gallery.save">Save Gallery Item</button>
+                    <button class="admin-button admin-button-primary" type="submit" data-i18n="admin.gallery.save">Save Photo</button>
                     <button class="admin-button" id="cancel-gallery-edit" type="button" data-i18n="admin.cancelEdit" hidden>Cancel edit</button>
                 </div>
             </form>
 
             <div class="admin-list" id="gallery-list" aria-live="polite"></div>
 
-            <form class="admin-batch" id="category-rename-form">
-                <h3 data-i18n="admin.categories.title">Rename or merge a category</h3>
-                <p data-i18n="admin.categories.intro">All photos in the old category move to the new name. Photos remain in the Gallery.</p>
-                <div class="admin-batch-controls">
-                    <label><span data-i18n="admin.categories.source">Current category</span><select name="source" required></select></label>
-                    <label><span data-i18n="admin.categories.target">New or existing category</span><input name="target" type="text" list="category-merge-options" required><datalist id="category-merge-options"></datalist></label>
-                </div>
-                <button class="admin-button admin-button-primary" type="submit" data-i18n="admin.categories.apply">Rename or merge</button>
-            </form>
+            </section>
         </section>
 
         <section class="admin-reset" id="admin-reset" aria-labelledby="reset-title" hidden>
             <div>
                 <p class="section-label" data-i18n="admin.reset.sectionLabel">Recovery</p>
-                <h2 id="reset-title" data-i18n="admin.reset.title">Restore default content</h2>
-                <p data-i18n="admin.reset.description">This overwrites all browser-local Work and Gallery changes with the repository seed data.</p>
+                <h2 id="reset-title" data-i18n="admin.reset.title">Clear browser-local content</h2>
+                <p data-i18n="admin.reset.description">This clears browser-local Works, Photos, and categories. It does not change Supabase.</p>
             </div>
             <button class="admin-button admin-button-danger" id="reset-content" type="button" data-i18n="admin.reset.button">Reset Content</button>
         </section>
@@ -317,20 +351,20 @@
 
     <footer><p data-i18n="footer.copyright">© 2026 Kris Photography</p></footer>
 
-    <script src="locales/en.js?v=20260923-long-edge"></script>
-    <script src="locales/zh-CN.js?v=20260923-long-edge"></script>
-    <script src="js/i18n.js?v=20260923-curation"></script>
-    <script src="js/config/data-source.js"></script>
-    <script src="data/collections.js"></script>
-    <script src="data/photos.js"></script>
-    <script src="js/storage-service.js"></script>
-    <script src="js/repositories/local-repository.js?v=20260923-curation"></script>
-    <script src="js/config/supabase-client.js?v=20260923-cloud-default"></script>
-    <script src="js/repositories/supabase-repository.js?v=20260923-curation"></script>
-    <script src="js/content-service.js?v=20260923-curation"></script>
-    <script src="js/cloud-admin-service.js"></script>
-    <script src="js/cloud-photo-upload.js?v=20260923-long-edge"></script>
-    <script src="js/jpeg-exif-review.js"></script>
-    <script src="js/admin.js?v=20260923-curation"></script>
+    <script src="locales/en.js?v=20260923-reset"></script>
+    <script src="locales/zh-CN.js?v=20260923-reset"></script>
+    <script src="js/i18n.js?v=20260923-reset"></script>
+    <script src="js/config/data-source.js?v=20260923-reset"></script>
+    <script src="data/collections.js?v=20260923-reset"></script>
+    <script src="data/photos.js?v=20260923-reset"></script>
+    <script src="js/storage-service.js?v=20260923-reset"></script>
+    <script src="js/repositories/local-repository.js?v=20260923-reset"></script>
+    <script src="js/config/supabase-client.js?v=20260923-reset"></script>
+    <script src="js/repositories/supabase-repository.js?v=20260923-reset"></script>
+    <script src="js/content-service.js?v=20260923-reset"></script>
+    <script src="js/cloud-admin-service.js?v=20260923-reset"></script>
+    <script src="js/cloud-photo-upload.js?v=20260923-reset"></script>
+    <script src="js/jpeg-exif-review.js?v=20260923-reset"></script>
+    <script src="js/admin.js?v=20260923-reset"></script>
 </body>
 </html>

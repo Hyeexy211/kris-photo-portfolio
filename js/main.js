@@ -8,7 +8,7 @@ const galleryContainer = document.querySelector("#photo-gallery");
 
 const galleryFilters = document.querySelector(".gallery-filters");
 
-// null 表示「全部」，不会与用户填写的真实分类名称冲突。
+// null 表示「全部」，其他值是共用类别的稳定 ID。
 let activeCategory = null;
 
 // 保存当前真正显示在 Gallery 中的照片，供灯箱上一张 / 下一张使用。
@@ -16,6 +16,7 @@ let renderedPhotos = [];
 
 // Content Service 首次读取后保存在页面内，筛选按钮不重复发送网络请求。
 let allGalleryPhotos = [];
+let allGalleryCategories = [];
 
 // 根据一条照片数据创建与原静态 Gallery 完全相同的可点击按钮。
 function createPhotoCard(photo) {
@@ -105,7 +106,7 @@ function sortPhotosByDate(photoList) {
 
 // 用传入数组一次替换 Gallery 内容，避免静态卡片与动态卡片叠加。
 function renderGallery(photoList) {
-    // main.js 也被独立作品页复用；那些页面没有动态 Gallery 容器。
+    // main.js 也被通用作品集页复用；那些页面没有动态 Gallery 容器。
     if (!galleryContainer) return;
 
     // 每次渲染都使用排序副本；Content Service 返回的数据不会被 sort() 修改。
@@ -141,22 +142,22 @@ function renderGallery(photoList) {
     observeRevealElements(galleryContainer);
 }
 
-// 只用当前照片的分类生成筛选项；Collection 的 category 不参与 Gallery。
+// 从共用类别定义生成筛选项；暂时没有照片的类别也能正常显示。
 function renderGalleryFilters() {
     if (!galleryFilters) return;
 
-    const categories = [...new Set(allGalleryPhotos.map((photo) => String(photo.category || "").trim()).filter(Boolean))];
     const fragment = document.createDocumentFragment();
 
-    [null, ...categories].forEach((category) => {
+    [null, ...allGalleryCategories].forEach((category) => {
         const button = document.createElement("button");
         button.className = "filter-button";
         button.type = "button";
         if (category === null) button.dataset.filterAll = "true";
-        else button.dataset.category = category;
-        button.setAttribute("aria-pressed", String(category === activeCategory));
-        button.classList.toggle("active", category === activeCategory);
-        button.textContent = category === null ? siteI18n.t("categories.all") : siteI18n.category(category);
+        else button.dataset.category = category.id;
+        const isActive = (category?.id || null) === activeCategory;
+        button.setAttribute("aria-pressed", String(isActive));
+        button.classList.toggle("active", isActive);
+        button.textContent = category === null ? siteI18n.t("categories.all") : category.name;
         fragment.appendChild(button);
     });
 
@@ -197,7 +198,7 @@ function setupGalleryLightbox() {
     });
 }
 
-// 首页存在 Gallery 时才初始化；独立作品页继续使用自己的静态照片结构。
+// 首页存在 Gallery 时才初始化；通用作品集页继续使用自己的照片结构。
 async function initGallery() {
     if (!galleryContainer) return;
 
@@ -209,7 +210,10 @@ async function initGallery() {
     galleryContainer.replaceChildren(loadingMessage);
 
     try {
-        allGalleryPhotos = await contentService.getPhotos();
+        [allGalleryPhotos, allGalleryCategories] = await Promise.all([
+            contentService.getPhotos(),
+            contentService.getPublicCategories()
+        ]);
     } catch (error) {
         console.error("Unable to load Gallery photographs.", error);
         const errorMessage = document.createElement("p");
@@ -234,7 +238,7 @@ async function initGallery() {
 // document.querySelector 会取到第一个匹配的元素，querySelectorAll 会取到全部匹配元素。
 // ================================================================
 
-// 独立作品页的静态照片按钮仍保留；首页动态 Gallery 会使用事件委托。
+// 通用作品集页的照片按钮由页面脚本生成；首页动态 Gallery 使用事件委托。
 let lightboxTriggers = [];
 
 // 找到共用的大图灯箱容器。
@@ -394,13 +398,9 @@ function showLightboxImage(index) {
         lightboxDetailsToggle.textContent = siteI18n.t("lightbox.photoDetails");
 
         if (photo.id) {
-            const script = document.querySelector('script[src$="main.js"]');
-            const hasStaticPage = typeof defaultPhotos !== "undefined"
-                && defaultPhotos.some((item) => item.id === photo.id);
-            const photoUrl = hasStaticPage
-                ? new URL(`../photos/${encodeURIComponent(photo.id)}.html`, script.src)
-                : new URL("../photo.html", script.src);
-            if (!hasStaticPage) photoUrl.searchParams.set("id", photo.id);
+            const script = document.querySelector('script[src*="js/main.js"]');
+            const photoUrl = new URL("../photo.html", script.src);
+            photoUrl.searchParams.set("id", photo.id);
             lightboxPhotoLink.href = photoUrl.href;
             lightboxPhotoLink.textContent = siteI18n.t("lightbox.viewPhoto");
         }
@@ -463,7 +463,7 @@ function closeLightbox() {
     lightboxTrigger = null;
 }
 
-// 只给不会重新渲染的项目页照片直接绑定；首页动态照片由 Gallery 容器委托。
+// 只给作品集页已经生成的照片直接绑定；首页动态照片由 Gallery 容器委托。
 async function setupStaticLightbox() {
     lightboxTriggers = [...document.querySelectorAll(".lightbox-trigger")].filter((trigger) => (
         !galleryContainer || !galleryContainer.contains(trigger)

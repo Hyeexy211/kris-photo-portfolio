@@ -199,6 +199,7 @@
 }
 
 .admin-form input,
+.admin-form select,
 .admin-form textarea {
     width: 100%;
     padding: 12px 14px;
@@ -317,6 +318,7 @@
 }
 
 .admin-form input:focus-visible,
+.admin-form select:focus-visible,
 .admin-form textarea:focus-visible,
 .admin-button:focus-visible {
     outline: 2px solid var(--color-text);
@@ -393,6 +395,24 @@
     background: var(--color-section-alt);
 }
 
+#category-admin {
+    margin: 0 0 48px;
+}
+
+.admin-batch-controls > .admin-button {
+    align-self: end;
+}
+
+.admin-photo-editor {
+    margin-top: 64px;
+    padding-top: 48px;
+    border-top: 1px solid #dddddd;
+}
+
+.admin-photo-editor .admin-section-heading h2 {
+    font-size: clamp(30px, 4vw, 44px);
+}
+
 .admin-batch h3 {
     font-size: 22px;
     font-weight: 500;
@@ -457,6 +477,32 @@
     align-items: center;
     padding: 12px 0;
     border-bottom: 1px solid #d6d6d6;
+}
+
+.admin-queue-row {
+    grid-template-columns: 96px minmax(0, 1fr) auto;
+}
+
+.admin-queue-row.is-selected {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.admin-queue-row > img {
+    width: 96px;
+    height: 72px;
+    object-fit: cover;
+    background: #e3e3e3;
+}
+
+.admin-queue-row .admin-item-actions {
+    justify-content: flex-end;
+}
+
+.admin-batch-results p {
+    margin-top: 8px;
+    overflow-wrap: anywhere;
+    color: var(--color-muted);
+    font-size: 13px;
 }
 
 .admin-photo-picker {
@@ -680,6 +726,20 @@
 
     .admin-photo-row {
         grid-template-columns: 1fr;
+    }
+
+    .admin-queue-row {
+        grid-template-columns: 72px minmax(0, 1fr);
+    }
+
+    .admin-queue-row > img {
+        width: 72px;
+        height: 56px;
+    }
+
+    .admin-queue-row .admin-item-actions {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
     }
 
     .admin-photo-picker {

@@ -18,9 +18,7 @@ window.siteLocales.en = {
         closeMenu: "Close navigation menu"
     },
     hero: {
-        title: "Photography by Kris Huang",
-        categories: "Portrait · Documentary · Landscape",
-        imageAlt: "Warm hanging lamp beside a rain-streaked window overlooking misty trees"
+        title: "Photography by Kris Huang"
     },
     home: {
         workEyebrow: "Selected Work",
@@ -30,14 +28,10 @@ window.siteLocales.en = {
         filterLabel: "Filter photographs by category",
         aboutLabel: "About",
         aboutTitle: "I photograph people, places and quiet moments that deserve to be remembered.",
-        aboutDescription: "I'm Kris, a photographer focused on portrait, documentary and landscape photography."
+        aboutDescription: "I'm Kris, a photographer building a collection of work."
     },
     categories: {
-        all: "All",
-        street: "Street",
-        portrait: "Portrait",
-        documentary: "Documentary",
-        landscape: "Landscape"
+        all: "All"
     },
     work: {
         noScript: "JavaScript is required to load collections.",
@@ -110,14 +104,6 @@ window.siteLocales.en = {
     footer: {
         copyright: "© 2026 Kris Photography"
     },
-    legacy: {
-        portraitDescription: "Rainy windows, reflected light and quiet moments observed from indoors.",
-        portraitGalleryLabel: "Portrait photographs",
-        documentaryDescription: "Quiet interiors, plants and objects observed in soft light.",
-        documentaryGalleryLabel: "Documentary photographs",
-        landscapeDescription: "Three views of city light, changing skies and a garden path.",
-        landscapeGalleryLabel: "Landscape photographs"
-    },
     admin: {
         seo: {
             title: "Content Admin | Kris Photography",
@@ -126,7 +112,7 @@ window.siteLocales.en = {
         nav: {
             label: "Admin navigation",
             works: "Works",
-            gallery: "Gallery",
+            gallery: "View Gallery",
             viewSite: "View site"
         },
         mode: {
@@ -135,7 +121,7 @@ window.siteLocales.en = {
             localLink: "Browser-local editor",
             cloudLink: "Cloud Admin",
             cloudLabel: "Authenticated cloud editor",
-            cloudIntro: "Cloud changes update Supabase after owner sign-in. Published photo share previews need regeneration and deployment after edits.",
+            cloudIntro: "Cloud changes update Supabase after owner sign-in. Photos are edited in the Work section; the public Gallery shows published results.",
             fileNotice: "This is a local file, not the published website. Open the online Dashboard to upload images; serve this folder over HTTP to preview local source.",
             openOnlineDashboard: "Open online Dashboard"
         },
@@ -190,14 +176,14 @@ window.siteLocales.en = {
             deleteCheckFailed: "The collection was deleted, but photo detachment could not be verified. Reload and check the Gallery."
         },
         gallery: {
-            sectionLabel: "Gallery / Photo",
-            title: "Manage Gallery",
-            save: "Save Gallery Item",
-            createTitle: "Create Gallery Item",
-            editTitle: "Edit Gallery Item",
+            sectionLabel: "Photos in Work",
+            title: "Manage Photos",
+            save: "Save Photo",
+            createTitle: "Choose photos above to enter details",
+            editTitle: "Edit Photo",
             meta: "ID: {{id}} · Category: {{category}} · Collection: {{collection}}",
-            itemType: "Gallery item",
-            empty: "No Gallery items saved.",
+            itemType: "Photo",
+            empty: "No photos saved.",
             fileOnlyNew: "File upload is available only when creating a new Gallery item.",
             saveFailed: "The Gallery item could not be saved.",
             unknownCollection: "Choose an existing Collection ID, or leave it empty to keep this photo only in the Gallery.",
@@ -234,6 +220,25 @@ window.siteLocales.en = {
             add: "Add selected",
             remove: "Remove selected",
             saveOrder: "Save collection order",
+            commonCategory: "Set category for selected photos",
+            applyCategory: "Apply category",
+            deleteSelected: "Delete selected photo records",
+            retryFailed: "Retry failed changes",
+            addFieldsConfirm: "Add {{count}} photos to {{title}}? Only collectionId and collectionOrder will change; photos in another collection will move here.",
+            removeFieldsConfirm: "Remove {{count}} photos from this collection? Only collectionId and collectionOrder will be cleared. The photo records and files remain.",
+            orderFieldsConfirm: "Save positions for {{count}} photos? Only collectionOrder will change; Gallery order remains unchanged.",
+            categoryFieldsConfirm: "Set {{count}} photos to category {{category}}? Only the category field will change; individual details remain.",
+            deleteConfirm: "Delete {{count}} selected photo records? They will disappear from collections and Gallery. Uploaded image objects stay in Storage for backup and may remain reachable by URL. This cannot be undone in Admin.",
+            savingOne: "Saving {{current}}/{{total}}…",
+            savedOne: "Saved",
+            skippedOne: "No change",
+            deletingOne: "Deleting {{current}}/{{total}}…",
+            deletedOne: "Deleted",
+            failedOne: "Failed: {{message}}",
+            failedCount: "failed; retry those items only.",
+            categorySaved: "Category saved for {{count}} photos.",
+            deleteDone: "Deleted {{deleted}} photo records. Image objects remain in Storage.",
+            deletePartial: "Deleted {{deleted}} photo records; {{failed}} failed. Retry failed items only.",
             up: "Move {{title}} up",
             down: "Move {{title}} down",
             moveConfirm: "{{count}} selected photos already belong to other collections. Add them here and move their ownership?",
@@ -242,20 +247,62 @@ window.siteLocales.en = {
             noOrderChanges: "Collection order has no unsaved changes.",
             saved: "{{count}} photo memberships saved.",
             orderSaved: "Collection order saved for {{count}} photos. Gallery order is unchanged.",
-            partial: "{{count}} updates saved before a failure. The list was reloaded; review the current memberships before retrying. {{message}}",
+            partial: "{{count}} updates saved; {{message}} The list was reloaded.",
             reloadFailed: "Some updates may have saved, but the list could not be reloaded. Refresh this page before retrying. {{message}}",
             busy: "Wait for the current save to finish."
         },
         categories: {
-            title: "Rename or merge a category",
-            intro: "All photos in the old category move to the new name. Photos remain in the Gallery.",
-            source: "Current category",
-            target: "New or existing category",
-            apply: "Rename or merge",
-            confirm: "Change {{count}} photos from \"{{source}}\" to \"{{target}}\"?",
-            same: "Choose a different category name.",
-            saved: "{{count}} photos now use \"{{target}}\". The old filter will disappear when no photos use it.",
-            partial: "{{count}} photos changed before a failure. The list was reloaded; review the categories before retrying. {{message}}"
+            manageTitle: "Photo categories",
+            manageIntro: "Works and photos use one category list. Create a category before saving content; unused categories still appear as empty Gallery filters.",
+            choose: "Choose a category",
+            newName: "New category name",
+            create: "Create category",
+            source: "Category to rename",
+            target: "New name",
+            rename: "Rename",
+            mergeSource: "Category to merge",
+            mergeTarget: "Keep category",
+            merge: "Merge",
+            deleteTarget: "Unused category",
+            delete: "Delete unused category",
+            same: "Choose two different categories or a different name.",
+            saveFailed: "Category could not be saved.",
+            deleteFailed: "This category could not be deleted. Check whether a Work or Photo uses it.",
+            created: "Category {{name}} created. It is now available in Work, Photo, and Gallery filters.",
+            renameConfirm: "Rename {{source}} to {{target}}? The category name changes for {{works}} Works and {{photos}} Photos; their other fields stay the same.",
+            renamed: "Category renamed to {{target}}. Works, Photos, and Gallery filters use the new name.",
+            mergeConfirm: "Merge {{source}} into {{target}}? The category field changes on {{works}} Works and {{photos}} Photos; no photo records are deleted.",
+            merged: "Categories merged into {{target}}. No photo records were deleted.",
+            deleteConfirm: "Delete unused category {{name}}? It has no Work or Photo records.",
+            deleted: "Unused category {{name}} deleted."
+        },
+        queue: {
+            title: "Upload photos to the selected collection",
+            intro: "Choose several local files at once. Select each preview, review EXIF suggestions, and fill its details before uploading. The source files stay on this device.",
+            choose: "Choose photos",
+            empty: "No files selected yet.",
+            untitledDraft: "Untitled draft",
+            editDetails: "Edit details",
+            removeDraft: "Remove draft",
+            detailsTitle: "Photo details for selected file",
+            saveDraft: "Save draft details",
+            draftSaved: "Details kept in this page until upload. They are not yet published.",
+            chooseFirst: "Choose one or more files above, then select a photo to enter its details.",
+            titleRequired: "Enter a title for this photo; the filename is not used as a title.",
+            categoryRequired: "Choose an existing category.",
+            collectionRequired: "Choose an existing collection before uploading.",
+            draft: "Ready for review",
+            preparing: "Preparing WebP files",
+            uploading: "{{count}}/3 WebP files uploaded",
+            saving: "Saving record",
+            success: "Saved",
+            failed: "Failed; retry this item",
+            needsReview: "Needs manual record and Storage review before retrying",
+            uploadAll: "Upload ready photos",
+            retryFailed: "Retry failed only",
+            clearDone: "Clear completed",
+            summary: "{{total}} selected · {{success}} saved · {{failed}} failed · {{review}} need review",
+            finished: "Batch complete: {{success}} saved, {{failed}} failed, {{review}} need manual review. Retry failed items only."
         },
         exif: {
             title: "Review JPEG EXIF suggestions",
@@ -315,11 +362,11 @@ window.siteLocales.en = {
         },
         reset: {
             sectionLabel: "Recovery",
-            title: "Restore default content",
-            description: "This overwrites all browser-local Work and Gallery changes with the repository seed data.",
-            button: "Reset Content",
-            confirm: "Reset all Work and Gallery content? This overwrites every browser-local change with the default seed data.",
-            restored: "Default Work and Gallery content restored.",
+            title: "Clear browser-local content",
+            description: "This clears browser-local Works, Photos, and categories. It does not change Supabase.",
+            button: "Clear Local Content",
+            confirm: "Clear all browser-local Works, Photos, and categories? Cloud content will not change.",
+            restored: "Browser-local Works, Photos, and categories cleared.",
             failed: "Content could not be reset. Check the browser console for details."
         },
         upload: {
@@ -367,16 +414,16 @@ window.siteLocales.en = {
         backToWebsite: "Back to Website",
         sectionLabel: "Content Management",
         title: "Dashboard",
-        intro: "Manage your photography collections and gallery photos.",
+        intro: "Manage collections, photos, and categories in Work. Preview the public Gallery.",
         works: {
             title: "Work / Collections",
-            description: "Manage photography collections.",
+            description: "Manage collections, photo uploads, details, and categories.",
             manage: "Manage Work →"
         },
         gallery: {
-            title: "Gallery / Photos",
-            description: "Manage gallery photos.",
-            manage: "Manage Gallery →"
+            title: "Public Gallery",
+            description: "Preview published photos and category filters.",
+            manage: "View Gallery →"
         },
         status: {
             checking: "Checking owner access…",
@@ -387,10 +434,10 @@ window.siteLocales.en = {
         }
     },
     seo: {
-        homeTitle: "Kris Photography | Portrait, Documentary & Landscape",
-        homeDescription: "Kris Photography is a personal photography portfolio featuring portrait, documentary and landscape work.",
+        homeTitle: "Kris Photography | Photography Portfolio",
+        homeDescription: "Kris Photography is a personal photography portfolio by Kris Huang.",
         homeOgTitle: "Kris Photography",
-        homeOgDescription: "Portrait, documentary and landscape photography by Kris.",
+        homeOgDescription: "A personal photography portfolio by Kris Huang.",
         collectionTitle: "Collection | Kris Photography",
         collectionDescription: "A photography collection by Kris Huang.",
         photoTitle: "Photograph | Kris Photography",
@@ -400,17 +447,6 @@ window.siteLocales.en = {
         collectionErrorTitle: "Collection Error | Kris Photography",
         photoPageTitle: "{{title}} | Kris Photography",
         photoNotFoundTitle: "Photograph Not Found | Kris Photography",
-        photoErrorTitle: "Photograph Error | Kris Photography",
-        projects: {
-            portraitTitle: "Portrait | Kris Photography",
-            portraitDescription: "Rainy windows, reflected light and quiet moments photographed by Kris Huang.",
-            portraitOgDescription: "Rainy windows, reflected light and quiet moments.",
-            documentaryTitle: "Documentary | Kris Photography",
-            documentaryDescription: "Quiet interiors, plants and objects observed in soft light. Photography by Kris Huang.",
-            documentaryOgDescription: "Quiet interiors, plants and objects observed in soft light.",
-            landscapeTitle: "Landscape | Kris Photography",
-            landscapeDescription: "Three views of city light, changing skies and a garden path. Photography by Kris Huang.",
-            landscapeOgDescription: "Three views of city light, changing skies and a garden path."
-        }
+        photoErrorTitle: "Photograph Error | Kris Photography"
     }
 };

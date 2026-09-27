@@ -4,26 +4,26 @@
 
 这是一个不依赖框架的摄影作品集。首页通过 Content Service 读取作品集与照片，并在下方生成可筛选 Gallery；点击作品卡片后会进入通用的 `collection.html?slug=...` 页面。HTML 负责内容结构，CSS 负责外观与响应式布局，JavaScript 负责数据读取、动态渲染、灯箱、手机菜单和滚动动画。现有照片保存在 `images/` 下；Cloud Admin 新上传的网页图使用 Supabase Storage。`dist/` 是给 Sites 预览和托管使用的同内容副本。
 
-## 当前项目状态（2026-09-23）
+## 本轮源码状态（2026-09-23）
 
-- 当前稳定检查点是第 34 课：公开页面已经通过 Content Service 和 Repository 从 Supabase 只读加载 3 个作品集与 9 张照片。
-- Supabase 的 Collections 或 Photos 任一读取失败时，两组资料会一起回退到浏览器本地种子，避免一页混用不同来源；页面不直接依赖数据库 SDK。
-- `admin.html` 默认打开有登录门槛的 Cloud Admin，提供云端 CRUD 和 Collection／Gallery 的本地选图上传；旧地址 `admin.html?mode=cloud` 仍兼容。第 33 课的浏览器本地原型保留在 `admin.html?mode=local`，只写当前浏览器的 localStorage。
-- GitHub Pages 已发布在 <https://hyeexy211.github.io/kris-photo-portfolio/>。2026-09-23 对此前合并版本的线上检查确认：首页、主要 CSS／JS 静态文件与当时的 `main` 一致，`admin/` 路由可访问；本次后台与上传改动发布后仍需复查。
-- 2026-09-23 已确认真实所有者登录和管理员身份，并在 Supabase 执行内容字段迁移：`story`、`collection_order`、`capture_time` 已存在，作品集外键已改为 `ON DELETE SET NULL`。`portfolio-web`、`portfolio-originals` 和 4 条所有者 Storage 策略原本已存在，因此没有重跑 Storage 迁移。
-- 当前源码的 HTTP 预览已连接真实 Supabase 完成所有者复测：新增作品集和照片、封面与照片上传／替换、故事编辑、拍摄时刻保存／清空、分类修改、批量归属、集内排序及删除均通过。测试后原有 3 个作品集、9 张照片逐字段（含时间戳）与基线一致，15 个测试网页图（含替换前版本）已清理。匿名数据库新增和 Storage 上传被拒绝；第二个已登录非管理员账号尚未测试。
+- 首页通过 Content Service 和 Repository 只读查询 Supabase。浏览器本地默认作品集、照片和类别已改为空；旧版本的本地记录会按明确的旧 ID 清理。云端读取失败会显示读取错误，不会回退并重新展示旧 localStorage 内容。
+- `admin.html` 默认进入有登录门槛的 Cloud Admin；`?mode=local` 是只影响当前浏览器的原型。作品集管理区是照片上传、逐张编辑、类别维护、批量归属／类别／排序／删除的入口；Gallery 导航进入公开画廊。
+- 本轮新增共享类别迁移、作品集内多文件上传与失败项重试的源码。`supabase/migrations/20260923_shared_categories.sql` 已在本项目生产库执行；真实所有者已验证多张上传、类别重命名与合并、批量修改／移动／排序／删除及公开展示。部分失败后的重试只通过 mock 模拟验证，尚未用真实故障完成验收；第二个已登录非管理员账号也尚未测试。
+- 2026-09-23 较早一轮真实云端复测验证了所有者登录、单张封面／照片上传与替换、内容字段迁移和匿名写入拒绝；当时测试后恢复了 3 个作品集、9 张照片，并清理 15 个测试网页图。这是历史结果，不是本轮批量流程或清空结果。第二个已登录非管理员账号尚未测试。
+- 旧云端内容已导出到仓库外的私有 JSON 并读回核验；生产库按清单限定删除旧记录，紧随删除的计数由 **3 个作品集、9 张照片**变为 **0 个作品集、0 张照片**，随后执行了共享类别迁移。本轮验收的 2 个临时作品集、2 张临时照片、1 个临时类别、12 个测试 WebP 和 4 个自动生成的零字节占位对象已清理；**2026-09-23 清理结束时**只读 SQL 复核作品集／照片／类别及两个 Storage 桶对象数量均为 **0**。2026-09-27 再次读取公开数据时为 **0 个作品集、0 张照片、4 个后来新增的类别**；这些类别不属于旧清单，予以保留。备份路径、SHA-256、ID、图片引用和两个时间点的结果见 [`docs/content-reset-audit-2026-09-23.md`](docs/content-reset-audit-2026-09-23.md)。
+- GitHub Pages 的静态文件与 Supabase 记录分别更新；不能由数据库已清空推断线上页面已经更新。本轮发布与线上核查结果以实际构建状态和本次任务的最终报告为准。
 - 原片按目前决定继续留在仓库；LCP/CLS、Lighthouse 和 200 张模拟卡片已在本地测试，真实访客性能数据仍未完成。实测过程与剩余验收项见 `docs/crud-test-report-2026-09-23.md`。
-- 现有 9 张照片页按你的选择提供 1200px WebP 网页尺寸下载；按钮不指向 1800px 展示图或原片。仓库公开且保留原片，所以这不等于原片受保护。
+- 旧的 9 张预生成照片页已从源码退役；单张照片统一使用 `photo.html?id=...`，仅在照片记录存在时展示。仓库公开且保留旧原片和网页图，因此旧图片地址仍可能直接访问。
 - `scripts/export-public-content.js` 可把 Supabase 的公开作品集和照片资料导出到仓库外的 JSON，供人工留存；它不包含图片、Auth 用户或数据库策略，完整备份和恢复仍需在服务端验证。
 - `Weblesson.docx` 目前完整写到第 18 课并预告第 19 课，尚未同步第 19～34 课的教学内容。
 
 ## 建议阅读顺序
 
 1. 从 `index.html` 开始：先看 `<head>`，再依次看页头、Hero、Selected Work 容器、动态 Gallery、About、页脚和末尾的脚本加载顺序。
-2. 打开 `data/collections.js` 与 `data/photos.js`：先认识本地种子数组，再看真实作品如何用 `id`、关联字段、图片路径与现有元数据描述。
+2. 打开 `data/collections.js` 与 `data/photos.js`：这两个本地默认数组现为空；再看 Repository 如何保存新作品的 `id`、关联和已确认资料。
 3. 打开 `js/content-service.js`：观察页面如何用同一组异步方法读取本地仓库或 Supabase 仓库，而不把数据库查询写进 UI。
 4. 再看 `css/style.css`：从 `:root` 设计变量开始，依次看全局规则、页头、Hero、灯箱、手机布局、动画、作品卡片和项目页。
-5. 最后看 `js/main.js`：先看如何取得元素，再看 `openLightbox` / `closeLightbox`、`setMenuOpen`、键盘事件和滚动观察器。这个脚本被首页和静态作品页共用，所以读取可选元素时会先确认它是否存在。
+5. 最后看 `js/main.js`：先看如何取得元素，再看 `openLightbox` / `closeLightbox`、`setMenuOpen`、键盘事件和滚动观察器。这个脚本被首页和通用作品集页共用，所以读取可选元素时会先确认它是否存在。
 
 源码里的中文注释紧挨着对应的标签、样式规则或 JavaScript 语句。阅读时可以先看注释，再看下面一行代码，最后在浏览器里观察它的效果。空行和闭合符号属于代码结构，不需要单独的功能说明。
 
@@ -32,10 +32,10 @@
 | 文件或目录 | 作用 | 初学者重点 |
 | --- | --- | --- |
 | `index.html` | 定义首页与作品入口 | `article`、整张卡片链接、`srcset`、`aria-*` |
-| `data/*.js` | 保存浏览器本地种子资料 | 数组、对象、`id`、`collectionId`、真实图片路径 |
-| `js/content-service.js` | 为 UI 提供统一内容读取接口 | `async/await`、数据源切换、失败回退 |
+| `data/*.js` | 保存空的浏览器本地默认资料 | 数组、`id`、`collectionId` 的数据边界 |
+| `js/content-service.js` | 为 UI 提供统一内容读取接口 | `async/await`、数据源切换、云端失败报错 |
 | `js/repositories/*.js` | 分别读取 localStorage 与 Supabase | Repository 边界、字段映射、只读查询 |
-| `js/cloud-photo-upload.js` | 为 Cloud Admin 的作品集封面和 Gallery 照片生成、上传 3 张 WebP 网页图 | 长边缩放、实际宽度 srcset、Storage 路径与失败清理；所有者真实上传／替换已验证 |
+| `js/cloud-photo-upload.js` | 为 Cloud Admin 的作品集封面和照片生成、上传 3 张 WebP 网页图 | 长边缩放、实际宽度 srcset、Storage 路径与失败清理；历史单张上传已真实验证 |
 | `collection.html` | 按 `slug` 展示一个作品集 | URL 参数、异步状态、动态 Lightbox 按钮 |
 | `css/style.css` | 布局、颜色、动画和响应式 | 选择器、Grid、Flexbox、媒体查询 |
 | `js/main.js` | 动态渲染与用户交互 | DOM 创建、筛选、事件监听、函数、状态 class |
@@ -44,15 +44,14 @@
 | `.openai/hosting.json` | Sites 静态托管配置 | `project_id` 绑定现有 Site，`dist` 是托管目录 |
 | `dist/` | 可预览的静态副本 | 不要只改这里，先改根目录源码再同步 |
 
-## 第 19～20 课：作品页与卡片
+## 第 19～20 课：作品页与卡片（历史阶段）
 
-- `index.html` 的 `#work` 只放作品入口。每个 `<article class="project-card">` 都有封面、标题、照片数量和指向独立页面的链接。
-- `projects/portrait.html`、`projects/documentary.html`、`projects/landscape.html` 分别展示三张现有照片。每页的 `../css/style.css`、`../images/...` 都从 `projects/` 返回到项目根目录。
-- 当前仓库没有课程示例的京都照片，因此没有添加空白的 `Kyoto Night` 页面，也没有填写未经确认的拍摄地点、年份或器材。以后有真实素材时，可以参照现有作品页复制一份，再在首页添加对应卡片。
+- `index.html` 的 `#work` 只放作品入口。作品卡片由 `js/work.js` 根据当前资料生成，进入 `collection.html?slug=...`。
+- 早期三个写死照片的 `projects/*.html` 页面已随旧内容退役。新作品集应通过 Cloud Admin 创建，不需要复制旧静态页面。
 
 ## 第 22 课：照片数据层
 
-- `data/photos.js` 是网站的照片数据层，记录九张真实作品的路径、标题、分类与响应式图片信息，不负责视觉布局。
+- `data/photos.js` 是浏览器本地默认照片资料，不负责视觉布局。旧九张照片的默认记录已清除，旧图片文件本身保留。
 - 没有经过确认的拍摄日期继续保留为空；`createPhotoCard()` 会跳过空日期，不编造地点、日期或器材资料。
 - `index.html` 会先加载 `data/photos.js`，再加载 `js/main.js`，因此主脚本能够读取照片资料并自动生成 Gallery。
 
@@ -60,7 +59,7 @@
 
 - `createPhotoCard(photo)` 使用 `document.createElement()` 把一条照片数据转换成正式的 `.gallery-item.lightbox-trigger.reveal` 照片按钮，继续复用原 Gallery 的样式、Hover、响应式与键盘行为。
 - `renderGallery(photoList)` 使用 `replaceChildren()` 一次替换旧内容，再逐张调用 `createPhotoCard()`；空数组会显示 `No photos found.`，不会与旧卡片叠加。
-- Gallery 从当前 Photo 的 `category` 去重生成筛选按钮，始终保留 All／全部；没有 Street 照片时不显示 Street。新分类按用户原文显示，内置分类仍有中英文译名。
+- Gallery 从当前类别定义生成筛选按钮，始终保留 All／全部；没有照片的类别可显示空状态。
 - 首页的动态 Gallery 是浏览全部照片的入口；页面从 Content Service 读取数据，`index.html` 只保留容器、初始 All 按钮和 Lightbox 结构。
 - 首页 Lightbox 在持久存在的 Gallery 容器上使用事件委托，通过 `data-id` 回到 `photos` 查找数据；重新筛选后不需要重复绑定监听器。
 - 动态创建的 `.reveal` 会在每次 render 后交给页面共用的同一个 `IntersectionObserver`，不会为每次筛选重复创建观察器。
@@ -69,29 +68,28 @@
 
 - Work、Gallery 与通用 Collection 页面继续只调用 `contentService`，不会直接调用 Supabase。
 - `js/repositories/supabase-repository.js` 是唯一包含数据库 `.from(...)` 查询的文件，并把数据库的 snake_case 字段转换回页面现有的 camelCase 数据结构。
-- `js/repositories/local-repository.js` 保留 localStorage 与默认种子；当前正式配置优先使用 `supabase`，云端配置缺失或读取失败时会安全回退到本地仓库。
+- `js/repositories/local-repository.js` 保留浏览器本地模式；当前正式配置优先使用 `supabase`。旧浏览器缓存与旧种子不能作为云端失败时的公开内容回退。
 - 第 34 课的公开数据接口只开放 `SELECT`；显式的 `admin.html?mode=local` 本地原型仍只保存在当前浏览器，不会写入 Supabase。
-- 数据库表、外键、RLS、公开只读策略、真实种子和手动配置步骤见 `docs/supabase-setup.md`。
+- 数据库表、外键、RLS、公开只读策略和手动配置步骤见 `docs/supabase-setup.md`；共享类别迁移与回退见 `docs/shared-categories-migration.md`。
 
 ## Cloud Admin 图片上传
 
 - 直接访问 `admin/` 可进入 Dashboard，再进入默认的 `admin.html` 管理内容；`admin.html?mode=cloud` 旧地址仍兼容。公开页面不提供后台入口。
-- Cloud Admin 新建或编辑 Collection、Gallery 时，可从电脑选择 JPEG、PNG、WebP 或 AVIF。表单会预览现有图片和新选择的图片；不选新文件就保留原图，不需要手填图片路径。
+- Cloud Admin 在作品集管理区创建或编辑作品集，也可选中作品集后一次选择多张 JPEG、PNG、WebP 或 AVIF。每张照片可先预览、填写资料，再逐张保存；失败项可单独重试。编辑现有照片时不选新文件就保留原图，不需要手填图片路径。
 - 源图最长边须至少 1800px。保存时浏览器保持比例，按最长边生成 640、1200、1800px WebP 网页图，`srcset` 使用实际输出宽度；上传到 Supabase Storage 成功后才将 URL 写入现有数据库字段。替换图片不会自动删除旧文件；上传或数据库写入失败会尽可能清理本次新文件。
 - `admin.html?mode=local` 的浏览器本地原型继续使用已有图片的相对路径字段，不上传文件。直接用 `file://` 打开云端编辑页时，应按页面提示改用线上或本地 HTTP 地址。两种模式的操作和 Supabase 手动配置见 `docs/user-guide.zh-CN.md` 与 `docs/supabase-storage-setup.md`。
 
 ## 照片资料字段
 
-- Admin 的 Gallery 表单可录入已确认的标签、说明、地点、日期、拍摄时刻和器材资料；标签以逗号分隔，保存后是数组。选择 JPEG 后可逐字段审核 EXIF 候选值，只有接受并保存才会公开。逐张照片页只显示有值的字段。
-- 现有 9 张照片尚未补充未经确认的资料；GPS 不进入公开数据。字段定义和云端同步边界见 `docs/photo-metadata.md`。
+- 作品集区的照片表单可录入已确认的标签、说明、地点、日期、拍摄时刻和器材资料；标签以逗号分隔，保存后是数组。选择 JPEG 后可逐字段审核 EXIF 候选值，只有接受并保存才会公开。逐张照片页只显示有值的字段；GPS 不进入公开数据。字段定义和云端同步边界见 `docs/photo-metadata.md`。
 
 ## 现有交互与可访问性
 
-- 首页 Gallery、通用 Collection 页和三个旧作品页的共用灯箱可展开照片信息；手机上可在大图上左右滑动切换照片，并滚动信息区。缺失的拍摄资料不会被编造；全部缺失时显示简短提示。
-- 灯箱标题旁的 `View photo` 会为现有 9 张照片打开 `photos/照片ID.html`，每页初始 HTML 含独立标题、图片、Open Graph 和 ImageObject 资料，可供社交爬虫读取。通用 `photo.html?id=照片ID` 保留给未来的云端新照片；这种新照片要获得独立社交卡片，需加入静态发布流程。修改种子照片后运行 `node scripts/generate-photo-pages.js`；在 Cloud Admin 修改这 9 张照片后运行 `node scripts/generate-photo-pages.js --source=supabase`，检查生成差异，再将 `photos/` 与 `dist/` 一起发布。新增或删除照片还须检查 `sitemap.xml`。
-- `sitemap.xml` 列出当前 3 个作品集、9 张静态照片页以及首页和旧作品页；新增内容后需要同步更新。`robots.txt` 随项目发布，但 GitHub Pages 的项目站点不能控制域名根路径的 `/robots.txt`，所以搜索引擎是否采用它还要在正式域名上验证。
+- 首页 Gallery 和通用 Collection 页共用灯箱，可展开照片信息；手机上可在大图上左右滑动切换照片，并滚动信息区。缺失的拍摄资料不会被编造；全部缺失时显示简短提示。
+- 灯箱标题旁的 `View photo` 统一打开 `photo.html?id=照片ID`，由 Content Service 核查当前记录。旧 `photos/*.html` 页面和基于种子重建这些页面的脚本已退役。动态单张页的初始社交卡片仍是通用资料；若未来需要每张照片的独立社交预览，应另行设计受当前内容驱动的发布流程。
+- `sitemap.xml` 在零内容状态只列首页。`robots.txt` 随项目发布，但 GitHub Pages 的项目站点不能控制域名根路径的 `/robots.txt`，所以搜索引擎是否采用它还要在正式域名上验证。
 - 原先 CSS 和 JavaScript 有 `.reveal` 滚动动画逻辑，但 HTML 没有使用 `.reveal`，所以动画从未启动。现在作品标题和图片都已接入；如果浏览器不支持观察器或用户选择减少动画，内容仍会直接显示。
-- 作品页图片放在真正的 `button` 中，Enter 和 Space 都能打开灯箱；首页卡片使用链接，键盘也能打开项目页。
+- 作品集页图片放在真正的 `button` 中，Enter 和 Space 都能打开灯箱；首页卡片使用链接，键盘也能打开通用作品集页。
 - 灯箱原先不管理焦点或辅助技术状态。现在打开时聚焦关闭按钮，关闭时把焦点还给原作品；Tab 不会跑到背后页面。
 - 手机菜单原先打开状态只改变图标，没有同步 `aria-expanded`，按 Escape 也不能关闭。现在状态统一由 `setMenuOpen` 管理，Esc 可关闭，宽屏切换时也会清理残留状态。
 - 固定页头可能遮住页内导航目标。现在 `scroll-padding-top` 为标题预留了空间。
@@ -108,7 +106,7 @@ node --check js/main.js
 python3 -m http.server 4173 --bind 127.0.0.1 --directory dist
 ```
 
-然后打开 `http://127.0.0.1:4173/`，检查三个作品卡片是否分别打开 Portrait、Documentary、Landscape 页面；在每页点开照片检查灯箱，并检查手机菜单与返回首页链接。第二条命令会持续运行；要停止它，在对应终端按 `Ctrl+C`。
+然后打开 `http://127.0.0.1:4173/`，检查零内容时作品集和画廊的空状态；有新内容时检查作品卡片能打开通用作品集页、照片能打开灯箱与通用单张页，并检查手机菜单与返回首页链接。第二条命令会持续运行；要停止它，在对应终端按 `Ctrl+C`。
 
 `dist/` 是静态托管副本。修改根目录中的首页、项目页、样式或脚本后，预览前要将对应文件同步到 `dist/`，否则你可能看到旧版本。
 
@@ -120,7 +118,7 @@ python3 -m http.server 4173 --bind 127.0.0.1 --directory dist
 
 数据库现有的 `title`、`description`、`alt` 等是单语言内容，作品名称和已保存描述会按原文显示。`siteI18n.content(record, field)` 已为未来的 `title_zh`、`title_en` 等字段预留读取入口；真正启用多语言内容时，还须协调 Supabase schema、Repository 字段映射、Admin 表单和静态照片页生成流程。本次新增的 `story`、`collection_order`、`capture_time` 已于 2026-09-23 在真实数据库完成迁移；迁移状态与发布边界见 `docs/user-guide.zh-CN.md`。
 
-`640`、`1200`、`1800` 三组 WebP 已按文件名生成真实宽度。浏览器会结合 `srcset` 和 `sizes` 选择合适版本，手机无需再下载原尺寸照片；30 个响应式文件的总大小由约 128 MiB 降至约 6.4 MiB。
+旧照片保留的 `640`、`1200`、`1800` 三组 WebP 曾按实际宽度接入 `srcset`；早期 30 个响应式文件的总大小由约 128 MiB 降至约 6.4 MiB。这是旧图片的历史性能结果，零内容页面不再加载它们。
 
 ## 容易混淆的三组概念
 
