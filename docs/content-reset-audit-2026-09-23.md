@@ -57,7 +57,7 @@ Storage 页面同时显示 `portfolio-web` 桶根为空。此次清理的是本�
 
 ## 后续只读复核（2026-09-27）
 
-公开只读 API 再次返回 `collections=0`、`photos=0`、`categories=4`。这 4 个类别（`portrait`、`street`、`landscape`、`cafe`）的 `created_at` 均为 2026-09-23 14:13:41 UTC，晚于本轮测试清理时的零计数；它们不在旧内容或临时 QA 删除清单中，因此保留。上述 Storage 的 `0/0` 是 2026-09-23 清理后的实测值，不能据此推断 2026-09-27 的 Storage 对象数量。
+公开只读 API 再次返回 `collections=0`、`photos=0`、`categories=4`。这 4 个类别（`portrait`、`street`、`landscape`、`cafe`）的 `created_at` 均为 2026-09-23 14:13:41 UTC，晚于本轮测试清理时的零计数；它们不在旧内容或临时 QA 删除清单中，因此保留。随后通过生产库只读 SQL 重新核对，`portfolio-web` 和 `portfolio-originals` 的对象数均为 **0**。因此 2026-09-27 的当前计数为作品集／照片／类别 **0/0/4**，两个 Storage 桶对象 **0/0**；这是与 2026-09-23 清理结束时不同的时间点。
 
 ## 静态发布与线上复核（2026-09-27）
 
